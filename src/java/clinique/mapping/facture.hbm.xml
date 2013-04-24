@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN" "http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd" >
+
+<hibernate-mapping package="clinique.mapping">
+ <class name="Facture" table="tbl_facture">
+ <id name="factureId" column="facture_id">
+ <generator class="assigned"/>
+ </id>
+
+<property name="numFact" column="num_fact" />
+<property name="totalHT" column="total_HT" />
+<property name="remise" column="remise" />
+<property name="majoration" column="majoration" />
+<property name="avance" column="avance" />
+<property name="qpc" column="qpc" />
+<property name="totalTva" column="total_tva" />
+<property name="statut" column="statut" />
+<property name="operateur" column="operateur" />
+<property name="netApayer" column="net_a_payer" />
+<property name="tauxRemise" column="taux_remise" />
+<property name="isException" column="isException" />
+<property name="dateFact" column="date_fact" type="date" />
+<property name="typePc" column="typePc"  />
+<property name="isHospitalisation" column="isHospitalisation"  />
+<property name="totalReglementPc" column="totalReglementPc"  />
+<property name="tauxMajoration" column="taux_majoration"  />
+<property name="remiseCash" column="remise_cash"  />
+
+
+<bag name="reglements" lazy="true" inverse="true" cascade="all-delete-orphan" >
+    <key column="facture_id"/>
+    <one-to-many class="Reglement"/>
+</bag>
+
+<bag name="recus" lazy="true" inverse="true" cascade="all-delete-orphan" >
+    <key column="facture_id"/>
+    <one-to-many class="Recu"/>
+</bag>
+
+<bag name="detailFactures" lazy="true" inverse="true" cascade="all-delete-orphan" >
+    <key column="facture_id"/>
+    <one-to-many class="DetailFacture"/>
+</bag>
+
+
+<many-to-one name="patient" class="Patient" cascade="none" column="patient_id"/>
+<many-to-one name="badge" class="Badge" cascade="none" column="badge_id"/>
+<many-to-one name="priseEnCharge" class="PriseEnCharge" cascade="none" column="pc_id"/>
+
+ </class>
+</hibernate-mapping>

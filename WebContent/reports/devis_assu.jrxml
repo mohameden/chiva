@@ -1,0 +1,390 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report9" language="groovy" pageWidth="595" pageHeight="842" columnWidth="555" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20">
+	<property name="ireport.zoom" value="1.0"/>
+	<property name="ireport.x" value="0"/>
+	<property name="ireport.y" value="0"/>
+	<style name="table">
+		<box>
+			<pen lineWidth="1.0" lineColor="#000000"/>
+		</box>
+	</style>
+	<style name="table_TH" mode="Opaque" backcolor="#F0F8FF">
+		<box>
+			<pen lineWidth="0.5" lineColor="#000000"/>
+		</box>
+	</style>
+	<style name="table_CH" mode="Opaque" backcolor="#BFE1FF">
+		<box>
+			<pen lineWidth="0.5" lineColor="#000000"/>
+		</box>
+	</style>
+	<style name="table_TD" mode="Opaque" backcolor="#FFFFFF">
+		<box>
+			<pen lineWidth="0.5" lineColor="#000000"/>
+		</box>
+	</style>
+	<style name="table 1">
+		<box>
+			<pen lineWidth="1.0" lineColor="#000000"/>
+		</box>
+	</style>
+	<style name="table 1_TH" mode="Opaque" backcolor="#F0F8FF">
+		<box>
+			<pen lineWidth="0.5" lineColor="#000000"/>
+		</box>
+	</style>
+	<style name="table 1_CH" mode="Opaque" backcolor="#BFE1FF">
+		<box>
+			<pen lineWidth="0.5" lineColor="#000000"/>
+		</box>
+	</style>
+	<style name="table 1_TD" mode="Opaque" backcolor="#FFFFFF">
+		<box>
+			<pen lineWidth="0.5" lineColor="#000000"/>
+		</box>
+	</style>
+	<style name="table 2">
+		<box>
+			<pen lineWidth="1.0" lineColor="#000000"/>
+		</box>
+	</style>
+	<style name="table 2_TH" mode="Opaque" backcolor="#F0F8FF">
+		<box>
+			<pen lineWidth="0.5" lineColor="#000000"/>
+		</box>
+	</style>
+	<style name="table 2_CH" mode="Opaque" backcolor="#BFE1FF">
+		<box>
+			<pen lineWidth="0.5" lineColor="#000000"/>
+		</box>
+	</style>
+	<style name="table 2_TD" mode="Opaque" backcolor="#FFFFFF">
+		<box>
+			<pen lineWidth="0.5" lineColor="#000000"/>
+		</box>
+	</style>
+	<subDataset name="New Dataset 3">
+		<parameter name="num_devis" class="java.lang.String"/>
+		<queryString>
+			<![CDATA[SELECT
+     tbl_acte.`classe_id` AS tbl_acte_classe_id,
+     tbl_acte.`nom_acte` AS tbl_acte_nom_acte,
+     tbl_acte.`prix` AS tbl_acte_prix,
+     tbl_acte.`prix_urg` AS tbl_acte_prix_urg,
+     tbl_acte.`prix_depl` AS tbl_acte_prix_depl,
+     tbl_acte.`pck` AS tbl_acte_pck,
+     tbl_acte.`coef` AS tbl_acte_coef,
+     tbl_acte.`taux_praticien` AS tbl_acte_taux_praticien,
+     tbl_acte.`taux_assistant` AS tbl_acte_taux_assistant,
+     tbl_acte.`taux_praticien_urg` AS tbl_acte_taux_praticien_urg,
+     tbl_acte.`taux_assistant_urg` AS tbl_acte_taux_assistant_urg,
+     tbl_acte.`taux_dep_assistant` AS tbl_acte_taux_dep_assistant,
+     tbl_acte.`statut` AS tbl_acte_statut,
+     tbl_acte.`operateur` AS tbl_acte_operateur,
+     tbl_acte.`famille_prestation_id` AS tbl_acte_famille_prestation_id,
+     tbl_acte.`reductible` AS tbl_acte_reductible,
+     tbl_acte.`code_acte` AS tbl_acte_code_acte,
+     tbl_acte.`date_debut` AS tbl_acte_date_debut,
+     tbl_acte.`date_fin` AS tbl_acte_date_fin,
+     tbl_devis_actes.`devis_actes_id` AS tbl_devis_actes_devis_actes_id,
+     tbl_devis_actes.`acte_id` AS tbl_devis_actes_acte_id,
+     tbl_devis_actes.`nbre` AS tbl_devis_actes_nbre,
+     tbl_devis_actes.`prix` AS tbl_devis_actes_prix,
+     tbl_devis_actes.`total` AS tbl_devis_actes_total,
+     tbl_devis_actes.`devis_assureur_id` AS tbl_devis_actes_devis_assureur_id,
+     tbl_devis_actes.`statut` AS tbl_devis_actes_statut,
+     tbl_devis_actes.`operateur` AS tbl_devis_actes_operateur,
+     tbl_devis_assureur.`devis_assureur_id` AS tbl_devis_assureur_devis_assureur_id,
+     tbl_devis_assureur.`categorie_id` AS tbl_devis_assureur_categorie_id,
+     tbl_devis_assureur.`patient_id` AS tbl_devis_assureur_patient_id,
+     tbl_devis_assureur.`date_devis` AS tbl_devis_assureur_date_devis,
+     tbl_devis_assureur.`total` AS tbl_devis_assureur_total,
+     tbl_devis_assureur.`statut` AS tbl_devis_assureur_statut,
+     tbl_devis_assureur.`operateur` AS tbl_devis_assureur_operateur,
+     tbl_acte.`acte_id` AS tbl_acte_acte_id
+FROM
+     `tbl_acte` tbl_acte,
+     `tbl_devis_actes` tbl_devis_actes,
+     `tbl_devis_assureur` tbl_devis_assureur
+WHERE
+     `tbl_devis_assureur`.devis_assureur_id =$P{num_devis}
+ AND `tbl_devis_assureur`.devis_assureur_id  = `tbl_devis_actes`.devis_assureur_id
+ AND `tbl_devis_actes`.acte_id  = `tbl_acte`.acte_id
+group by  `tbl_devis_actes`.acte_id]]>
+		</queryString>
+		<field name="tbl_acte_classe_id" class="java.lang.Integer"/>
+		<field name="tbl_acte_nom_acte" class="java.lang.String"/>
+		<field name="tbl_acte_prix" class="java.lang.Double"/>
+		<field name="tbl_acte_prix_urg" class="java.lang.Double"/>
+		<field name="tbl_acte_prix_depl" class="java.lang.Double"/>
+		<field name="tbl_acte_pck" class="java.lang.Boolean"/>
+		<field name="tbl_acte_coef" class="java.lang.String"/>
+		<field name="tbl_acte_taux_praticien" class="java.lang.Integer"/>
+		<field name="tbl_acte_taux_assistant" class="java.lang.Integer"/>
+		<field name="tbl_acte_taux_praticien_urg" class="java.lang.Integer"/>
+		<field name="tbl_acte_taux_assistant_urg" class="java.lang.Integer"/>
+		<field name="tbl_acte_taux_dep_assistant" class="java.lang.Integer"/>
+		<field name="tbl_acte_statut" class="java.lang.String"/>
+		<field name="tbl_acte_operateur" class="java.lang.String"/>
+		<field name="tbl_acte_famille_prestation_id" class="java.lang.Integer"/>
+		<field name="tbl_acte_reductible" class="java.lang.String"/>
+		<field name="tbl_acte_code_acte" class="java.lang.String"/>
+		<field name="tbl_acte_date_debut" class="java.sql.Date"/>
+		<field name="tbl_acte_date_fin" class="java.sql.Date"/>
+		<field name="tbl_devis_actes_devis_actes_id" class="java.lang.String"/>
+		<field name="tbl_devis_actes_acte_id" class="java.lang.Integer"/>
+		<field name="tbl_devis_actes_nbre" class="java.lang.Integer"/>
+		<field name="tbl_devis_actes_prix" class="java.lang.Double"/>
+		<field name="tbl_devis_actes_total" class="java.lang.Double"/>
+		<field name="tbl_devis_actes_devis_assureur_id" class="java.lang.String"/>
+		<field name="tbl_devis_actes_statut" class="java.lang.String"/>
+		<field name="tbl_devis_actes_operateur" class="java.lang.String"/>
+		<field name="tbl_devis_assureur_devis_assureur_id" class="java.lang.String"/>
+		<field name="tbl_devis_assureur_categorie_id" class="java.lang.Integer"/>
+		<field name="tbl_devis_assureur_patient_id" class="java.lang.String"/>
+		<field name="tbl_devis_assureur_date_devis" class="java.sql.Date"/>
+		<field name="tbl_devis_assureur_total" class="java.lang.Double"/>
+		<field name="tbl_devis_assureur_statut" class="java.lang.String"/>
+		<field name="tbl_devis_assureur_operateur" class="java.lang.String"/>
+		<field name="tbl_acte_acte_id" class="java.lang.Integer"/>
+	</subDataset>
+	<parameter name="num_devis" class="java.lang.String"/>
+	<queryString language="SQL">
+		<![CDATA[SELECT
+     tbl_devis_assureur.`devis_assureur_id` AS tbl_devis_assureur_devis_assureur_id,
+     tbl_devis_assureur.`categorie_id` AS tbl_devis_assureur_categorie_id,
+     tbl_devis_assureur.`patient_id` AS tbl_devis_assureur_patient_id,
+     tbl_devis_assureur.`date_devis` AS tbl_devis_assureur_date_devis,
+     tbl_devis_assureur.`total` AS tbl_devis_assureur_total,
+     tbl_devis_actes.`devis_actes_id` AS tbl_devis_actes_devis_actes_id,
+     tbl_devis_actes.`acte_id` AS tbl_devis_actes_acte_id,
+     tbl_devis_actes.`nbre` AS tbl_devis_actes_nbre,
+     tbl_devis_actes.`prix` AS tbl_devis_actes_prix,
+     tbl_devis_actes.`total` AS tbl_devis_actes_total,
+     tbl_devis_actes.`devis_assureur_id` AS tbl_devis_actes_devis_assureur_id,
+     tbl_acte.`acte_id` AS tbl_acte_acte_id,
+     tbl_acte.`classe_id` AS tbl_acte_classe_id,
+     tbl_acte.`nom_acte` AS tbl_acte_nom_acte,
+     tbl_patient.`patient_id` AS tbl_patient_patient_id,
+     tbl_patient.`nom` AS tbl_patient_nom,
+     tbl_patient.`prenom` AS tbl_patient_prenom,
+     tbl_patient.`lieu_naissance` AS tbl_patient_lieu_naissance,
+     tbl_patient.`date_naissance` AS tbl_patient_date_naissance,
+     tbl_acte.`famille_prestation_id` AS tbl_acte_famille_prestation_id,
+     tbl_classe.`classe_id` AS tbl_classe_classe_id,
+     tbl_classe.`nom_classe` AS tbl_classe_nom_classe,
+     tbl_famille_prestation.`famille_prestation_id` AS tbl_famille_prestation_famille_prestation_id,
+     tbl_famille_prestation.`libelle` AS tbl_famille_prestation_libelle
+FROM
+     `tbl_classe` tbl_classe INNER JOIN `tbl_acte` tbl_acte ON tbl_classe.`classe_id` = tbl_acte.`classe_id`
+     INNER JOIN `tbl_famille_prestation` tbl_famille_prestation ON tbl_acte.`famille_prestation_id` = tbl_famille_prestation.`famille_prestation_id`,
+     `tbl_devis_assureur` tbl_devis_assureur,
+     `tbl_devis_actes` tbl_devis_actes,
+     `tbl_patient` tbl_patient]]>
+	</queryString>
+	<field name="tbl_devis_assureur_devis_assureur_id" class="java.lang.String"/>
+	<field name="tbl_devis_assureur_categorie_id" class="java.lang.Integer"/>
+	<field name="tbl_devis_assureur_patient_id" class="java.lang.String"/>
+	<field name="tbl_devis_assureur_date_devis" class="java.sql.Date"/>
+	<field name="tbl_devis_assureur_total" class="java.lang.Double"/>
+	<field name="tbl_devis_actes_devis_actes_id" class="java.lang.String"/>
+	<field name="tbl_devis_actes_acte_id" class="java.lang.Integer"/>
+	<field name="tbl_devis_actes_nbre" class="java.lang.Integer"/>
+	<field name="tbl_devis_actes_prix" class="java.lang.Double"/>
+	<field name="tbl_devis_actes_total" class="java.lang.Double"/>
+	<field name="tbl_devis_actes_devis_assureur_id" class="java.lang.String"/>
+	<field name="tbl_acte_acte_id" class="java.lang.Integer"/>
+	<field name="tbl_acte_classe_id" class="java.lang.Integer"/>
+	<field name="tbl_acte_nom_acte" class="java.lang.String"/>
+	<field name="tbl_patient_patient_id" class="java.lang.String"/>
+	<field name="tbl_patient_nom" class="java.lang.String"/>
+	<field name="tbl_patient_prenom" class="java.lang.String"/>
+	<field name="tbl_patient_lieu_naissance" class="java.lang.String"/>
+	<field name="tbl_patient_date_naissance" class="java.sql.Date"/>
+	<field name="tbl_acte_famille_prestation_id" class="java.lang.Integer"/>
+	<field name="tbl_classe_classe_id" class="java.lang.Integer"/>
+	<field name="tbl_classe_nom_classe" class="java.lang.String"/>
+	<field name="tbl_famille_prestation_famille_prestation_id" class="java.lang.Integer"/>
+	<field name="tbl_famille_prestation_libelle" class="java.lang.String"/>
+	<background>
+		<band splitType="Stretch"/>
+	</background>
+	<title>
+		<band height="159" splitType="Stretch">
+			<staticText>
+				<reportElement x="11" y="120" width="78" height="20"/>
+				<textElement>
+					<font size="10"/>
+				</textElement>
+				<text><![CDATA[NOM PRENOM :]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="10" y="80" width="79" height="20"/>
+				<textElement>
+					<font size="10" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Devis N°:]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="11" y="30" width="100" height="20"/>
+				<textElement textAlignment="Justified">
+					<font size="10"/>
+				</textElement>
+				<text><![CDATA[       ZRA N° 54]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="321" y="80" width="23" height="20"/>
+				<textElement>
+					<font size="10" isBold="true"/>
+				</textElement>
+				<text><![CDATA[DU:]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="10" y="50" width="193" height="20"/>
+				<textElement>
+					<font size="10"/>
+				</textElement>
+				<text><![CDATA[Tel:  4525 80 80    Fax:  4525 34 35  ]]></text>
+			</staticText>
+			<textField>
+				<reportElement x="89" y="80" width="114" height="20"/>
+				<textElement>
+					<font size="10" isBold="true"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{num_devis}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="355" y="80" width="190" height="20"/>
+				<textElement/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{tbl_devis_assureur_date_devis}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="89" y="120" width="267" height="20"/>
+				<textElement>
+					<font size="10" isBold="true"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{tbl_patient_nom}+$F{tbl_patient_prenom}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="10" y="10" width="124" height="20"/>
+				<textElement>
+					<font size="12" isBold="true"/>
+				</textElement>
+				<text><![CDATA[CLINIQUE CHIVA]]></text>
+			</staticText>
+		</band>
+	</title>
+	<pageHeader>
+		<band height="27" splitType="Stretch">
+			<staticText>
+				<reportElement x="10" y="7" width="111" height="20"/>
+				<textElement>
+					<font size="14" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Actes]]></text>
+			</staticText>
+		</band>
+	</pageHeader>
+	<columnHeader>
+		<band height="165" splitType="Stretch">
+			<componentElement>
+				<reportElement key="table 2" style="table 2" x="13" y="5" width="532" height="125">
+					<propertyExpression name="num_devis"><![CDATA[$P{num_devis}]]></propertyExpression>
+				</reportElement>
+				<jr:table xmlns:jr="http://jasperreports.sourceforge.net/jasperreports/components" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports/components http://jasperreports.sourceforge.net/xsd/components.xsd">
+					<datasetRun subDataset="New Dataset 3">
+						<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
+					</datasetRun>
+					<jr:column width="156">
+						<jr:columnHeader style="table 2_CH" height="30" rowSpan="1">
+							<staticText>
+								<reportElement x="9" y="0" width="90" height="30"/>
+								<textElement/>
+								<text><![CDATA[Nom]]></text>
+							</staticText>
+						</jr:columnHeader>
+						<jr:detailCell style="table 2_TD" height="20" rowSpan="1">
+							<textField>
+								<reportElement x="10" y="0" width="90" height="20"/>
+								<textElement/>
+								<textFieldExpression class="java.lang.String"><![CDATA[$F{tbl_acte_nom_acte}]]></textFieldExpression>
+							</textField>
+						</jr:detailCell>
+					</jr:column>
+					<jr:column width="117">
+						<jr:columnHeader style="table 2_CH" height="30" rowSpan="1">
+							<staticText>
+								<reportElement x="10" y="0" width="90" height="30"/>
+								<textElement/>
+								<text><![CDATA[P U]]></text>
+							</staticText>
+						</jr:columnHeader>
+						<jr:detailCell style="table 2_TD" height="20" rowSpan="1">
+							<textField>
+								<reportElement x="12" y="0" width="90" height="20"/>
+								<textElement/>
+								<textFieldExpression class="java.lang.String"><![CDATA[$F{tbl_devis_actes_prix}]]></textFieldExpression>
+							</textField>
+						</jr:detailCell>
+					</jr:column>
+					<jr:column width="91">
+						<jr:columnHeader style="table 2_CH" height="30" rowSpan="1">
+							<staticText>
+								<reportElement x="8" y="0" width="76" height="30"/>
+								<textElement/>
+								<text><![CDATA[Nombre]]></text>
+							</staticText>
+						</jr:columnHeader>
+						<jr:detailCell style="table 2_TD" height="20" rowSpan="1">
+							<textField>
+								<reportElement x="10" y="0" width="74" height="20"/>
+								<textElement/>
+								<textFieldExpression class="java.lang.String"><![CDATA[$F{tbl_devis_actes_nbre}]]></textFieldExpression>
+							</textField>
+						</jr:detailCell>
+					</jr:column>
+					<jr:column width="123">
+						<jr:columnHeader style="table 2_CH" height="30" rowSpan="1">
+							<staticText>
+								<reportElement x="8" y="0" width="90" height="30"/>
+								<textElement/>
+								<text><![CDATA[P T]]></text>
+							</staticText>
+						</jr:columnHeader>
+						<jr:detailCell style="table 2_TD" height="20" rowSpan="1">
+							<textField>
+								<reportElement x="10" y="0" width="90" height="20"/>
+								<textElement/>
+								<textFieldExpression class="java.lang.String"><![CDATA[$F{tbl_devis_actes_total}]]></textFieldExpression>
+							</textField>
+						</jr:detailCell>
+					</jr:column>
+				</jr:table>
+			</componentElement>
+		</band>
+	</columnHeader>
+	<columnFooter>
+		<band height="45" splitType="Stretch">
+			<textField>
+				<reportElement x="399" y="2" width="155" height="20"/>
+				<textElement>
+					<font size="12" isBold="true"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{tbl_devis_assureur_total}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="296" y="3" width="100" height="20"/>
+				<textElement>
+					<font size="12" isBold="true"/>
+				</textElement>
+				<text><![CDATA[TOTAL:]]></text>
+			</staticText>
+		</band>
+	</columnFooter>
+	<pageFooter>
+		<band height="54" splitType="Stretch"/>
+	</pageFooter>
+	<summary>
+		<band height="42" splitType="Stretch"/>
+	</summary>
+</jasperReport>

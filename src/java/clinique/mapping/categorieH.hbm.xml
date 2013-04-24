@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN" "http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd" >
+
+<hibernate-mapping package="clinique.mapping">
+ <class name="CategorieH" table="tbl_categorieh">
+ <id name="categorieHId" column="categorieh_id">
+ <generator class="assigned"/>
+ </id>
+
+<property name="nomCategorie" column="nom_categorie" />
+<property name="pourcentage" column="pourcentage" />
+<property name="statut" column="statut" />
+<property name="operateur" column="operateur" />
+<property name="datedebutAssurance" column="datedebut_assurance" />
+<property name="datefinAssurance" column="datefin_assurance" />
+<property name="categorieId" column="categorie_id" />
+<property name="majoration" column="majoration" />
+<property name="prefixeFacture" column="prefixe_facture" />
+
+
+<many-to-one name="entreprise" class="Entreprise" cascade="none" column="entreprise_id"/>
+
+<bag name="blackListes" lazy="true" inverse="true" cascade="all-delete-orphan" >
+    <key column="categorie_id"/>
+    <one-to-many class="BlackListe"/>
+</bag>
+
+<bag name="reglements" lazy="true" inverse="true" cascade="all-delete-orphan" >
+    <key column="categorie_id"/>
+    <one-to-many class="Reglement"/>
+</bag>
+
+ </class>
+</hibernate-mapping>

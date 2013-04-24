@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN" "http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd" >
+
+<hibernate-mapping package="clinique.mapping">
+ <class name="EntreeStock" table="tbl_entree_stock">
+ <id name="entreeStockId" column="entree_stock_id">
+ <generator class="assigned"/>
+ </id>
+
+<property name="dateEntree" column="date_entree" />
+<property name="quantite" column="quantite" />
+<property name="prixUnitaire" column="prix_unitaire" />
+<property name="numeroDestinataire" column="numero_destinataire" />
+<property name="statut" column="statut" />
+<property name="operateur" column="operateur" />
+
+<many-to-one name="produit" class="Produit" cascade="none" column="produit_id"/>
+<many-to-one name="fournisseur" class="Fournisseur" cascade="none" column="fournisseur_id"/>
+
+ </class>
+</hibernate-mapping>

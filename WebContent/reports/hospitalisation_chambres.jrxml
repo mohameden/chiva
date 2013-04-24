@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="hospitalisation_chambres" pageWidth="595" pageHeight="842" columnWidth="595" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0">
+	<subDataset name="dataset1"/>
+	<parameter name="num_fact" class="java.lang.String"/>
+	<queryString language="SQL">
+		<![CDATA[SELECT
+     tbl_chambre.`chambre_libelle` AS tbl_chambre_chambre_libelle,
+     tbl_chambres_hospitalisation.`date_entree` AS tbl_chambres_hospitalisation_date_entree,
+     tbl_chambres_hospitalisation.`date_sortie` AS tbl_chambres_hospitalisation_date_sortie,
+     tbl_chambres_hospitalisation.`total` AS tbl_chambres_hospitalisation_total
+FROM
+     `tbl_chambre` tbl_chambre,
+     `tbl_chambres_hospitalisation` tbl_chambres_hospitalisation,
+     `tbl_hospitalisation` tbl_hospitalisation
+WHERE
+ tbl_hospitalisation.`facture_id` =$P{num_fact}
+ AND tbl_chambres_hospitalisation.`hospitalisation_id` = tbl_hospitalisation.`hospitalisation_id`
+ AND tbl_chambre.`chambre_id` = tbl_chambres_hospitalisation.`chambre_id`]]>
+	</queryString>
+	<field name="tbl_chambre_chambre_libelle" class="java.lang.String">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="tbl_chambres_hospitalisation_date_entree" class="java.sql.Date">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="tbl_chambres_hospitalisation_date_sortie" class="java.sql.Date">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="tbl_chambres_hospitalisation_total" class="java.lang.Double">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<columnHeader>
+		<band height="33">
+			<rectangle>
+				<reportElement x="1" y="5" width="514" height="26"/>
+			</rectangle>
+			<staticText>
+				<reportElement x="4" y="6" width="143" height="25"/>
+				<textElement verticalAlignment="Middle">
+					<font size="12" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Chambre]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="152" y="5" width="116" height="26"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="12" isBold="true"/>
+				</textElement>
+				<text><![CDATA[date_entree]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="271" y="6" width="124" height="22"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="12" isBold="true"/>
+				</textElement>
+				<text><![CDATA[date_sortie]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="400" y="5" width="111" height="26"/>
+				<textElement textAlignment="Right" verticalAlignment="Middle">
+					<font size="12" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Total]]></text>
+			</staticText>
+		</band>
+	</columnHeader>
+	<detail>
+		<band height="19">
+			<rectangle>
+				<reportElement x="1" y="-2" width="514" height="20"/>
+			</rectangle>
+			<textField>
+				<reportElement x="4" y="0" width="143" height="18"/>
+				<textElement verticalAlignment="Middle"/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{tbl_chambre_chambre_libelle}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="152" y="0" width="116" height="18"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{tbl_chambres_hospitalisation_date_entree}.toString()]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="271" y="0" width="124" height="18"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{tbl_chambres_hospitalisation_date_sortie}.toString()]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="400" y="0" width="111" height="18"/>
+				<textElement textAlignment="Right" verticalAlignment="Middle"/>
+				<textFieldExpression class="java.lang.Double"><![CDATA[$F{tbl_chambres_hospitalisation_total}]]></textFieldExpression>
+			</textField>
+		</band>
+	</detail>
+	<columnFooter>
+		<band/>
+	</columnFooter>
+	<summary>
+		<band/>
+	</summary>
+</jasperReport>
