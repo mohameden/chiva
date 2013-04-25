@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="recu_reglement" pageWidth="555" pageHeight="802" columnWidth="555" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0">
+	<parameter name="num_fact" class="java.lang.String"/>
+	<queryString language="SQL">
+		<![CDATA[SELECT
+     tbl_type_payement.`type_payement` AS tbl_type_payement_type_payement,
+     tbl_reglement.`description` AS tbl_reglement_description,
+     tbl_reglement.`date_reglement` AS tbl_reglement_date_reglement,
+     tbl_reglement.`montant` AS tbl_reglement_montant
+FROM
+     `tbl_reglement` tbl_reglement,
+     `tbl_type_payement` tbl_type_payement
+WHERE
+     tbl_reglement.`facture_id` =$P{num_fact}
+  AND  tbl_reglement.`type_payement_id` = tbl_type_payement.`type_payement_id`]]>
+	</queryString>
+	<field name="tbl_type_payement_type_payement" class="java.lang.String">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="tbl_reglement_description" class="java.lang.String">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="tbl_reglement_date_reglement" class="java.sql.Date">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="tbl_reglement_montant" class="java.lang.Double">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<background>
+		<band height="10"/>
+	</background>
+	<pageHeader>
+		<band/>
+	</pageHeader>
+	<columnHeader>
+		<band/>
+	</columnHeader>
+	<detail>
+		<band height="20">
+			<textField>
+				<reportElement x="0" y="0" width="109" height="20"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="12"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{tbl_type_payement_type_payement}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="110" y="0" width="200" height="20"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="12"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{tbl_reglement_description}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="311" y="0" width="110" height="20"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="12"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{tbl_reglement_date_reglement}.toString()]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="422" y="0" width="88" height="20"/>
+				<textElement textAlignment="Right" verticalAlignment="Middle">
+					<font size="12"/>
+				</textElement>
+				<textFieldExpression class="java.lang.Double"><![CDATA[$F{tbl_reglement_montant}]]></textFieldExpression>
+			</textField>
+			<line>
+				<reportElement x="-2" y="19" width="514" height="1"/>
+			</line>
+			<line>
+				<reportElement x="109" y="0" width="1" height="19"/>
+			</line>
+			<line>
+				<reportElement x="421" y="0" width="1" height="19"/>
+			</line>
+			<line>
+				<reportElement x="310" y="0" width="1" height="19"/>
+			</line>
+			<line>
+				<reportElement x="512" y="0" width="1" height="20"/>
+			</line>
+			<line>
+				<reportElement x="-2" y="0" width="1" height="19"/>
+			</line>
+		</band>
+	</detail>
+	<columnFooter>
+		<band/>
+	</columnFooter>
+	<summary>
+		<band/>
+	</summary>
+</jasperReport>

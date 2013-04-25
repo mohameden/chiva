@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE log4j:configuration SYSTEM "log4j.dtd">
+
+<!-- Standard Log4j Logging file for Spring Application -->
+<log4j:configuration xmlns:log4j="http://jakarta.apache.org/log4j/">
+
+    <!-- Make sure a copy of what we log goes to the console -->
+    <appender name="CONSOLE" class="org.apache.log4j.ConsoleAppender">
+		<param name="Target" value="System.out"/>
+		<param name="Threshold" value="INFO"/>
+		<layout class="org.apache.log4j.PatternLayout">
+			<param name="ConversionPattern" value="%d %-5p [%t] %C{2} (%F:%L) - %m%n"/>
+		</layout>
+	</appender>
+
+        <!-- Make sure a copy of what we log goes to log file -->
+	<appender name="LOGFILE" class="org.apache.log4j.RollingFileAppender">
+		<param name="Threshold" value="DEBUG"/>
+		<param name="File" value="D:/logs/clinique.log"/>
+		<param name="Append" value="true"/>
+		<param name="MaxFileSize" value="3000KB"/>
+		<layout class="org.apache.log4j.PatternLayout">
+			<param name="ConversionPattern" value="%d{DATE} %-5p %-15c{1}: %m%n"/>
+		</layout>
+	</appender>
+
+        <!-- Sample of how to switch off / on debugging for different parts of the application
+                in this case , the plugin-manager -->
+	<!--
+	<category name="net.firstpartners.rp.mid.global.PluginManager" additivity="false">
+		<priority value="DEBUG"/>
+		<appender-ref ref="LOGFILE"/>
+	</category>
+	-->
+	<root>
+		<priority value="DEBUG"/>
+		<appender-ref ref="CONSOLE"/>
+		<appender-ref ref="LOGFILE"/>
+	</root>
+</log4j:configuration>
+

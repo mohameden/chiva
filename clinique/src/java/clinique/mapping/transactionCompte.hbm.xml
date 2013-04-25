@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN" "http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd" >
+
+<hibernate-mapping package="clinique.mapping">
+ <class name="TransactionCompte" table="tbl_transaction_compte">
+ <id name="transactionId" column="transaction_id">
+ <generator class="assigned"/>
+ </id>
+
+<property name="montant" column="montant" />
+<property name="operation" column="operation" />
+<property name="statut" column="statut" />
+<property name="operateur" column="operateur" />
+<property name="dateTransaction" column="date_transaction" />
+
+<many-to-one name="compte" class="Compte" cascade="none" column="compte_id"/>
+
+
+ </class>
+</hibernate-mapping>

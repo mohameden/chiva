@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE struts-config PUBLIC "-//Apache Software Foundation//DTD Struts Configuration 1.2//EN" "http://struts.apache.org/dtds/struts-config_1_2.dtd">
+<struts-config>
+  <form-beans>
+  <form-bean name="formInfosPatient" type="clinique.model.gestion.commerciale.GestionCommercialeForm"/>
+ </form-beans>
+  <action-mappings>
+ 
+    
+    <action parameter="dispatch" validate="false" name="formInfosPatient"
+		    path="/patientAction"
+		  scope="session" type="clinique.controller.gestion.commerciale.GestionCommercialeAction">
+		  <forward name="gestionCom" path="/vues/gestionCommerciale/gestionCom.jsp" redirect="false"/>
+		  <forward name="initMulti" path="/vues/gestionCommerciale/infosPatient.jsp" redirect="false"/>
+		  <forward name="succes" path="/vues/gestionCommerciale/ajoutPrestations.jsp" redirect="false"/>
+		  <forward name="infosAncienWithAssurance" path="/vues/gestionCommerciale/infosPatientAncienWithAssurance.jsp" redirect="false"/>
+		  <forward name="infosAncienWithoutPC" path="/vues/gestionCommerciale/infosPatientAncienWithoutPC.jsp" redirect="false"/>
+		  <forward name="infosPatient" path="/vues/gestionCommerciale/infosPatient.jsp" redirect="false"/>
+	      <forward name="reglement" path="/vues/gestionCommerciale/reglementRecu.jsp" redirect="false"/>
+	      <forward name="showRecu" path="/vues/gestionCommerciale/affichageRecu.jsp" redirect="false"/>
+	      <forward name="mainPageHospit" path="/vues/gestionCommerciale/hospitalisation.jsp" redirect="false"/>
+	      <forward name="infosPatientHosp" path="/vues/gestionCommerciale/infosPatientHosp.jsp" redirect="false"/>
+	      <forward name="choisirChambre" path="/vues/gestionCommerciale/choisirChambre.jsp" redirect="false"/>
+	      <forward name="listHospitalises" path="/vues/gestionCommerciale/listHospitalises.jsp" redirect="false"/>
+	      <forward name="changerChambre" path="/vues/gestionCommerciale/changerChambre.jsp" redirect="false"/>
+	      <forward name="addPrestationHosp" path="/vues/gestionCommerciale/ajoutPrestationsHosp.jsp" redirect="false"/>
+	      <forward name="sortieHospitalisation" path="/vues/gestionCommerciale/sortieHospitalisation.jsp" redirect="false"/>
+	      <forward name="showReglementHosp" path="/vues/gestionCommerciale/reglementRecuHosp.jsp" redirect="false"/>
+	      <forward name="showRecuHosp" path="/vues/gestionCommerciale/affichageRecuHosp.jsp" redirect="false"/>
+	       <forward name="infosHospAncienWithAssurance" path="/vues/gestionCommerciale/infosPatientHospAncienWithAssurance.jsp" redirect="false"/>
+		  <forward name="infosHospAncienWithoutPC" path="/vues/gestionCommerciale/infosPatientHospAncienWithoutPC.jsp" redirect="false"/>
+		  <forward name="listFacturesAgenerer" path="/vues/gestionCommerciale/listFacturesAgenerer.jsp" redirect="false"/>
+		  <forward name="listFacturesGenerees" path="/vues/gestionCommerciale/listFacturesGenerees.jsp" redirect="false"/>
+	      <forward name="modules" path="/vues/modules.jsp"/>
+	      <forward name="authentification" path="/index.jsp"/>
+	      <forward name="impressionFact" path="/vues/gestionCommerciale/impressionFact.jsp"/>
+	      <forward name="modificationFact" path="/vues/gestionCommerciale/modificationFact.jsp"/>
+	      <forward name="infosFactureAmodifier" path="/vues/gestionCommerciale/modifierFactureAssureurPrestations.jsp"/>
+	      <forward name="listFacturesAimprimer" path="/vues/gestionCommerciale/listFacturesAimprimer.jsp" redirect="false"/>
+	      
+	      
+	      <forward name="infosPatientDevis" path="/vues/gestionCommerciale/infosPatientDevis.jsp" redirect="false"/>
+	      <forward name="ajoutPrestationDevis" path="/vues/gestionCommerciale/ajoutPrestationsDevis.jsp" redirect="false"/>
+	      
+	       <forward name="infosDevisAncienWithAssurance" path="/vues/gestionCommerciale/infosPatientDevisAncienWithAssurance.jsp" redirect="false"/>
+		  <forward name="infosDevisAncienWithoutPC" path="/vues/gestionCommerciale/infosPatientDevisAncienWithoutPC.jsp" redirect="false"/>
+		  
+		  <forward name="listDevisAimprimer" path="/vues/gestionCommerciale/listDevisAimprimer.jsp" redirect="false"/>
+		  <forward name="ajouterDRG" path="/vues/gestionCommerciale/ajouterDRG.jsp" redirect="false"/>
+		  <forward name="ajouterDRGHosp" path="/vues/gestionCommerciale/ajouterDRGHosp.jsp" redirect="false"/>
+		  <forward name="libererChambreHosp" path="/vues/gestionCommerciale/libererChambreHospitalisation.jsp" redirect="false"/>
+		  <forward name="sortieHospitalisationInfos" path="/vues/gestionCommerciale/sortieHospitalisationInfos.jsp" redirect="false"/>
+		   
+		  
+		  
+		  
+	      
+	</action>
+    
+  </action-mappings>
+  <controller/>
+  <message-resources
+    parameter="gestionCliniqueResources"
+         null="false" />
+         
+         <message-resources parameter="erreurGestionCommerciale" 
+         null="false" key="erreurGestionCommerciale" />
+         
+  
+         
+</struts-config>

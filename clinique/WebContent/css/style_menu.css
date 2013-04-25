@@ -1,0 +1,56 @@
+.LienMajAr {
+	FONT-SIZE: 11px;
+	COLOR: #400040;
+	font-family: Arial, Helvetica, sans-serif;
+	BACKGROUND-COLOR: transparent;
+	font-weight: bold;
+	font-size: 15px;
+	TEXT-DECORATION: none;
+	cursor: auto;
+}
+.LienMin2Ar { FONT-SIZE: 14px; COLOR: #400040; font-family: Arial, Helvetica, sans-serif; BACKGROUND-COLOR: transparent; font-weight: bold; TEXT-DECORATION: none }
+.LienadminAr { FONT-SIZE: 11px; COLOR: #400040; font-family: Arial, Helvetica, sans-serif; BACKGROUND-COLOR: transparent; font-weight: bold}
+.LienMin3Ar {
+	FONT-SIZE: 16px;
+	COLOR: #400040;
+	font-family: Arial, Helvetica, sans-serif;
+	BACKGROUND-COLOR: transparent;
+	font-weight: normal;
+	TEXT-DECORATION: none;
+	cursor: hand;
+}
+.LienMinAr { FONT-SIZE: 14px; COLOR: #400040; font-family: Arial, Helvetica, sans-serif; BACKGROUND-COLOR: transparent; font-weight: bold; TEXT-DECORATION: none }
+.LienMin4Ar { FONT-SIZE: 11px; COLOR: #400040; font-family: Arial, Helvetica, sans-serif; BACKGROUND-COLOR: transparent; font-weight: normal; TEXT-DECORATION: none }
+
+.LienMaj {
+	FONT-SIZE: 11px;
+	COLOR: #400040;
+	font-family: Arial, Helvetica, sans-serif;
+	BACKGROUND-COLOR: transparent;
+	font-weight: bold;
+	font-size:14px;
+	TEXT-DECORATION: none;
+	cursor: auto;
+}
+.LienMin2 { FONT-SIZE: 11px; COLOR: #400040; font-family: Arial, Helvetica, sans-serif; BACKGROUND-COLOR: transparent; font-weight: bold; TEXT-DECORATION: none }
+.Lienadmin { FONT-SIZE: 11px; COLOR: #400040; font-family: Arial, Helvetica, sans-serif; BACKGROUND-COLOR: transparent; font-weight: bold}
+.LienMin3 {
+	FONT-SIZE: 13px;
+	COLOR: #400040;
+	font-family: Arial, Helvetica, sans-serif;
+	BACKGROUND-COLOR: transparent;
+	font-weight: normal;
+	TEXT-DECORATION: none;
+	cursor: hand;
+}
+.LienMin { FONT-SIZE: 11px; COLOR: #400040; font-family: Arial, Helvetica, sans-serif; BACKGROUND-COLOR: transparent; font-weight: bold; TEXT-DECORATION: none }
+.LienMin4 { FONT-SIZE: 11px; COLOR: #400040; font-family: Arial, Helvetica, sans-serif; BACKGROUND-COLOR: transparent; font-weight: normal; TEXT-DECORATION: none }
+.FermerLeNoue{display:none; visibility:hidden }
+.OuvrirLeNoue{visibility:visible }
+.LienActif {
+		 FONT-SIZE: 11px; COLOR: #400040; font-family: Arial, Helvetica, sans-serif; BACKGROUND-COLOR: transparent; font-weight: bold; TEXT-DECORATION: none
+}
+
+
+
+

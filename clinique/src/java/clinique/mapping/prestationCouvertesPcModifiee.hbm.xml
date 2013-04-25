@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN" "http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd" >
+
+<hibernate-mapping package="clinique.mapping">
+ <class name="PrestationCouvertesPcModifiee" table="tbl_prestation_couvertes_pc_modifiee">
+ <id name="presCouvId" column="pres_couv_id">
+ <generator class="assigned"/>
+ </id>
+
+<property name="statut" column="statut" />
+<property name="operateur" column="operateur" />
+<property name="type" column="type" />
+<property name="libelle" column="libelle" />
+<property name="limite" column="limite" />
+<property name="nbreActes" column="nbreActes" />
+<property name="nbreActesRestant" column="nbreActesRestant" />
+
+
+<many-to-one name="priseEnCharge" class="PriseEnChargeModifiee" cascade="none" column="pcm_id"/>
+<many-to-one name="classe" class="Classe" cascade="none" column="classe_id"/>
+<many-to-one name="famille" class="FamillePrestation" cascade="none" column="famille_prestation_id"/>
+<many-to-one name="acte" class="Acte" cascade="none" column="acte_id"/>
+
+ </class>
+</hibernate-mapping>

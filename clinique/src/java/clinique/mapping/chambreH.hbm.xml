@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN" "http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd" >
+
+<hibernate-mapping package="clinique.mapping">
+ <class name="ChambreH" table="tbl_chambreh">
+ <id name="chambreHId" column="chambreh_id">
+ <generator class="assigned"/>
+ </id>
+
+<property name="chambreNum" column="chambre_num" />
+<property name="chambreLibelle" column="chambre_libelle" />
+<property name="tarif" column="tarif" />
+<property name="etat" column="etat" />
+<property name="statut" column="statut" />
+<property name="dateDebut" column="date_debut" />
+<property name="dateFin" column="date_fin" />
+
+
+<many-to-one name="chambre" class="Chambre" cascade="none" column="chambre_id"/>
+
+
+ </class>
+</hibernate-mapping>

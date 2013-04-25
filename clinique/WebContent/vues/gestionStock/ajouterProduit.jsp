@@ -1,0 +1,354 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<%@ page language="java" contentType="text/html; charset=UTF-8"
+    pageEncoding="UTF-8"%>
+
+<%@ taglib uri="/WEB-INF/tld/struts-html.tld" prefix="html" %>
+<%@ taglib uri="http://displaytag.sf.net" prefix="display" %>
+<%@ taglib uri="/WEB-INF/tld/struts-bean.tld" prefix="bean"%>
+ <%@ taglib uri="/WEB-INF/tld/struts-logic.tld" prefix="logic" %>
+ <%@ page import="java.util.prefs.Preferences" %>
+ <%
+    String hideToolbar = (String) Preferences.systemRoot().node("Browser").get("hidetoolbar", "true").toLowerCase();
+%>
+
+<html>
+<head>
+<title>Ajouter un produit</title>
+
+<script src="<%=request.getContextPath()%>/js/commun.js" ></script>
+<script src="<%=request.getContextPath()%>/js/browsers.js" ></script>
+
+<link rel="stylesheet" type="text/css" href="<%=request.getContextPath()%>/css/styleBoutonsMenu.css" />
+<link rel="stylesheet" type="text/css" href="<%=request.getContextPath()%>/css/alternative.css" />
+
+
+
+    <link type="text/css" href="<%=request.getContextPath()%>/js/jquery-ui-1.8.18.custom/css/ui-lightness/jquery-ui-1.8.18.custom.css" rel="stylesheet" />	
+<script type="text/javascript" src="<%=request.getContextPath()%>/js/jquery-ui-1.8.18.custom/js/jquery-1.7.1.min.js"></script>
+<script type="text/javascript" src="<%=request.getContextPath()%>/js/jquery-ui-1.8.18.custom/js/jquery-ui-1.8.18.custom.min.js"></script>
+<link type="text/css" href="<%=request.getContextPath()%>/js/jquery-ui-1.8.18.custom/development-bundle/demos/demos.css" rel="stylesheet" />	
+<script type="text/javascript" src="<%=request.getContextPath()%>/js/jquery-ui-1.8.18.custom/development-bundle/ui/i18n/jquery.ui.datepicker-fr.js"></script>	
+		
+		<script type="text/javascript">
+		$(window).load(function(){
+			if(document.forms[0].estEffWithSuccess.value=="true")
+			{
+				viderChamps();
+			}
+			if(document.forms[0].facturable.checked==true)
+			{
+				document.forms[0].prixProduit.readOnly=false;
+			}
+			else
+			{
+				document.forms[0].prixProduit.readOnly=true;
+			}
+			});
+		function desactiverOuActiverPrixUnitaire()
+		{
+			if(document.forms[0].facturableCheckBox.checked==true)
+			{
+				document.forms[0].prixProduit.readOnly=false;
+				document.forms[0].facturable.value="1";
+			}
+			else
+			{
+				document.forms[0].prixProduit.readOnly=true;
+				document.forms[0].facturable.value="0";
+				document.forms[0].prixProduit.value="";
+			}
+		}		
+		function rechercher ()
+    	{
+        	
+        	document.forms[0].dispatch.value = "chercher";
+        	document.forms[0].submit();
+    	}
+
+		
+		$(function() {
+			$.datepicker.setDefaults($.datepicker.regional['fr']);
+			
+			$.datepicker.setDefaults({
+				showOn: 'button',
+				buttonImage: '<%=request.getContextPath()%>/images/calendar.gif',
+				buttonImageOnly: true,
+				changeMonth: true,
+				changeYear: true,
+				showAnim: "blind",
+				yearRange: '1930:2030' });
+			
+			$("#dateNaissance").datepicker({});
+			$("#dateNaissanceR").datepicker({});
+			$("#dateDerniereVisteR").datepicker({yearRange: '1990:2030'});
+
+			
+		});
+		function check()
+		{
+			saved=true;
+			if(document.forms[0].nomProduit.value=="")
+			{				
+				document.getElementById("erreurNomProduit").style.display='block';
+				saved=false;
+				return;
+			}
+			else
+			{
+				document.getElementById("erreurNomProduit").style.display='none';
+			}
+			if(document.forms[0].quantiteDisponibleProduit.value=="")
+			{
+				document.getElementById("erreurQuantiteDisponibleProduit").style.display='block';
+				saved=false;
+				return;
+			}
+			else
+			{
+				document.getElementById("erreurQuantiteDisponibleProduit").style.display='none';
+			}
+			if(document.forms[0].prixProduit.value=="" && document.forms[0].facturable.value=="1")
+			{
+				document.getElementById("erreurPrixProduit").style.display='block';
+				saved=false;
+				return;
+			}
+			else
+			{
+				document.getElementById("erreurPrixProduit").style.display='none';
+			}
+			if(document.forms[0].seuilMinimumProduit.value=="")
+			{
+				document.getElementById("erreurSeuilMinimumProduit").style.display='block';
+				saved=false;
+				return;
+			}
+			else
+			{
+				document.getElementById("erreurSeuilMinimumProduit").style.display='none';
+			}
+			if(saved==true)
+			{
+				save();
+			}
+			
+		}
+		function save()
+		{
+			document.forms[0].dispatch.value="saveProduit";
+			document.forms[0].submit();
+		}
+		function hideErrors()
+		{
+			document.getElementById("erreurAjoutProduit").style.display='none';
+			document.getElementById("succes").style.display='none';
+			document.getElementById("erreurNomProduit").style.display='none';
+			document.getElementById("erreurQuantiteDisponibleProduit").style.display='none';
+			document.getElementById("erreurPrixProduit").style.display='none';
+			document.getElementById("erreurSeuilMinimumProduit").style.display='none';
+		}
+		function viderChamps()
+		{
+			document.forms[0].nomProduit.value="";
+			document.forms[0].quantiteDisponibleProduit.value="";
+			document.forms[0].prixProduit.value="";
+			document.forms[0].seuilMinimumProduit.value="";
+			document.forms[0].facturableCheckBox.checked=false;
+		}
+</script>
+
+</head>
+
+<body>
+<div class=demos>
+<table bordercolor="#FF6600;" height="100%"  width="100%" align="center" style="border-right-style:solid; border-left-style:solid; border-top-style:solid; border-bottom-style:solid;">
+
+<tr bgcolor="#00253E"  align="center" >
+<td  align="center" height="80" > 
+<table width="100%">
+<tr>
+<td width="33%"><img  height="75" align="bottom" style="margin-left:0; margin-bottom: 2; margin-top: 3;"   width="200" src="<%=request.getContextPath()%>/images/entete.jpg"  /></td>
+<td width="33%" align="center">
+
+ <img align="bottom"  src="<%=request.getContextPath()%>/images/titre3.gif" />
+ </td>
+ <td width="34%" align="center"></td>
+ </tr>
+ </table>
+</td> 
+</tr>
+
+<tr style="background:#0B415F;">
+<td height="20">
+</td>
+</tr>
+
+
+<tr >
+<td style="background:#00253E;">
+<table   align="center"  width="80%" >
+
+
+<tr >
+<td  colspan="4" >
+<table width="100%"   align="center" style="background:#00253E; ">
+<tr>
+<td>
+<html:form action="/gestionStockAction.do">
+<input type="hidden" name="dispatch"/>
+<html:hidden property="estEffWithSuccess"/>
+<html:hidden property="facturable"/>
+<div id="erreurs" align="center">
+<div id="erreurAjoutProduit">
+<font color="#FF0000"  size="5">
+<html:errors bundle="erreurGestionStock"/>
+</font>
+</div>
+<logic:equal name="formGestionStock" property="estEffWithSuccess" value="true">
+<div id="succes">
+<table align="center"  WIDTH="300" style="margin-top:15px; font-size: 12px; color:red; ">
+			<tr>
+				<td align="center">
+				<font color="#0000FF"  size="5">
+				Opération efféctuée avec succès
+				</font>
+				</td>
+			</tr>
+</table>
+</div>
+</logic:equal>
+<div id="erreurNomProduit" style="display: none">
+<table align="center"  WIDTH="300" style="margin-top:15px; font-size: 12px; color:red; ">
+		<tr align="center">
+			<td>
+			<font color="#FF0000"  size="5">
+			Veuillez saisir le nom du produit
+			</font>
+			</td>
+		</tr>
+</table>
+</div>
+<div id="erreurQuantiteDisponibleProduit" style="display: none">
+<table align="center"  WIDTH="300" style="margin-top:15px; font-size: 12px; color:red; ">
+		<tr align="center">
+			<td>
+			<font color="#FF0000"  size="5">
+			Veuillez saisir la quantite du produit
+			</font>
+			</td>
+		</tr>
+</table>
+</div>
+<div id="erreurPrixProduit" style="display: none">
+<table align="center"  WIDTH="300" style="margin-top:15px; font-size: 12px; color:red; ">
+		<tr align="center">
+			<td>
+			<font color="#FF0000"  size="5">
+			Veuillez saisir le prix du produit
+			</font>
+			</td>
+		</tr>
+</table>
+</div>
+<div id="erreurSeuilMinimumProduit" style="display: none">
+<table align="center"  WIDTH="300" style="margin-top:15px; font-size: 12px; color:red; ">
+		<tr align="center">
+			<td>
+			<font color="#FF0000"  size="5">
+			Veuillez saisir le seuil minimum du stock de produit
+			</font>
+			</td>
+		</tr>
+</table>
+</div>
+</div>
+<table width="100%"   align="center" style="background:#00253E; ">
+           
+          
+		 <tr><td>
+		  
+		  <table width="80%" align="center" bgcolor="#00253E">
+		 
+		  <tr> 
+		  <td colspan="2">
+		  <table cellspacing="0" width="100%" align="center"  align="left"  style=" border-color:#FF6600; border-width:1px; border-style:solid; border-left:none;   border-right:none; border-top:none;">
+		  <tr>
+		 <td colspan="2">
+<font  style="oblique" color="#FF6600"  size="5">Ajouter un produit</font></td>
+<td width="15%"></td>
+		  </tr>
+		 
+		
+		  </table>
+		  </td>
+		  </tr>
+		  <tr><td colspan="2"></td></tr>
+		  <tr>
+		  <td colspan="2">	  
+		  <div id="formulAjoutProduit" style="display: block">
+		  <table width="100%"   align="center" style="background:#0B415F; ">
+		  <tr><td>
+		  <table width="100%" align="left" style="background:#00253E; font-size:14; font-weight:bold; color: white;">
+		  <tr>
+		  <td width="19%" >Classe</td>
+		  <td width="31%">
+		  <html:select property="classeId">
+		  <html:optionsCollection name="formGestionStock" property="classesList" label="label" value="value" />
+		  </html:select>
+		  </td>
+		  </tr>
+		  <tr>
+		  <td width="19%" >Nom</td>
+		  <td width="31%"><html:text styleClass="champText" property="nomProduit" size ="25" onkeypress="Nom();" onfocus="hideErrors();" /></td>
+		  </tr>
+		  <tr>
+		  <td width="19%" >Facturable</td>
+		  <td width="31%"><html:checkbox property="facturableCheckBox" onclick="desactiverOuActiverPrixUnitaire();"></html:checkbox></td>
+		  <td width="19%">Prix</td>
+		  <td width="31%"><html:text styleClass="champText" property="prixProduit" size ="8"/></td>
+		  </tr>
+		   <tr>
+		  <td width="19%">Quantite</td>
+		  <td width="31%"><html:text styleClass="champText" property="quantiteDisponibleProduit" size ="8" onkeypress="Numerique();" onfocus="hideErrors();" /></td>
+		  <td width="19%">Seuil Minimum du stock</td>
+		  <td width="31%"><html:text styleClass="champText" property="seuilMinimumProduit" size ="8" onkeypress="Numerique();" onfocus="hideErrors();"/></td>
+		  </tr>
+		  <tr>
+		  <td colspan="4" align="center">
+		  <input type="button" value="Enregistrer" size ="50" style="font-weight:bold; background-color:#00253E; color:#FFFFFF; cursor:hand; border:solid 2px #FF6600;"  onclick="check();" onfocus="hideErrors();"/>
+		  </td>
+		  </tr>
+		  </table>
+		   </td></tr>
+		  </table>
+		  </div>
+		  		  </td>
+		  </tr>
+		  </table>
+          
+         </td></tr>
+</table>
+
+</html:form>
+</td>
+</tr>
+</table>
+</td>
+</tr>
+</table>
+</td>
+
+</tr>
+
+<tr align="center"  bgcolor="#00253E"  style=" font-size:13;" >
+	 
+	    <td align="center" height="20" ><div align="center"><font style="oblique" color="#FFFFFF">Copyright  CLINIQUE CHIVA</font></div></td>
+
+	 </tr>
+	
+</table>
+
+</div>
+
+</body>
+</html>

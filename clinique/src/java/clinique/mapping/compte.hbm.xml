@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN" "http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd" >
+
+<hibernate-mapping package="clinique.mapping">
+ <class name="Compte" table="tbl_compte">
+ <id name="compteId" column="compte_id">
+ <generator class="assigned"/>
+ </id>
+
+<property name="numeroCompte" column="numero_compte" />
+<property name="soldeAvant" column="solde_avant" />
+<property name="solde" column="solde" />
+<property name="statut" column="statut" />
+<property name="operateur" column="operateur" />
+
+<bag name="transactionsCompte" lazy="true" inverse="true" cascade="all-delete-orphan" >
+    <key column="compte_id"/>
+    <one-to-many class="TransactionCompte"/>
+</bag>
+
+<bag name="pcPersonnels" lazy="true" inverse="true" cascade="all-delete-orphan" >
+    <key column="compte_id"/>
+    <one-to-many class="PcPersonnel"/>
+</bag>
+
+<many-to-one name="personnel" class="Personnel" cascade="none" column="personnel_id"/>
+
+
+
+ </class>
+</hibernate-mapping>

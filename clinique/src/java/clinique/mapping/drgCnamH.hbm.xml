@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN" "http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd" >
+
+<hibernate-mapping package="clinique.mapping">
+ <class name="DrgCnamH" table="tbl_drgcnamh">
+ <id name="drgCnamHId" column="drgcnamh_id">
+ <generator class="assigned"/>
+ </id>
+
+<property name="numDrg" column="numdrg" />
+<property name="nomDrg" column="nomdrg" />
+<property name="montant" column="montant" />
+<property name="operateur" column="operateur" />
+<property name="statut" column="statut" />
+<property name="dateDebut" column="date_debut" />
+<property name="dateFin" column="date_fin" />
+
+<many-to-one name="drgCnam" class="DrgCnam" cascade="none" column="drgcnam_id"/>
+
+ </class>
+</hibernate-mapping>
