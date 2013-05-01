@@ -1,6 +1,5 @@
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.util.Date;
 import java.util.Scanner;
 
 public class Test {
@@ -148,16 +147,16 @@ public class Test {
 	}
 
 	public static void main(String[] args) {
-		// TODO Auto-generated method stub
-		try {
-			Test test = new Test();
-			// test.checkNum("37777773");
-			Date date = new Date();
-			System.out.println(date.getHours());
-
-		} catch (Exception e) {
-			System.out.println(e);
-		}
+		testMapping();
+		// try {
+		// Test test = new Test();
+		// // test.checkNum("37777773");
+		// Date date = new Date();
+		// System.out.println(date.getHours());
+		//
+		// } catch (Exception e) {
+		// System.out.println(e);
+		// }
 
 	}
 
@@ -168,6 +167,24 @@ public class Test {
 					"C:/workspace/babs/GestionClinique/chiva/clinique/l.txt"));
 			while (s.hasNextLine()) {
 				System.out.println(s.nextLine().substring(36));
+			}
+		} catch (FileNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+
+	public static void testMapping() {
+		Scanner s;
+		try {
+			s = new Scanner(
+					new FileInputStream(
+							"C:/workspace/babs/GestionClinique/chiva/clinique/mapping.txt"));
+			while (s.hasNextLine()) {
+				String line = s.nextLine();
+				int j = line.lastIndexOf('"');
+				System.out.println("<value>" + line.substring(21, j)
+						+ "</value>");
 			}
 		} catch (FileNotFoundException e) {
 			// TODO Auto-generated catch block

@@ -22,4 +22,10 @@
          
          <message-resources parameter="erreurGestionCommerciale" 
          null="false" key="erreurGestionCommerciale" />
+          	<!-- Spring Struts plugin -->
+ 	<plug-in className="org.springframework.web.struts.ContextLoaderPlugIn">
+		<set-property property="contextConfigLocation"
+		value="/WEB-INF/classes/ApplicationContext.xml" />
+  	</plug-in>
+         
 </struts-config>
