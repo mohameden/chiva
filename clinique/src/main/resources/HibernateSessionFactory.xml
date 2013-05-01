@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:aop="http://www.springframework.org/schema/aop"
+       xmlns:tx="http://www.springframework.org/schema/tx"
+       xsi:schemaLocation="
+       http://www.springframework.org/schema/beans 
+       http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
+       http://www.springframework.org/schema/tx 
+       http://www.springframework.org/schema/tx/spring-tx-3.0.xsd
+       http://www.springframework.org/schema/aop 
+       http://www.springframework.org/schema/aop/spring-aop-3.0.xsd">
+ <bean id="transactionManager" 
+            class="org.springframework.orm.hibernate3.HibernateTransactionManager">
+    <property name="sessionFactory" ref="sessionFactory"/>
+  </bean>
+  
+  <aop:config>
+    <aop:pointcut id="businessObjectMethods" 
+            expression="execution(* clinique.metier.*.*BO*(..))"/>
+    <aop:advisor advice-ref="txAdvice" pointcut-ref="businessObjectMethods"/>
+  </aop:config>
+
+  <tx:advice id="txAdvice" transaction-manager="transactionManager">
+    <tx:attributes>
+      <tx:method name="*" propagation="REQUIRED"/>
+    </tx:attributes>
+  </tx:advice>
+
+	<!-- Hibernate session factory -->
+	<bean id="sessionFactory"
+		class="org.springframework.orm.hibernate3.LocalSessionFactoryBean">
+
+		<property name="dataSource">
+			<ref bean="dataSource" />
+		</property>
+
+		<property name="hibernateProperties">
+			<props>
+				<prop key="hibernate.dialect">org.hibernate.dialect.MySQLDialect</prop>
+				<prop key="hibernate.show_sql">true</prop>
+				<prop key="hibernate.connection.characterEncoding">UTF-8</prop>
+				<prop key="hibernate.cache.use_query_cache">false</prop>
+				<prop key="hibernate.validator.apply_to_ddl">false</prop>
+				<prop key="hibernate.connection.isolation">2</prop>
+			</props>
+		</property>
+
+		<property name="mappingResources">
+			<list>
+				<value>clinique/mapping/acte.hbm.xml</value>
+				<value>clinique/mapping/acteur.hbm.xml</value>
+				<value>clinique/mapping/acteurActe.hbm.xml</value>
+				<value>clinique/mapping/assureur.hbm.xml</value>
+				<value>clinique/mapping/blackListe.hbm.xml</value>
+				<value>clinique/mapping/categorie.hbm.xml</value>
+				<value>clinique/mapping/chambre.hbm.xml</value>
+				<value>clinique/mapping/classe.hbm.xml</value>
+				<value>clinique/mapping/detailFacture.hbm.xml</value>
+				<value>clinique/mapping/droitAcces.hbm.xml</value>
+				<value>clinique/mapping/entreprise.hbm.xml</value>
+				<value>clinique/mapping/facture.hbm.xml</value>
+				<value>clinique/mapping/famillePrestation.hbm.xml</value>
+				<value>clinique/mapping/hospitalisation.hbm.xml</value>
+				<value>clinique/mapping/menu.hbm.xml</value>
+				<value>clinique/mapping/module.hbm.xml</value>
+				<value>clinique/mapping/patient.hbm.xml</value>
+				<value>clinique/mapping/prestationCouvertesPc.hbm.xml</value>
+				<value>clinique/mapping/priseEnCharge.hbm.xml</value>
+				<value>clinique/mapping/profil.hbm.xml</value>
+				<value>clinique/mapping/reglement.hbm.xml</value>
+				<value>clinique/mapping/typePayement.hbm.xml</value>
+				<value>clinique/mapping/user.hbm.xml</value>
+				<value>clinique/mapping/produit.hbm.xml</value>
+				<value>clinique/mapping/fournisseur.hbm.xml</value>
+				<value>clinique/mapping/entreeStock.hbm.xml</value>
+				<value>clinique/mapping/sortieStock.hbm.xml</value>
+				<value>clinique/mapping/recu.hbm.xml</value>
+				<value>clinique/mapping/personnel.hbm.xml</value>
+				<value>clinique/mapping/pcPersonnel.hbm.xml</value>
+				<value>clinique/mapping/chambresHospitalisation.hbm.xml</value>
+				<value>clinique/mapping/badge.hbm.xml</value>
+				<value>clinique/mapping/acteH.hbm.xml</value>
+				<value>clinique/mapping/acteurActeH.hbm.xml</value>
+				<value>clinique/mapping/categorieH.hbm.xml</value>
+				<value>clinique/mapping/chambreH.hbm.xml</value>
+				<value>clinique/mapping/acteAssureur.hbm.xml</value>
+				<value>clinique/mapping/acteAssureurH.hbm.xml</value>
+				<value>clinique/mapping/chambreAssureur.hbm.xml</value>
+				<value>clinique/mapping/chambreAssureurH.hbm.xml</value>
+				<value>clinique/mapping/drgCnam.hbm.xml</value>
+				<value>clinique/mapping/drgCnamH.hbm.xml</value>
+				<value>clinique/mapping/detailFactureModifiees.hbm.xml</value>
+				<value>clinique/mapping/patientPcActuel.hbm.xml</value>
+				<value>clinique/mapping/factureModifiees.hbm.xml</value>
+				<value>clinique/mapping/reglementFactureModifiees.hbm.xml</value>
+				<value>clinique/mapping/acteurActeAssureur.hbm.xml</value>
+				<value>clinique/mapping/acteurActeAssureurH.hbm.xml</value>
+				<value>clinique/mapping/prestationCouvertesPcModifiee.hbm.xml
+				</value>
+				<value>clinique/mapping/priseEnChargeModifiee.hbm.xml</value>
+				<value>clinique/mapping/compte.hbm.xml</value>
+				<value>clinique/mapping/devisActes.hbm.xml</value>
+				<value>clinique/mapping/devisAssureur.hbm.xml</value>
+				<value>clinique/mapping/exclusionActeAssureur.hbm.xml</value>
+				<value>clinique/mapping/factureGlobalFacture.hbm.xml</value>
+				<value>clinique/mapping/factureGlobal.hbm.xml</value>
+				<value>clinique/mapping/transactionCompte.hbm.xml</value>
+				<value>clinique/mapping/parametresClinique.hbm.xml</value>
+				<value>clinique/mapping/compteCategorie.hbm.xml</value>
+				<value>clinique/mapping/transactionCompteCategorie.hbm.xml</value>
+				<value>clinique/mapping/detailDgrCnamFacture.hbm.xml</value>
+			</list>
+		</property>
+	</bean>
+</beans>
