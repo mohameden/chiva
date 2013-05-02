@@ -9,8 +9,7 @@ import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
 import org.springframework.web.struts.ActionSupport;
 
-import clinique.mapping.User;
-import clinique.metier.securite.AuthentificationBO;
+import clinique.metier.securite.IAuthentificationBO;
 import clinique.model.securite.SecuriteForm;
 
 public class AuthentificationAction extends ActionSupport {
@@ -27,24 +26,20 @@ public class AuthentificationAction extends ActionSupport {
 		log.debug("********** Debut execute AuthentificationAction **********");
 		try {
 			SecuriteForm formulaire = (SecuriteForm) form;
-			AuthentificationBO authentificationBO = (AuthentificationBO) getWebApplicationContext()
-					.getBean(AuthentificationBO.NAME);
-			User user = authentificationBO.getUser(formulaire);
-			if (user != null) {
-				formulaire.setLoginUser(user.getLogin());
-				formulaire.setProfil(user.getProfil().getNomProfil());
+			IAuthentificationBO authentificationBO = (IAuthentificationBO) getWebApplicationContext()
+					.getBean(IAuthentificationBO.NAME);
+			formulaire = authentificationBO.getUser(formulaire);
+			if (formulaire != null) {
 				return mapping.findForward(FORWARD);
 			} else {
 				this.saveErrors(request, authentificationBO.getErrors());
 				return mapping.findForward(FORWARD_ERR);
 			}
 		} catch (Exception e) {
-			e.printStackTrace();
 			log.fatal(e.getMessage());
 			return mapping.findForward(FORWARD_ERR);
 
 		} finally {
-			System.gc();
 			log.debug("********** Fin execute AuthentificationAction **********");
 		}
 	}

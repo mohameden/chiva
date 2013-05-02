@@ -1,33 +1,42 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE struts-config PUBLIC "-//Apache Software Foundation//DTD Struts Configuration 1.2//EN" "http://struts.apache.org/dtds/struts-config_1_2.dtd">
 <struts-config>
-  <form-beans>
-  <form-bean name="formGestionStock" type="clinique.model.gestion.stock.GestionStockForm"/>
- </form-beans>
-  <action-mappings>
- 
-    
-    <action parameter="dispatch" validate="false" name="formGestionStock"
-		    path="/gestionStockAction"
-		  scope="session" type="clinique.controller.gestion.stock.GestionStockAction">
-		  <forward name="ajouterFournisseur" path="/vues/gestionStock/ajouterFournisseur.jsp" redirect="false"/>
-		  <forward name="ajouterProduit" path="/vues/gestionStock/ajouterProduit.jsp" redirect="false"/>
-		  <forward name="ajouterEntreeStock" path="/vues/gestionStock/ajouterEntreeStock.jsp" redirect="false"/>
-		  <forward name="ajouterSortieStock" path="/vues/gestionStock/ajouterSortieStock.jsp" redirect="false"/>
-		  <forward name="affichListeProduits" path="/vues/gestionStock/listeProduits.jsp" redirect="false"/>
-		  <forward name="affichJournalStock" path="/vues/gestionStock/journalDuStock.jsp" redirect="false"/>
-	</action>
-    
-  </action-mappings>
-  <controller/>
-  <message-resources
-    parameter="MyWebAppResources"
-         null="false" />
-  <message-resources parameter="erreurGestionStock" null="false" key="erreurGestionStock" />
-   <message-resources
-    parameter="gestionCliniqueResources"
-         null="false" />  
-         
-         <message-resources parameter="erreurGestionCommerciale" 
-         null="false" key="erreurGestionCommerciale" />    
+	<form-beans>
+		<form-bean name="formGestionStock"
+			type="clinique.model.gestion.stock.GestionStockForm" />
+	</form-beans>
+	<action-mappings>
+		<action parameter="dispatch" validate="false" name="formGestionStock"
+			path="/gestionStockAction" scope="session"
+			type="clinique.controller.gestion.stock.GestionStockAction">
+			<forward name="ajouterFournisseur" path="/vues/gestionStock/ajouterFournisseur.jsp"
+				redirect="false" />
+			<forward name="ajouterProduit" path="/vues/gestionStock/ajouterProduit.jsp"
+				redirect="false" />
+			<forward name="ajouterEntreeStock" path="/vues/gestionStock/ajouterEntreeStock.jsp"
+				redirect="false" />
+			<forward name="ajouterSortieStock" path="/vues/gestionStock/ajouterSortieStock.jsp"
+				redirect="false" />
+			<forward name="affichListeProduits" path="/vues/gestionStock/listeProduits.jsp"
+				redirect="false" />
+			<forward name="affichJournalStock" path="/vues/gestionStock/journalDuStock.jsp"
+				redirect="false" />
+		</action>
+
+	</action-mappings>
+	<controller />
+	<message-resources parameter="MyWebAppResources"
+		null="false" />
+	<message-resources parameter="erreurGestionStock"
+		null="false" key="erreurGestionStock" />
+	<message-resources parameter="gestionCliniqueResources"
+		null="false" />
+
+	<message-resources parameter="erreurGestionCommerciale"
+		null="false" key="erreurGestionCommerciale" />
+	<plug-in className="org.springframework.web.struts.ContextLoaderPlugIn">
+		<set-property property="contextConfigLocation"
+			value="/WEB-INF/classes/ApplicationContext.xml" />
+	</plug-in>
+
 </struts-config>

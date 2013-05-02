@@ -12,13 +12,13 @@ import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
 import org.apache.struts.action.ActionMessages;
-import org.apache.struts.actions.DispatchAction;
+import org.springframework.web.struts.DispatchActionSupport;
 
-import clinique.impression.ImpressionBO;
-import clinique.metier.gestion.commerciale.GestionCommercialeBO;
+import clinique.impression.IImpressionBO;
+import clinique.metier.gestion.commerciale.IGestionCommercialeBO;
 import clinique.model.gestion.commerciale.GestionCommercialeForm;
 
-public class GestionCommercialeAction extends DispatchAction {
+public class GestionCommercialeAction extends DispatchActionSupport {
 	private static Logger log = Logger
 			.getLogger(GestionCommercialeAction.class);
 
@@ -29,6 +29,16 @@ public class GestionCommercialeAction extends DispatchAction {
 	// private final String CONTENT_PDF = "application/pdf";
 	// private final String RECU_FR =
 	// InitServlet.CHEMIN_ROOT+"/reports/Recu_Saisie_Acte_fr.jrxml";
+
+	private IGestionCommercialeBO getGestionCommercialeBO() {
+		return (IGestionCommercialeBO) getWebApplicationContext().getBean(
+				IGestionCommercialeBO.NAME);
+	}
+
+	private IImpressionBO getImpressionBO() {
+		return (IImpressionBO) getWebApplicationContext().getBean(
+				IImpressionBO.NAME);
+	}
 
 	@SuppressWarnings("unchecked")
 	public ActionForward chercher(ActionMapping mapping, ActionForm form,
@@ -42,13 +52,10 @@ public class GestionCommercialeAction extends DispatchAction {
 			// user=(User)request.getSession().getAttribute("userConnected");
 			// formulaire.setOperateur(user.getLogin());
 			formulaire.setPatients(new ArrayList());
-			GestionCommercialeBO gestionCommercialeBO = new GestionCommercialeBO();
+			IGestionCommercialeBO gestionCommercialeBO = getGestionCommercialeBO();
 			if (gestionCommercialeBO.getListPatientsMulti(formulaire)) {
-
 				return mapping.findForward("initMulti");
-			}
-
-			else {
+			} else {
 				return mapping.findForward("initMulti");
 			}
 		} catch (Exception e) {
@@ -57,22 +64,19 @@ public class GestionCommercialeAction extends DispatchAction {
 		} finally {
 			log.debug("********** Fin chercher GestionCommercialeAction **********");
 		}
-
 	}
 
 	@SuppressWarnings("unchecked")
 	public ActionForward chercherPatientDevis(ActionMapping mapping,
 			ActionForm form, HttpServletRequest request,
 			HttpServletResponse response) throws Exception {
-
-		log.debug("********** Debut chercher GestionCommercialeAction **********");
 		try {
 			GestionCommercialeForm formulaire = (GestionCommercialeForm) form;
 			// User
 			// user=(User)request.getSession().getAttribute("userConnected");
 			// formulaire.setOperateur(user.getLogin());
 			formulaire.setPatients(new ArrayList());
-			GestionCommercialeBO gestionCommercialeBO = new GestionCommercialeBO();
+			IGestionCommercialeBO gestionCommercialeBO = getGestionCommercialeBO();
 			if (gestionCommercialeBO.getListPatientsMulti(formulaire)) {
 
 				return mapping.findForward("infosPatientDevis");
@@ -102,7 +106,7 @@ public class GestionCommercialeAction extends DispatchAction {
 			// user=(User)request.getSession().getAttribute("userConnected");
 			// formulaire.setOperateur(user.getLogin());
 			formulaire.setPatients(new ArrayList());
-			GestionCommercialeBO gestionCommercialeBO = new GestionCommercialeBO();
+			IGestionCommercialeBO gestionCommercialeBO = getGestionCommercialeBO();
 			if (gestionCommercialeBO.getListPatientsMultiForHosp(formulaire)) {
 
 				return mapping.findForward("infosPatientHosp");
@@ -134,7 +138,7 @@ public class GestionCommercialeAction extends DispatchAction {
 			// formulaire.setOperateur(user.getLogin());
 			formulaire.setPatients(new ArrayList());
 			formulaire.setDetailsFactureList(new ArrayList());
-			GestionCommercialeBO gestionCommercialeBO = new GestionCommercialeBO();
+			IGestionCommercialeBO gestionCommercialeBO = getGestionCommercialeBO();
 			if (gestionCommercialeBO.patientPrestationsFormulaire(formulaire)) {
 				gestionCommercialeBO.initialiserCombosPrestations(formulaire);
 
@@ -167,7 +171,7 @@ public class GestionCommercialeAction extends DispatchAction {
 			formulaire.setPatients(new ArrayList());
 			formulaire.setDetailsFactureList(new ArrayList());
 
-			GestionCommercialeBO gestionCommercialeBO = new GestionCommercialeBO();
+			IGestionCommercialeBO gestionCommercialeBO = getGestionCommercialeBO();
 			if (gestionCommercialeBO
 					.patientPrestationsFormulaireAncien(formulaire)) {
 
@@ -208,7 +212,7 @@ public class GestionCommercialeAction extends DispatchAction {
 			formulaire.setPatients(new ArrayList());
 			formulaire.setDetailsFactureList(new ArrayList());
 
-			GestionCommercialeBO gestionCommercialeBO = new GestionCommercialeBO();
+			IGestionCommercialeBO gestionCommercialeBO = getGestionCommercialeBO();
 			if (gestionCommercialeBO
 					.patientPrestationsFormulaireAncien(formulaire)) {
 
@@ -249,7 +253,7 @@ public class GestionCommercialeAction extends DispatchAction {
 			formulaire.setPatients(new ArrayList());
 			formulaire.setDetailsFactureList(new ArrayList());
 
-			GestionCommercialeBO gestionCommercialeBO = new GestionCommercialeBO();
+			IGestionCommercialeBO gestionCommercialeBO = getGestionCommercialeBO();
 			if (gestionCommercialeBO
 					.patientPrestationsFormulaireAncien(formulaire)) {
 
@@ -286,7 +290,7 @@ public class GestionCommercialeAction extends DispatchAction {
 			// User
 			// user=(User)request.getSession().getAttribute("userConnected");
 			// formulaire.setOperateur(user.getLogin());
-			GestionCommercialeBO gestionCommercialeBO = new GestionCommercialeBO();
+			IGestionCommercialeBO gestionCommercialeBO = getGestionCommercialeBO();
 			ActionMessages errors = new ActionMessages();
 
 			errors = gestionCommercialeBO.checkActeAdd(formulaire);
@@ -330,7 +334,7 @@ public class GestionCommercialeAction extends DispatchAction {
 			// User
 			// user=(User)request.getSession().getAttribute("userConnected");
 			// formulaire.setOperateur(user.getLogin());
-			GestionCommercialeBO gestionCommercialeBO = new GestionCommercialeBO();
+			IGestionCommercialeBO gestionCommercialeBO = getGestionCommercialeBO();
 
 			gestionCommercialeBO.initialiserCombosDrgCnam(formulaire);
 			formulaire.setTotalMontantDrg("0");
@@ -358,7 +362,7 @@ public class GestionCommercialeAction extends DispatchAction {
 			// User
 			// user=(User)request.getSession().getAttribute("userConnected");
 			// formulaire.setOperateur(user.getLogin());
-			GestionCommercialeBO gestionCommercialeBO = new GestionCommercialeBO();
+			IGestionCommercialeBO gestionCommercialeBO = getGestionCommercialeBO();
 
 			if (gestionCommercialeBO.ajouterActesHosp(formulaire)) {
 				gestionCommercialeBO.setSortie(formulaire);
@@ -392,7 +396,7 @@ public class GestionCommercialeAction extends DispatchAction {
 			// User
 			// user=(User)request.getSession().getAttribute("userConnected");
 			// formulaire.setOperateur(user.getLogin());
-			GestionCommercialeBO gestionCommercialeBO = new GestionCommercialeBO();
+			IGestionCommercialeBO gestionCommercialeBO = getGestionCommercialeBO();
 
 			if (gestionCommercialeBO.ajouterActeDevis(formulaire)) {
 
@@ -424,7 +428,7 @@ public class GestionCommercialeAction extends DispatchAction {
 			// User
 			// user=(User)request.getSession().getAttribute("userConnected");
 			// formulaire.setOperateur(user.getLogin());
-			GestionCommercialeBO gestionCommercialeBO = new GestionCommercialeBO();
+			IGestionCommercialeBO gestionCommercialeBO = getGestionCommercialeBO();
 			ActionMessages errors = new ActionMessages();
 
 			errors = gestionCommercialeBO.checkActeAdd(formulaire);
@@ -469,7 +473,7 @@ public class GestionCommercialeAction extends DispatchAction {
 			// user=(User)request.getSession().getAttribute("userConnected");
 			// formulaire.setOperateur(user.getLogin());
 
-			GestionCommercialeBO gestionCommercialeBO = new GestionCommercialeBO();
+			IGestionCommercialeBO gestionCommercialeBO = getGestionCommercialeBO();
 			ActionMessages errors = new ActionMessages();
 			errors = gestionCommercialeBO.checkPrestCouvAdd(formulaire);
 			if (errors.isEmpty()) {
@@ -514,7 +518,7 @@ public class GestionCommercialeAction extends DispatchAction {
 			// user=(User)request.getSession().getAttribute("userConnected");
 			// formulaire.setOperateur(user.getLogin());
 
-			GestionCommercialeBO gestionCommercialeBO = new GestionCommercialeBO();
+			IGestionCommercialeBO gestionCommercialeBO = getGestionCommercialeBO();
 			ActionMessages errors = new ActionMessages();
 			errors = gestionCommercialeBO.checkPrestCouvAdd(formulaire);
 			if (errors.isEmpty()) {
@@ -559,7 +563,7 @@ public class GestionCommercialeAction extends DispatchAction {
 			// user=(User)request.getSession().getAttribute("userConnected");
 			// formulaire.setOperateur(user.getLogin());
 
-			GestionCommercialeBO gestionCommercialeBO = new GestionCommercialeBO();
+			IGestionCommercialeBO gestionCommercialeBO = getGestionCommercialeBO();
 			ActionMessages errors = new ActionMessages();
 			errors = gestionCommercialeBO.checkPrestCouvAdd(formulaire);
 			if (errors.isEmpty()) {
@@ -604,7 +608,7 @@ public class GestionCommercialeAction extends DispatchAction {
 			// user=(User)request.getSession().getAttribute("userConnected");
 			// formulaire.setOperateur(user.getLogin());
 
-			GestionCommercialeBO gestionCommercialeBO = new GestionCommercialeBO();
+			IGestionCommercialeBO gestionCommercialeBO = getGestionCommercialeBO();
 			ActionMessages errors = new ActionMessages();
 			errors = gestionCommercialeBO.checkPrestCouvAdd(formulaire);
 			if (errors.isEmpty()) {
@@ -649,7 +653,7 @@ public class GestionCommercialeAction extends DispatchAction {
 			// user=(User)request.getSession().getAttribute("userConnected");
 			// formulaire.setOperateur(user.getLogin());
 
-			GestionCommercialeBO gestionCommercialeBO = new GestionCommercialeBO();
+			IGestionCommercialeBO gestionCommercialeBO = getGestionCommercialeBO();
 			if (gestionCommercialeBO
 					.supprimerPrestFromListePrestCouvertes(formulaire)) {
 
@@ -684,7 +688,7 @@ public class GestionCommercialeAction extends DispatchAction {
 			// user=(User)request.getSession().getAttribute("userConnected");
 			// formulaire.setOperateur(user.getLogin());
 
-			GestionCommercialeBO gestionCommercialeBO = new GestionCommercialeBO();
+			IGestionCommercialeBO gestionCommercialeBO = getGestionCommercialeBO();
 			if (gestionCommercialeBO.supprimerPrestFromListeDevis(formulaire)) {
 
 				gestionCommercialeBO.initialiserCombosPrestations(formulaire);
@@ -718,7 +722,7 @@ public class GestionCommercialeAction extends DispatchAction {
 			// user=(User)request.getSession().getAttribute("userConnected");
 			// formulaire.setOperateur(user.getLogin());
 
-			ImpressionBO impressionBO = ImpressionBO.getInstance();
+			IImpressionBO impressionBO = getImpressionBO();
 			// impressionBO
 
 			return mapping.findForward(FORWARD);
@@ -747,7 +751,7 @@ public class GestionCommercialeAction extends DispatchAction {
 			formulaire.setPrestationCouvertesPcs(new ArrayList());
 			formulaire.setDetailsFactureList(new ArrayList());
 
-			GestionCommercialeBO gestionCommercialeBO = new GestionCommercialeBO();
+			IGestionCommercialeBO gestionCommercialeBO = getGestionCommercialeBO();
 			ActionMessages errors = new ActionMessages();
 			errors = gestionCommercialeBO.getUser(formulaire);
 			if (errors.isEmpty()) {
@@ -789,13 +793,13 @@ public class GestionCommercialeAction extends DispatchAction {
 			}
 
 			else if (subAction.equals("accueil")) {
-				GestionCommercialeBO gestionCommercialeBO = new GestionCommercialeBO();
+				IGestionCommercialeBO gestionCommercialeBO = getGestionCommercialeBO();
 				gestionCommercialeBO.initialiserForm(formulaire);
 				return mapping.findForward("modules");
 			}
 
 			else if (subAction.equals("authentification")) {
-				GestionCommercialeBO gestionCommercialeBO = new GestionCommercialeBO();
+				IGestionCommercialeBO gestionCommercialeBO = getGestionCommercialeBO();
 				gestionCommercialeBO.initialiserForm(formulaire);
 				return mapping.findForward("authentification");
 			}
@@ -825,7 +829,7 @@ public class GestionCommercialeAction extends DispatchAction {
 			formulaire.setPrestationCouvertesPcs(new ArrayList());
 			formulaire.setDetailsFactureList(new ArrayList());
 
-			GestionCommercialeBO gestionCommercialeBO = new GestionCommercialeBO();
+			IGestionCommercialeBO gestionCommercialeBO = getGestionCommercialeBO();
 			ActionMessages errors = new ActionMessages();
 			errors = gestionCommercialeBO.getUser(formulaire);
 			if (errors.isEmpty()) {
@@ -860,7 +864,7 @@ public class GestionCommercialeAction extends DispatchAction {
 			// user=(User)request.getSession().getAttribute("userConnected");
 			// formulaire.setOperateur(user.getLogin());
 
-			GestionCommercialeBO gestionCommercialeBO = new GestionCommercialeBO();
+			IGestionCommercialeBO gestionCommercialeBO = getGestionCommercialeBO();
 			ActionMessages errors = new ActionMessages();
 			errors = gestionCommercialeBO.getUser(formulaire);
 			if (errors.isEmpty()) {
@@ -892,7 +896,7 @@ public class GestionCommercialeAction extends DispatchAction {
 			// user=(User)request.getSession().getAttribute("userConnected");
 			// formulaire.setOperateur(user.getLogin());
 			formulaire.setReglementsList(new ArrayList());
-			GestionCommercialeBO gestionCommercialeBO = new GestionCommercialeBO();
+			IGestionCommercialeBO gestionCommercialeBO = getGestionCommercialeBO();
 			gestionCommercialeBO.checkRemise(formulaire);
 			gestionCommercialeBO.setValeursResteApyer(formulaire);
 			gestionCommercialeBO.initialiserCombosTypePyement(formulaire);
@@ -921,7 +925,7 @@ public class GestionCommercialeAction extends DispatchAction {
 			// user=(User)request.getSession().getAttribute("userConnected");
 			// formulaire.setOperateur(user.getLogin());
 
-			GestionCommercialeBO gestionCommercialeBO = new GestionCommercialeBO();
+			IGestionCommercialeBO gestionCommercialeBO = getGestionCommercialeBO();
 			gestionCommercialeBO.ajouterRegelement(formulaire);
 			gestionCommercialeBO.initialiserCombosTypePyement(formulaire);
 			gestionCommercialeBO.initialiserCombosPcPersonnel(formulaire);
@@ -948,7 +952,7 @@ public class GestionCommercialeAction extends DispatchAction {
 			// user=(User)request.getSession().getAttribute("userConnected");
 			// formulaire.setOperateur(user.getLogin());
 
-			GestionCommercialeBO gestionCommercialeBO = new GestionCommercialeBO();
+			IGestionCommercialeBO gestionCommercialeBO = getGestionCommercialeBO();
 			gestionCommercialeBO.ajouterRegelement(formulaire);
 			gestionCommercialeBO.initialiserCombosTypePyement(formulaire);
 			gestionCommercialeBO.initialiserCombosPcPersonnel(formulaire);
@@ -975,7 +979,7 @@ public class GestionCommercialeAction extends DispatchAction {
 			// user=(User)request.getSession().getAttribute("userConnected");
 			// formulaire.setOperateur(user.getLogin());
 
-			GestionCommercialeBO gestionCommercialeBO = new GestionCommercialeBO();
+			IGestionCommercialeBO gestionCommercialeBO = getGestionCommercialeBO();
 			gestionCommercialeBO
 					.supprimerReglementFromListeReglement(formulaire);
 			gestionCommercialeBO.initialiserCombosTypePyement(formulaire);
@@ -1003,7 +1007,7 @@ public class GestionCommercialeAction extends DispatchAction {
 			// user=(User)request.getSession().getAttribute("userConnected");
 			// formulaire.setOperateur(user.getLogin());
 
-			GestionCommercialeBO gestionCommercialeBO = new GestionCommercialeBO();
+			IGestionCommercialeBO gestionCommercialeBO = getGestionCommercialeBO();
 			gestionCommercialeBO
 					.supprimerReglementHospFromListeReglement(formulaire);
 			gestionCommercialeBO.initialiserCombosTypePyement(formulaire);
@@ -1032,7 +1036,7 @@ public class GestionCommercialeAction extends DispatchAction {
 			// user=(User)request.getSession().getAttribute("userConnected");
 			// formulaire.setOperateur(user.getLogin());
 
-			GestionCommercialeBO gestionCommercialeBO = new GestionCommercialeBO();
+			IGestionCommercialeBO gestionCommercialeBO = getGestionCommercialeBO();
 			gestionCommercialeBO.checkReglementPCByAssureur(formulaire);
 			if (gestionCommercialeBO.ajouterRecuFacture(formulaire)) {
 
@@ -1062,7 +1066,7 @@ public class GestionCommercialeAction extends DispatchAction {
 			// user=(User)request.getSession().getAttribute("userConnected");
 			// formulaire.setOperateur(user.getLogin());
 
-			GestionCommercialeBO gestionCommercialeBO = new GestionCommercialeBO();
+			IGestionCommercialeBO gestionCommercialeBO = getGestionCommercialeBO();
 			gestionCommercialeBO.checkReglementPCByAssureurCNAM(formulaire);
 			if (gestionCommercialeBO.ajouterRecuFacture(formulaire)) {
 
@@ -1092,7 +1096,7 @@ public class GestionCommercialeAction extends DispatchAction {
 			// user=(User)request.getSession().getAttribute("userConnected");
 			// formulaire.setOperateur(user.getLogin());
 
-			GestionCommercialeBO gestionCommercialeBO = new GestionCommercialeBO();
+			IGestionCommercialeBO gestionCommercialeBO = getGestionCommercialeBO();
 			// gestionCommercialeBO.fermerSession();
 			gestionCommercialeBO.checkReglementPCByAssureur(formulaire);
 			gestionCommercialeBO.addReglementAvance(formulaire);
@@ -1127,7 +1131,7 @@ public class GestionCommercialeAction extends DispatchAction {
 			// user=(User)request.getSession().getAttribute("userConnected");
 			// formulaire.setOperateur(user.getLogin());
 
-			GestionCommercialeBO gestionCommercialeBO = new GestionCommercialeBO();
+			IGestionCommercialeBO gestionCommercialeBO = getGestionCommercialeBO();
 			gestionCommercialeBO.checkReglementPCByAssureurCNAM(formulaire);
 			gestionCommercialeBO.addReglementAvance(formulaire);
 			if (gestionCommercialeBO.ajouterRecuFactureHosp(formulaire)) {
@@ -1158,7 +1162,7 @@ public class GestionCommercialeAction extends DispatchAction {
 			// user=(User)request.getSession().getAttribute("userConnected");
 			// formulaire.setOperateur(user.getLogin());
 
-			GestionCommercialeBO gestionCommercialeBO = new GestionCommercialeBO();
+			IGestionCommercialeBO gestionCommercialeBO = getGestionCommercialeBO();
 
 			if (gestionCommercialeBO.creerRecuHosp(formulaire)) {
 
@@ -1204,7 +1208,7 @@ public class GestionCommercialeAction extends DispatchAction {
 			// user=(User)request.getSession().getAttribute("userConnected");
 			// formulaire.setOperateur(user.getLogin());
 
-			ImpressionBO impressionBO = ImpressionBO.getInstance();
+			IImpressionBO impressionBO = getImpressionBO();
 			byte[] bytes = impressionBO.genererRecu(formulaire.getRecu()
 					.getRecuId(), "ORIGNINAL");
 
@@ -1243,7 +1247,7 @@ public class GestionCommercialeAction extends DispatchAction {
 
 			System.out.println(" id hosp" + formulaire.getFactureId());
 
-			ImpressionBO impressionBO = ImpressionBO.getInstance();
+			IImpressionBO impressionBO = getImpressionBO();
 			byte[] bytes = impressionBO.genererFactureHosp(
 					formulaire.getFactureId(), "ORIGNINAL");
 
@@ -1280,7 +1284,7 @@ public class GestionCommercialeAction extends DispatchAction {
 			// user=(User)request.getSession().getAttribute("userConnected");
 			// formulaire.setOperateur(user.getLogin());
 
-			ImpressionBO impressionBO = ImpressionBO.getInstance();
+			IImpressionBO impressionBO = getImpressionBO();
 			byte[] bytes = impressionBO.genererFacture(
 					formulaire.getFactureId(), "ORIGINAL");
 
@@ -1315,7 +1319,7 @@ public class GestionCommercialeAction extends DispatchAction {
 		try {
 			GestionCommercialeForm formulaire = (GestionCommercialeForm) form;
 
-			GestionCommercialeBO gestionCommercialeBO = new GestionCommercialeBO();
+			IGestionCommercialeBO gestionCommercialeBO = getGestionCommercialeBO();
 
 			if (gestionCommercialeBO.creerDevis(formulaire)) {
 
@@ -1347,7 +1351,7 @@ public class GestionCommercialeAction extends DispatchAction {
 			// formulaire.setOperateur(user.getLogin());
 			formulaire.setPatients(new ArrayList());
 
-			GestionCommercialeBO gestionCommercialeBO = new GestionCommercialeBO();
+			IGestionCommercialeBO gestionCommercialeBO = getGestionCommercialeBO();
 			ActionMessages errors = new ActionMessages();
 			errors = gestionCommercialeBO.checkBadge(formulaire,
 					formulaire.getPatient());
@@ -1400,7 +1404,7 @@ public class GestionCommercialeAction extends DispatchAction {
 			// formulaire.setOperateur(user.getLogin());
 			formulaire.setPatients(new ArrayList());
 
-			GestionCommercialeBO gestionCommercialeBO = new GestionCommercialeBO();
+			IGestionCommercialeBO gestionCommercialeBO = getGestionCommercialeBO();
 			ActionMessages errors = new ActionMessages();
 			errors = gestionCommercialeBO.checkBadge(formulaire,
 					formulaire.getPatient());
@@ -1452,7 +1456,7 @@ public class GestionCommercialeAction extends DispatchAction {
 			// formulaire.setOperateur(user.getLogin());
 			formulaire.setPatients(new ArrayList());
 
-			GestionCommercialeBO gestionCommercialeBO = new GestionCommercialeBO();
+			IGestionCommercialeBO gestionCommercialeBO = getGestionCommercialeBO();
 			ActionMessages errors = new ActionMessages();
 			errors = gestionCommercialeBO.checkBadge(formulaire,
 					formulaire.getPatient());
@@ -1505,7 +1509,7 @@ public class GestionCommercialeAction extends DispatchAction {
 			// formulaire.setOperateur(user.getLogin());
 			formulaire.setPatients(new ArrayList());
 
-			GestionCommercialeBO gestionCommercialeBO = new GestionCommercialeBO();
+			IGestionCommercialeBO gestionCommercialeBO = getGestionCommercialeBO();
 			ActionMessages errors = new ActionMessages();
 			errors = gestionCommercialeBO.checkBadge(formulaire,
 					formulaire.getPatient());
@@ -1557,7 +1561,7 @@ public class GestionCommercialeAction extends DispatchAction {
 			// formulaire.setOperateur(user.getLogin());
 			formulaire.setPatients(new ArrayList());
 
-			GestionCommercialeBO gestionCommercialeBO = new GestionCommercialeBO();
+			IGestionCommercialeBO gestionCommercialeBO = getGestionCommercialeBO();
 			ActionMessages errors = new ActionMessages();
 			errors = gestionCommercialeBO.checkBadge(formulaire,
 					formulaire.getPatient());
@@ -1609,7 +1613,7 @@ public class GestionCommercialeAction extends DispatchAction {
 			// formulaire.setOperateur(user.getLogin());
 			formulaire.setPatients(new ArrayList());
 
-			GestionCommercialeBO gestionCommercialeBO = new GestionCommercialeBO();
+			IGestionCommercialeBO gestionCommercialeBO = getGestionCommercialeBO();
 
 			if (gestionCommercialeBO
 					.addAncienDevisPatientWithoutPCInfos(formulaire)) {
@@ -1652,7 +1656,7 @@ public class GestionCommercialeAction extends DispatchAction {
 			// formulaire.setOperateur(user.getLogin());
 			formulaire.setPatients(new ArrayList());
 
-			GestionCommercialeBO gestionCommercialeBO = new GestionCommercialeBO();
+			IGestionCommercialeBO gestionCommercialeBO = getGestionCommercialeBO();
 
 			if (gestionCommercialeBO.addAncienPatientWithPC(formulaire)) {
 				if (gestionCommercialeBO
@@ -1693,7 +1697,7 @@ public class GestionCommercialeAction extends DispatchAction {
 			// formulaire.setOperateur(user.getLogin());
 			formulaire.setPatients(new ArrayList());
 
-			GestionCommercialeBO gestionCommercialeBO = new GestionCommercialeBO();
+			IGestionCommercialeBO gestionCommercialeBO = getGestionCommercialeBO();
 			ActionMessages errors = new ActionMessages();
 			errors = gestionCommercialeBO.checkBadge(formulaire,
 					formulaire.getPatient());
@@ -1746,7 +1750,7 @@ public class GestionCommercialeAction extends DispatchAction {
 			// formulaire.setOperateur(user.getLogin());
 			formulaire.setPatients(new ArrayList());
 
-			GestionCommercialeBO gestionCommercialeBO = new GestionCommercialeBO();
+			IGestionCommercialeBO gestionCommercialeBO = getGestionCommercialeBO();
 			ActionMessages errors = new ActionMessages();
 			errors = gestionCommercialeBO.checkBadge(formulaire,
 					formulaire.getPatient());
@@ -1797,7 +1801,7 @@ public class GestionCommercialeAction extends DispatchAction {
 			// user=(User)request.getSession().getAttribute("userConnected");
 			// formulaire.setOperateur(user.getLogin());
 			formulaire.setHopitalises(new ArrayList());
-			GestionCommercialeBO gestionCommercialeBO = new GestionCommercialeBO();
+			IGestionCommercialeBO gestionCommercialeBO = getGestionCommercialeBO();
 			gestionCommercialeBO.initialiserForm(formulaire);
 			ActionMessages errors = new ActionMessages();
 			errors = gestionCommercialeBO.getUser(formulaire);
@@ -1836,7 +1840,7 @@ public class GestionCommercialeAction extends DispatchAction {
 			// user=(User)request.getSession().getAttribute("userConnected");
 			// formulaire.setOperateur(user.getLogin());
 
-			GestionCommercialeBO gestionCommercialeBO = new GestionCommercialeBO();
+			IGestionCommercialeBO gestionCommercialeBO = getGestionCommercialeBO();
 			if (gestionCommercialeBO.reserverChambre(formulaire)) {
 
 				gestionCommercialeBO.getListHopitalises(formulaire);
@@ -1867,8 +1871,7 @@ public class GestionCommercialeAction extends DispatchAction {
 			// user=(User)request.getSession().getAttribute("userConnected");
 			// formulaire.setOperateur(user.getLogin());
 
-			GestionCommercialeBO gestionCommercialeBO = new GestionCommercialeBO();
-			gestionCommercialeBO.fermerSession();
+			IGestionCommercialeBO gestionCommercialeBO = getGestionCommercialeBO();
 			if (gestionCommercialeBO.changerChambre(formulaire)) {
 				gestionCommercialeBO.initialiserForm(formulaire);
 
@@ -1902,7 +1905,7 @@ public class GestionCommercialeAction extends DispatchAction {
 			// user=(User)request.getSession().getAttribute("userConnected");
 			// formulaire.setOperateur(user.getLogin());
 
-			GestionCommercialeBO gestionCommercialeBO = new GestionCommercialeBO();
+			IGestionCommercialeBO gestionCommercialeBO = getGestionCommercialeBO();
 
 			if (gestionCommercialeBO.showHospForAddPrestation(formulaire)) {
 				gestionCommercialeBO.initialiserCombosPrestations(formulaire);
@@ -1933,7 +1936,7 @@ public class GestionCommercialeAction extends DispatchAction {
 			// user=(User)request.getSession().getAttribute("userConnected");
 			// formulaire.setOperateur(user.getLogin());
 
-			GestionCommercialeBO gestionCommercialeBO = new GestionCommercialeBO();
+			IGestionCommercialeBO gestionCommercialeBO = getGestionCommercialeBO();
 
 			if (gestionCommercialeBO.showHospForChangeChambre(formulaire)) {
 				gestionCommercialeBO.initialiserCombosChambres(formulaire);
@@ -1964,7 +1967,7 @@ public class GestionCommercialeAction extends DispatchAction {
 			// user=(User)request.getSession().getAttribute("userConnected");
 			// formulaire.setOperateur(user.getLogin());
 
-			GestionCommercialeBO gestionCommercialeBO = new GestionCommercialeBO();
+			IGestionCommercialeBO gestionCommercialeBO = getGestionCommercialeBO();
 
 			if (gestionCommercialeBO.showHospForSortie(formulaire)) {
 
@@ -1994,7 +1997,7 @@ public class GestionCommercialeAction extends DispatchAction {
 			// user=(User)request.getSession().getAttribute("userConnected");
 			// formulaire.setOperateur(user.getLogin());
 
-			GestionCommercialeBO gestionCommercialeBO = new GestionCommercialeBO();
+			IGestionCommercialeBO gestionCommercialeBO = getGestionCommercialeBO();
 
 			if (gestionCommercialeBO.showHospInfosForSortie(formulaire)) {
 
@@ -2024,7 +2027,7 @@ public class GestionCommercialeAction extends DispatchAction {
 			// user=(User)request.getSession().getAttribute("userConnected");
 			// formulaire.setOperateur(user.getLogin());
 
-			GestionCommercialeBO gestionCommercialeBO = new GestionCommercialeBO();
+			IGestionCommercialeBO gestionCommercialeBO = getGestionCommercialeBO();
 
 			if (gestionCommercialeBO.showHospForSortie(formulaire)) {
 
@@ -2055,7 +2058,7 @@ public class GestionCommercialeAction extends DispatchAction {
 			// user=(User)request.getSession().getAttribute("userConnected");
 			// formulaire.setOperateur(user.getLogin());
 
-			GestionCommercialeBO gestionCommercialeBO = new GestionCommercialeBO();
+			IGestionCommercialeBO gestionCommercialeBO = getGestionCommercialeBO();
 
 			if (gestionCommercialeBO.ajouterActesHosp(formulaire)) {
 				formulaire.setReglementsList(new ArrayList());
@@ -2091,7 +2094,7 @@ public class GestionCommercialeAction extends DispatchAction {
 			// user=(User)request.getSession().getAttribute("userConnected");
 			// formulaire.setOperateur(user.getLogin());
 
-			GestionCommercialeBO gestionCommercialeBO = new GestionCommercialeBO();
+			IGestionCommercialeBO gestionCommercialeBO = getGestionCommercialeBO();
 
 			gestionCommercialeBO.setLibererChambre(formulaire);
 			gestionCommercialeBO.setSortieSansReglement(formulaire);
@@ -2123,7 +2126,7 @@ public class GestionCommercialeAction extends DispatchAction {
 			formulaire.setPrestationCouvertesPcs(new ArrayList());
 			formulaire.setDetailsFactureList(new ArrayList());
 
-			GestionCommercialeBO gestionCommercialeBO = new GestionCommercialeBO();
+			IGestionCommercialeBO gestionCommercialeBO = getGestionCommercialeBO();
 			ActionMessages errors = new ActionMessages();
 			errors = gestionCommercialeBO.getUser(formulaire);
 			if (errors.isEmpty()) {
@@ -2155,7 +2158,7 @@ public class GestionCommercialeAction extends DispatchAction {
 
 			formulaire.setOperateur(formulaire.getLogin());
 
-			GestionCommercialeBO gestionCommercialeBO = new GestionCommercialeBO();
+			IGestionCommercialeBO gestionCommercialeBO = getGestionCommercialeBO();
 
 			gestionCommercialeBO.initialiserForm(formulaire);
 			return mapping.findForward("impressionFact");
@@ -2179,7 +2182,7 @@ public class GestionCommercialeAction extends DispatchAction {
 
 			formulaire.setOperateur(formulaire.getLogin());
 
-			GestionCommercialeBO gestionCommercialeBO = new GestionCommercialeBO();
+			IGestionCommercialeBO gestionCommercialeBO = getGestionCommercialeBO();
 
 			gestionCommercialeBO.initialiserForm(formulaire);
 			return mapping.findForward("modificationFact");
@@ -2205,7 +2208,7 @@ public class GestionCommercialeAction extends DispatchAction {
 			// user=(User)request.getSession().getAttribute("userConnected");
 			// formulaire.setOperateur(user.getLogin());
 			formulaire.setFacturesAgenererList(new ArrayList());
-			GestionCommercialeBO gestionCommercialeBO = new GestionCommercialeBO();
+			IGestionCommercialeBO gestionCommercialeBO = getGestionCommercialeBO();
 			gestionCommercialeBO.initialiserForm(formulaire);
 
 			gestionCommercialeBO.getListFacturesGenerees(formulaire);
@@ -2233,7 +2236,7 @@ public class GestionCommercialeAction extends DispatchAction {
 			// user=(User)request.getSession().getAttribute("userConnected");
 			// formulaire.setOperateur(user.getLogin());
 			formulaire.setFacturesAgenererList(new ArrayList());
-			GestionCommercialeBO gestionCommercialeBO = new GestionCommercialeBO();
+			IGestionCommercialeBO gestionCommercialeBO = getGestionCommercialeBO();
 			gestionCommercialeBO.initialiserForm(formulaire);
 			formulaire.setIsFirst("false");
 			if (gestionCommercialeBO.getListFacturesAgenerer(formulaire)) {
@@ -2270,7 +2273,7 @@ public class GestionCommercialeAction extends DispatchAction {
 			// user=(User)request.getSession().getAttribute("userConnected");
 			// formulaire.setOperateur(user.getLogin());
 			formulaire.setFacturesAgenererList(new ArrayList());
-			GestionCommercialeBO gestionCommercialeBO = new GestionCommercialeBO();
+			IGestionCommercialeBO gestionCommercialeBO = getGestionCommercialeBO();
 			gestionCommercialeBO.initialiserForm(formulaire);
 			formulaire.setIsFirst("true");
 
@@ -2293,7 +2296,7 @@ public class GestionCommercialeAction extends DispatchAction {
 		try {
 
 			GestionCommercialeForm formulaire = (GestionCommercialeForm) form;
-			GestionCommercialeBO gestionCommercialeBO = new GestionCommercialeBO();
+			IGestionCommercialeBO gestionCommercialeBO = getGestionCommercialeBO();
 			gestionCommercialeBO.genererFacture(formulaire);
 			gestionCommercialeBO.initialiserForm(formulaire);
 
@@ -2316,7 +2319,7 @@ public class GestionCommercialeAction extends DispatchAction {
 		try {
 			GestionCommercialeForm formulaire = (GestionCommercialeForm) form;
 
-			GestionCommercialeBO gestionCommercialeBO = new GestionCommercialeBO();
+			IGestionCommercialeBO gestionCommercialeBO = getGestionCommercialeBO();
 			gestionCommercialeBO.infosForModificationFacture(formulaire);
 			gestionCommercialeBO.initialiserCombosPrestations(formulaire);
 			gestionCommercialeBO.initialiserCombosDrgCnam(formulaire);
@@ -2346,7 +2349,7 @@ public class GestionCommercialeAction extends DispatchAction {
 			// User
 			// user=(User)request.getSession().getAttribute("userConnected");
 			// formulaire.setOperateur(user.getLogin());
-			GestionCommercialeBO gestionCommercialeBO = new GestionCommercialeBO();
+			IGestionCommercialeBO gestionCommercialeBO = getGestionCommercialeBO();
 			ActionMessages errors = new ActionMessages();
 
 			errors = gestionCommercialeBO
@@ -2396,7 +2399,7 @@ public class GestionCommercialeAction extends DispatchAction {
 			formulaire.setPrestationCouvertesPcs(new ArrayList());
 			formulaire.setDetailsFactureList(new ArrayList());
 
-			GestionCommercialeBO gestionCommercialeBO = new GestionCommercialeBO();
+			IGestionCommercialeBO gestionCommercialeBO = getGestionCommercialeBO();
 			ActionMessages errors = new ActionMessages();
 			errors = gestionCommercialeBO.getUser(formulaire);
 			if (errors.isEmpty()) {
@@ -2428,7 +2431,7 @@ public class GestionCommercialeAction extends DispatchAction {
 			// User
 			// user=(User)request.getSession().getAttribute("userConnected");
 			// formulaire.setOperateur(user.getLogin());
-			GestionCommercialeBO gestionCommercialeBO = new GestionCommercialeBO();
+			IGestionCommercialeBO gestionCommercialeBO = getGestionCommercialeBO();
 			if (gestionCommercialeBO
 					.ajouterDrgCnamDansDetailDrgCnamList(formulaire)) {
 
@@ -2464,7 +2467,7 @@ public class GestionCommercialeAction extends DispatchAction {
 			// User
 			// user=(User)request.getSession().getAttribute("userConnected");
 			// formulaire.setOperateur(user.getLogin());
-			GestionCommercialeBO gestionCommercialeBO = new GestionCommercialeBO();
+			IGestionCommercialeBO gestionCommercialeBO = getGestionCommercialeBO();
 			if (gestionCommercialeBO
 					.ajouterDrgCnamDansDetailDrgCnamList(formulaire)) {
 
@@ -2500,7 +2503,7 @@ public class GestionCommercialeAction extends DispatchAction {
 			// User
 			// user=(User)request.getSession().getAttribute("userConnected");
 			// formulaire.setOperateur(user.getLogin());
-			GestionCommercialeBO gestionCommercialeBO = new GestionCommercialeBO();
+			IGestionCommercialeBO gestionCommercialeBO = getGestionCommercialeBO();
 			if (gestionCommercialeBO
 					.supprimerDetailDrgFromListeDetailDrgCnamFacture(formulaire)) {
 
@@ -2536,7 +2539,7 @@ public class GestionCommercialeAction extends DispatchAction {
 			// User
 			// user=(User)request.getSession().getAttribute("userConnected");
 			// formulaire.setOperateur(user.getLogin());
-			GestionCommercialeBO gestionCommercialeBO = new GestionCommercialeBO();
+			IGestionCommercialeBO gestionCommercialeBO = getGestionCommercialeBO();
 			if (gestionCommercialeBO
 					.supprimerDetailDrgFromListeDetailDrgCnamFacture(formulaire)) {
 
@@ -2574,7 +2577,7 @@ public class GestionCommercialeAction extends DispatchAction {
 			// user=(User)request.getSession().getAttribute("userConnected");
 			// formulaire.setOperateur(user.getLogin());
 			formulaire.setFacturesAimprimerList(new ArrayList());
-			GestionCommercialeBO gestionCommercialeBO = new GestionCommercialeBO();
+			IGestionCommercialeBO gestionCommercialeBO = getGestionCommercialeBO();
 			gestionCommercialeBO.initialiserForm(formulaire);
 			formulaire.setIsFirst("false");
 			if (gestionCommercialeBO.getListFacturesAimprimer(formulaire)) {
@@ -2613,7 +2616,7 @@ public class GestionCommercialeAction extends DispatchAction {
 			// user=(User)request.getSession().getAttribute("userConnected");
 			// formulaire.setOperateur(user.getLogin());
 			formulaire.setFacturesAgenererList(new ArrayList());
-			GestionCommercialeBO gestionCommercialeBO = new GestionCommercialeBO();
+			IGestionCommercialeBO gestionCommercialeBO = getGestionCommercialeBO();
 			gestionCommercialeBO.initialiserForm(formulaire);
 
 			gestionCommercialeBO.getListFacturesAimprimer(formulaire);
@@ -2642,7 +2645,7 @@ public class GestionCommercialeAction extends DispatchAction {
 			// user=(User)request.getSession().getAttribute("userConnected");
 			// formulaire.setOperateur(user.getLogin());
 
-			ImpressionBO impressionBO = ImpressionBO.getInstance();
+			IImpressionBO impressionBO = getImpressionBO();
 			byte[] bytes = impressionBO.genererFacture(
 					formulaire.getFactureId(), "ORIGINAL");
 
@@ -2680,7 +2683,7 @@ public class GestionCommercialeAction extends DispatchAction {
 			// user=(User)request.getSession().getAttribute("userConnected");
 			// formulaire.setOperateur(user.getLogin());
 			formulaire.setDevisAimprimerList(new ArrayList());
-			GestionCommercialeBO gestionCommercialeBO = new GestionCommercialeBO();
+			IGestionCommercialeBO gestionCommercialeBO = getGestionCommercialeBO();
 			gestionCommercialeBO.initialiserForm(formulaire);
 
 			gestionCommercialeBO.getListDevisAimprimer(formulaire);
@@ -2707,7 +2710,7 @@ public class GestionCommercialeAction extends DispatchAction {
 			// user=(User)request.getSession().getAttribute("userConnected");
 			// formulaire.setOperateur(user.getLogin());
 
-			ImpressionBO impressionBO = ImpressionBO.getInstance();
+			IImpressionBO impressionBO = getImpressionBO();
 			byte[] bytes = impressionBO.genererDevisAssureur(
 					formulaire.getDevisAssureurId(), "ORIGINAL");
 
@@ -2745,7 +2748,7 @@ public class GestionCommercialeAction extends DispatchAction {
 			// user=(User)request.getSession().getAttribute("userConnected");
 			// formulaire.setOperateur(user.getLogin());
 			formulaire.setDevisAimprimerList(new ArrayList());
-			GestionCommercialeBO gestionCommercialeBO = new GestionCommercialeBO();
+			IGestionCommercialeBO gestionCommercialeBO = getGestionCommercialeBO();
 			gestionCommercialeBO.initialiserForm(formulaire);
 			formulaire.setIsFirst("false");
 			if (gestionCommercialeBO.getListDevisAimprimer(formulaire)) {

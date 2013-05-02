@@ -11,8 +11,8 @@ import org.apache.log4j.Logger;
 import org.apache.struts.action.ActionError;
 import org.apache.struts.action.ActionMessages;
 import org.apache.struts.util.LabelValueBean;
-import org.hibernate.Session;
-import org.hibernate.Transaction;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 import clinique.dao.ActeAssureurDAO;
 import clinique.dao.ActeAssureurHDAO;
@@ -24,8 +24,10 @@ import clinique.dao.ActeurActeDAO;
 import clinique.dao.ActeurActeHDAO;
 import clinique.dao.ActeurDAO;
 import clinique.dao.AssureurDAO;
+import clinique.dao.BadgeDAO;
 import clinique.dao.CategorieDAO;
 import clinique.dao.ChambreDAO;
+import clinique.dao.ChambresHospitalisationDAO;
 import clinique.dao.ClasseDAO;
 import clinique.dao.CompteCategorieDAO;
 import clinique.dao.CompteDAO;
@@ -40,7 +42,11 @@ import clinique.dao.ParametresCliniqueDAO;
 import clinique.dao.PatientDAO;
 import clinique.dao.PatientPcActuelDAO;
 import clinique.dao.PcPersonnelDAO;
-import clinique.dao.SessionFactoryUtil;
+import clinique.dao.PriseEnChargeDAO;
+import clinique.dao.RecuDAO;
+import clinique.dao.ReglementDAO;
+import clinique.dao.TransactionCompteCategorieDAO;
+import clinique.dao.TransactionCompteDAO;
 import clinique.dao.TypePayementDAO;
 import clinique.dao.UserDAO;
 import clinique.mapping.Acte;
@@ -85,575 +91,964 @@ import clinique.mapping.TransactionCompte;
 import clinique.mapping.TransactionCompteCategorie;
 import clinique.mapping.TypePayement;
 import clinique.mapping.User;
+import clinique.metier.TransactionalBO;
 import clinique.model.gestion.commerciale.GestionCommercialeForm;
 import clinique.utils.ConstantesMetier;
 import clinique.utils.UtilDate;
 
-@SuppressWarnings("deprecation")
-public class GestionCommercialeBO implements ConstantesMetier {
+@Service(IGestionCommercialeBO.NAME)
+public class GestionCommercialeBO extends TransactionalBO implements
+		IGestionCommercialeBO {
 
 	private static Logger log = Logger.getLogger(GestionCommercialeBO.class);
 
-	public void chargerPrestations(GestionCommercialeForm formulaire) {
-		// if (!UtilDate.getInstance().isVide(formulaire.getFactureId()))
-		// formulaire.setDetailsFactureList(FactureDAO.getInstance().getFacture(Integer.parseInt(formulaire.getFactureId())).getDetailFactures());
-		// else formulaire.setDetailsFactureList(null);
+	@Autowired
+	private ActeAssureurDAO acteAssureurDAO;
+	@Autowired
+	private ActeAssureurHDAO acteAssureurHDAO;
+	@Autowired
+	private ActeDAO acteDAO;
+	@Autowired
+	private ActeHDAO acteHDAO;
+	@Autowired
+	private ActeurActeAssureurDAO acteurActeAssureurDAO;
+	@Autowired
+	private ActeurActeDAO acteurActeDAO;
+	@Autowired
+	private ActeurActeHDAO acteurActeHDAO;
+	@Autowired
+	private ActeurDAO acteurDAO;
+	@Autowired
+	private AssureurDAO assureurDAO;
+	@Autowired
+	private BadgeDAO badgeDAO;
+	@Autowired
+	private CategorieDAO categorieDAO;
+	@Autowired
+	private ChambreDAO chambreDAO;
+	@Autowired
+	private ChambresHospitalisationDAO chambresHospitalisationDAO;
+	@Autowired
+	private ClasseDAO classeDAO;
+	@Autowired
+	private CompteDAO compteDAO;
+	@Autowired
+	private DevisAssureurDAO devisAssureurDAO;
+	@Autowired
+	private DrgCnamDAO drgCnamDAO;
+	@Autowired
+	private ExclusionActeAssureurDAO exclusionActeAssureurDAO;
+	@Autowired
+	private FactureDAO factureDAO;
+	@Autowired
+	private FactureModifieesDAO factureModifieesDAO;
+	@Autowired
+	private FamillePrestationDAO famillePrestationDAO;
+	@Autowired
+	private HospitalisationDAO hospitalisationDAO;
+	@Autowired
+	private ParametresCliniqueDAO parametresCliniqueDAO;
+	@Autowired
+	private PatientDAO patientDAO;
+	@Autowired
+	private PatientPcActuelDAO patientPcActuelDAO;
+	@Autowired
+	private PcPersonnelDAO pcPersonnelDAO;
+	@Autowired
+	private PriseEnChargeDAO priseEnChargeDAO;
+	@Autowired
+	private RecuDAO recuDAO;
+	@Autowired
+	private ReglementDAO reglementDAO;
+	@Autowired
+	private TransactionCompteCategorieDAO transactionCompteCategorieDAO;
+	@Autowired
+	private TransactionCompteDAO transactionCompteDAO;
+	@Autowired
+	private TypePayementDAO typePayementDAO;
+	@Autowired
+	private UserDAO userDAO;
+	@Autowired
+	private ActeurActeAssureurHDAO acteurActeAssureurHDAO;
+	@Autowired
+	private CompteCategorieDAO compteCategorieDAO;
+
+	private ActeAssureurDAO getActeAssureurDAO() {
+		return acteAssureurDAO;
 	}
 
-	@SuppressWarnings({ "unchecked", "finally" })
-	public boolean getListPatientsMulti(GestionCommercialeForm formulaire)
-			throws Exception {
-
-		log.debug("********** Debut getListPatientsMulti GestionCommercialeBO **********");
-		boolean result = false;
-
-		// Session session=SessionFactoryUtil.getInstance().openSession();
-		try {
-			Collection<Patient> list = PatientDAO.getInstance()
-					.listPatientsRecherches(formulaire.getPatientIdR(),
-							formulaire.getNomR(), formulaire.getPrenomR(),
-							formulaire.getDateNaissanceR(),
-							formulaire.getDateDerniereVisiteR(),
-							formulaire.getTelephoneR(), formulaire.getCniR(),
-							formulaire.getNniR(), formulaire.getNumeroBadgeR());
-
-			if (list != null) {
-				formulaire.setPatients((List) list);
-				result = true;
-			}
-
-		} catch (Exception e) {
-			log.fatal(e.getMessage());
-		}
-
-		finally {
-			// session.close();
-			log.debug("********** Fin getListPatientsMulti GestionCommercialeBO **********");
-			return result;
-		}
+	private ActeAssureurHDAO getActeAssureurHDAO() {
+		return acteAssureurHDAO;
 	}
 
-	@SuppressWarnings({ "finally", "unchecked" })
-	public boolean getListPatientsMultiForHosp(GestionCommercialeForm formulaire)
-			throws Exception {
-
-		log.debug("********** Debut getListPatientsMulti GestionCommercialeBO **********");
-		boolean result = false;
-
-		// Session session=SessionFactoryUtil.getInstance().openSession();
-		try {
-			Collection<Patient> list = PatientDAO.getInstance()
-					.listPatientsRecherches(formulaire.getPatientIdR(),
-							formulaire.getNomR(), formulaire.getPrenomR(),
-							formulaire.getDateNaissanceR(),
-							formulaire.getDateDerniereVisiteR(),
-							formulaire.getTelephoneR(), formulaire.getCniR(),
-							formulaire.getNniR(), formulaire.getNumeroBadgeR());
-
-			formulaire.setPatients(new ArrayList());
-			if (list != null) {
-				int i = 0;
-				for (Object element : list) {
-					i = 0;
-					Patient patient = (Patient) element;
-					for (Iterator iter1 = getListHopitalisesPatients(formulaire)
-							.iterator(); iter1.hasNext();) {
-						Patient patient1 = (Patient) iter1.next();
-						if (patient1.getPatientId().equals(
-								patient.getPatientId())) {
-							i++;
-						}
-					}
-
-					if (i == 0) {
-						formulaire.getPatients().add(patient);
-					}
-
-				}
-				result = true;
-			}
-
-		} catch (Exception e) {
-			log.fatal(e.getMessage());
-		}
-
-		finally {
-			// session.close();
-			log.debug("********** Fin getListPatientsMulti GestionCommercialeBO **********");
-			return result;
-		}
+	private ActeDAO getActeDAO() {
+		return acteDAO;
 	}
 
-	@SuppressWarnings("finally")
-	public boolean patientPrestationsFormulaire(
-			GestionCommercialeForm formulaire) throws Exception {
-
-		log.debug("********** Debut patientPrestationsFormulaire GestionCommercialeBO **********");
-
-		boolean result = false;
-		try {
-
-			// Patient
-			// patient=PatientDAO.getInstance().getPatient(formulaire.getPatientId());
-			Patient patient = formulaire.getPatient();
-			if (patient != null) {
-				formulaire.setPatientId(String.valueOf(patient.getPatientId()));
-				formulaire.setNom(patient.getNom());
-				formulaire.setPrenom(patient.getPrenom());
-				formulaire.setAdresse(patient.getAdresse());
-				formulaire.setCni(patient.getCni());
-				formulaire.setDateNaissance(UtilDate.getInstance()
-						.dateToString(patient.getDateNaissance()));
-
-				formulaire.setDateDerniereVisite(UtilDate.getInstance()
-						.dateToString(patient.getDateDerniereVisite()));
-				formulaire.setDatePremiereVisite(UtilDate.getInstance()
-						.dateToString(patient.getDatePremiereViste()));
-				formulaire.setLieuNaissance(patient.getLieuNaissance());
-				formulaire.setNni(patient.getNni());
-				PatientPcActuel patientPcActuel = PatientPcActuelDAO
-						.getInstance().getPatientPcByPatient(patient);
-				if (patientPcActuel != null) {
-					if (patientPcActuel.getType().equals("badge")
-							&& patientPcActuel.getBadge() != null) {
-						formulaire.setNumeroBadge(patientPcActuel.getBadge()
-								.getNumeroBadge());
-					} else {
-						formulaire.setNumeroBadge("");
-					}
-				}
-				formulaire.setTelephone(patient.getTelephone());
-
-				// formulaire.setDetailsFactureList(null);
-				formulaire.setFactureId("");
-				formulaire.setRecuId("");
-
-				result = true;
-
-			}
-
-		} catch (Exception e) {
-
-			e.printStackTrace();
-			log.fatal(e.getMessage());
-		}
-
-		finally {
-			log.debug("********** Debut patientPrestationsFormulaire GestionCommercialeBO **********");
-			return result;
-		}
+	private ActeHDAO getActeHDAO() {
+		return acteHDAO;
 	}
 
-	@SuppressWarnings("finally")
-	public boolean showHospForChangeChambre(GestionCommercialeForm formulaire)
-			throws Exception {
+	private ActeurActeAssureurDAO getActeurActeAssureurDAO() {
+		return acteurActeAssureurDAO;
+	}
 
-		log.debug("********** Debut patientPrestationsFormulaire GestionCommercialeBO **********");
-		// Session session=SessionFactoryUtil.getInstance().openSession();
-		boolean result = false;
-		try {
+	private ActeurActeDAO getActeurActeDAO() {
+		return acteurActeDAO;
+	}
 
-			HospitalisationDAO hospitalisationDAO = HospitalisationDAO
-					.getInstance();
+	private ActeurActeHDAO getActeurActeHDAO() {
+		return acteurActeHDAO;
+	}
 
-			Hospitalisation hospitalisation = hospitalisationDAO
-					.getHospitalisation(formulaire.getHospitalisaionId().trim());
+	private ActeurDAO getActeurDAO() {
+		return acteurDAO;
+	}
 
-			if (hospitalisation != null) {
-				formulaire.setHospitalisation(hospitalisation);
-				formulaire.setDateEntree(UtilDate.getInstance().dateToString(
-						hospitalisation.getDateEntree()));
-				formulaire.setChambreActuelle(hospitalisation.getChambre()
-						.getChambreLibelle());
-				formulaire.setAvance(String.valueOf(hospitalisation
-						.getFacture().getAvance()));
-				formulaire.setPatient(hospitalisation.getPatient());
-			}
+	private AssureurDAO getAssureurDAO() {
+		return assureurDAO;
+	}
 
-			// Patient
-			// patient=PatientDAO.getInstance().getPatient(formulaire.getPatientId());
-			Patient patient = formulaire.getPatient();
-			if (patient != null) {
-				formulaire.setPatientId(String.valueOf(patient.getPatientId()));
-				formulaire.setNom(patient.getNom());
-				formulaire.setPrenom(patient.getPrenom());
-				formulaire.setAdresse(patient.getAdresse());
-				formulaire.setCni(patient.getCni());
-				formulaire.setDateNaissance(UtilDate.getInstance()
-						.dateToString(patient.getDateNaissance()));
+	private CategorieDAO getCategorieDAO() {
+		return categorieDAO;
+	}
 
-				formulaire.setDateDerniereVisite(UtilDate.getInstance()
-						.dateToString(patient.getDateDerniereVisite()));
-				formulaire.setDatePremiereVisite(UtilDate.getInstance()
-						.dateToString(patient.getDatePremiereViste()));
-				formulaire.setLieuNaissance(patient.getLieuNaissance());
-				formulaire.setNni(patient.getNni());
-				PatientPcActuel patientPcActuel = PatientPcActuelDAO
-						.getInstance().getPatientPcByPatient(patient);
-				if (patientPcActuel.getType().equals("badge")
-						&& patientPcActuel.getBadge() != null) {
-					formulaire.setNumeroBadge(patientPcActuel.getBadge()
-							.getNumeroBadge());
+	private ChambreDAO getChambreDAO() {
+		return chambreDAO;
+	}
+
+	private ClasseDAO getClasseDAO() {
+		return classeDAO;
+	}
+
+	private CompteDAO getCompteDAO() {
+		return compteDAO;
+	}
+
+	private DevisAssureurDAO getDevisAssureurDAO() {
+		return devisAssureurDAO;
+	}
+
+	private DrgCnamDAO getDrgCnamDAO() {
+		return drgCnamDAO;
+	}
+
+	private ExclusionActeAssureurDAO getExclusionActeAssureurDAO() {
+		return exclusionActeAssureurDAO;
+	}
+
+	private FactureDAO getFactureDAO() {
+		return factureDAO;
+	}
+
+	private FamillePrestationDAO getFamillePrestationDAO() {
+		return famillePrestationDAO;
+	}
+
+	private HospitalisationDAO getHospitalisationDAO() {
+		return hospitalisationDAO;
+	}
+
+	private ParametresCliniqueDAO getParametresCliniqueDAO() {
+		return parametresCliniqueDAO;
+	}
+
+	private PatientDAO getPatientDAO() {
+		return patientDAO;
+	}
+
+	private PatientPcActuelDAO getPatientPcActuelDAO() {
+		return patientPcActuelDAO;
+	}
+
+	private PcPersonnelDAO getPcPersonnelDAO() {
+		return pcPersonnelDAO;
+	}
+
+	private TypePayementDAO getTypePayementDAO() {
+		return typePayementDAO;
+	}
+
+	private UserDAO getUserDao() {
+		return userDAO;
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * clinique.metier.gestion.commerciale.IGestionCommercialeBO#addActeBadge
+	 * (clinique.model.gestion.commerciale.GestionCommercialeForm, double)
+	 */
+	@Override
+	public void addActeBadge(GestionCommercialeForm formulaire, double prixActe) {
+		int pourcentage = getCategorieDAO().getCategorie(
+				Integer.parseInt(formulaire.getCategorieId())).getPourcentage();
+		int nbreActe = Integer.parseInt(formulaire.getNombreActe());
+
+		formulaire.setCoteAssureur(String.valueOf(Double.parseDouble(formulaire
+				.getCoteAssureur()) + prixActe * nbreActe * pourcentage / 100));
+
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see clinique.metier.gestion.commerciale.IGestionCommercialeBO#
+	 * addActeBadgeFromDetailFacture
+	 * (clinique.model.gestion.commerciale.GestionCommercialeForm, double,
+	 * clinique.mapping.DetailFacture)
+	 */
+	@Override
+	public void addActeBadgeFromDetailFacture(
+			GestionCommercialeForm formulaire, double prixActe, DetailFacture df) {
+		int pourcentage = getCategorieDAO().getCategorie(
+				Integer.parseInt(formulaire.getCategorieId())).getPourcentage();
+		int nbreActe = df.getNbrActes();
+
+		formulaire.setCoteAssureur(String.valueOf(Double.parseDouble(formulaire
+				.getCoteAssureur()) + prixActe * nbreActe * pourcentage / 100));
+
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see clinique.metier.gestion.commerciale.IGestionCommercialeBO#
+	 * addActeNombreActeLimiteAvecPlafond
+	 * (clinique.model.gestion.commerciale.GestionCommercialeForm, int, int,
+	 * clinique.mapping.PrestationCouvertesPc, double, int, double)
+	 */
+	@Override
+	public void addActeNombreActeLimiteAvecPlafond(
+			GestionCommercialeForm formulaire, int pourcentage, int nbreActe,
+			PrestationCouvertesPc pcCouv, double prixActe, int nbreActeRestant,
+			double plafondRestant) {
+		nbreActeRestant = pcCouv.getNbreActesRestant();
+		double prixActes = prixActe * nbreActe;
+		// nbre acte restant < nbre acte saisi
+		if (nbreActe > nbreActeRestant) {
+			prixActes = prixActe * nbreActeRestant;
+			// pourcentage non defini
+			if (pourcentage == 0) {
+
+				if (prixActes > plafondRestant) {
+					formulaire.setCoteAssureur(String.valueOf(Double
+							.parseDouble(formulaire.getCoteAssureur())
+							+ plafondRestant));
 				} else {
-					formulaire.setNumeroBadge("");
+					formulaire.setCoteAssureur(String.valueOf(Double
+							.parseDouble(formulaire.getCoteAssureur())
+							+ prixActes));
 				}
-				formulaire.setTelephone(patient.getTelephone());
 
-				// formulaire.setDetailsFactureList(null);
-
-				result = true;
-
+				pcCouv.setNbreActesRestant(0);
+				setPrestCouvAtList(pcCouv, formulaire);
 			}
 
-		} catch (Exception e) {
-			log.fatal(e.getMessage());
+			// pourcentage defini
+			else {
+				if (prixActes > plafondRestant) {
+					formulaire.setCoteAssureur(String.valueOf(Double
+							.parseDouble(formulaire.getCoteAssureur())
+							+ plafondRestant * pourcentage / 100));
+				} else {
+					formulaire.setCoteAssureur(String.valueOf(Double
+							.parseDouble(formulaire.getCoteAssureur())
+							+ prixActes * pourcentage / 100));
+				}
+				pcCouv.setNbreActesRestant(0);
+				setPrestCouvAtList(pcCouv, formulaire);
+			}
 		}
 
-		finally {
-			// session.close();
-			log.debug("********** Debut patientPrestationsFormulaire GestionCommercialeBO **********");
-			return result;
+		// nbre acte restant >= nbre acte saisi
+		else {
+
+			// pourcentage non defini
+			if (pourcentage == 0) {
+				if (prixActes > plafondRestant) {
+					formulaire.setCoteAssureur(String.valueOf(Double
+							.parseDouble(formulaire.getCoteAssureur())
+							+ plafondRestant));
+				} else {
+					formulaire.setCoteAssureur(String.valueOf(Double
+							.parseDouble(formulaire.getCoteAssureur())
+							+ prixActes));
+				}
+				pcCouv.setNbreActesRestant(nbreActeRestant - nbreActe);
+				setPrestCouvAtList(pcCouv, formulaire);
+
+			}
+			// pourcentage defini
+			else {
+				if (prixActes > plafondRestant) {
+					formulaire.setCoteAssureur(String.valueOf(Double
+							.parseDouble(formulaire.getCoteAssureur())
+							+ plafondRestant * pourcentage / 100));
+				} else {
+					formulaire.setCoteAssureur(String.valueOf(Double
+							.parseDouble(formulaire.getCoteAssureur())
+							+ prixActes * pourcentage / 100));
+				}
+				pcCouv.setNbreActesRestant(nbreActeRestant - nbreActe);
+				setPrestCouvAtList(pcCouv, formulaire);
+			}
 		}
+
 	}
 
-	@SuppressWarnings("finally")
-	public boolean showHospForSortie(GestionCommercialeForm formulaire)
-			throws Exception {
-
-		log.debug("********** Debut showHospForSortie GestionCommercialeBO **********");
-		// Session session=SessionFactoryUtil.getInstance().openSession();
-		boolean result = false;
-		try {
-
-			Hospitalisation hospitalisation = HospitalisationDAO
-					.getInstance()
-					.getHospitalisation(formulaire.getHospitalisaionId().trim());
-			if (hospitalisation != null) {
-				formulaire.setHospitalisation(hospitalisation);
-				formulaire.setDateEntree(UtilDate.getInstance().dateToString(
-						hospitalisation.getDateEntree()));
-				formulaire.setChambreActuelle(hospitalisation.getChambre()
-						.getChambreLibelle());
-				formulaire.setAvance(String.valueOf(hospitalisation
-						.getFacture().getAvance()));
-				formulaire.setPatient(hospitalisation.getPatient());
-				formulaire.setFacture(hospitalisation.getFacture());
-				formulaire.setDetailsFactureList(hospitalisation.getFacture()
-						.getDetailFactures());
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see clinique.metier.gestion.commerciale.IGestionCommercialeBO#
+	 * addActeNombreActeLimiteSansPlafond
+	 * (clinique.model.gestion.commerciale.GestionCommercialeForm, int, int,
+	 * clinique.mapping.PrestationCouvertesPc, double, int)
+	 */
+	@Override
+	public void addActeNombreActeLimiteSansPlafond(
+			GestionCommercialeForm formulaire, int pourcentage, int nbreActe,
+			PrestationCouvertesPc pcCouv, double prixActe, int nbreActeRestant) {
+		nbreActeRestant = pcCouv.getNbreActesRestant();
+		// nbre acte restant < nbre acte saisi
+		if (nbreActe > nbreActeRestant) {
+			// pourcentage non defini
+			if (pourcentage == 0) {
+				formulaire.setCoteAssureur(String.valueOf(Double
+						.parseDouble(formulaire.getCoteAssureur())
+						+ prixActe
+						* nbreActeRestant));
+				pcCouv.setNbreActesRestant(0);
+				setPrestCouvAtList(pcCouv, formulaire);
 			}
+			// pourcentage defini
+			else {
+				formulaire.setCoteAssureur(String.valueOf(Double
+						.parseDouble(formulaire.getCoteAssureur())
+						+ prixActe
+						* nbreActeRestant * pourcentage / 100));
+				pcCouv.setNbreActesRestant(0);
+				setPrestCouvAtList(pcCouv, formulaire);
+			}
+		}
 
-			// Patient
-			// patient=PatientDAO.getInstance().getPatient(formulaire.getPatientId());
-			Patient patient = formulaire.getPatient();
-			if (patient != null) {
-				formulaire.setPatientId(String.valueOf(patient.getPatientId()));
-				formulaire.setNom(patient.getNom());
-				formulaire.setPrenom(patient.getPrenom());
-				formulaire.setAdresse(patient.getAdresse());
-				formulaire.setCni(patient.getCni());
-				formulaire.setDateNaissance(UtilDate.getInstance()
-						.dateToString(patient.getDateNaissance()));
+		// nbre acte restant >= nbre acte saisi
+		else {
+			// pourcentage non defini
+			if (pourcentage == 0) {
+				formulaire.setCoteAssureur(String.valueOf(Double
+						.parseDouble(formulaire.getCoteAssureur())
+						+ prixActe
+						* nbreActe));
+				pcCouv.setNbreActesRestant(nbreActeRestant - nbreActe);
+				setPrestCouvAtList(pcCouv, formulaire);
 
-				formulaire.setDateDerniereVisite(UtilDate.getInstance()
-						.dateToString(patient.getDateDerniereVisite()));
-				formulaire.setDatePremiereVisite(UtilDate.getInstance()
-						.dateToString(patient.getDatePremiereViste()));
-				formulaire.setLieuNaissance(patient.getLieuNaissance());
-				formulaire.setNni(patient.getNni());
-				formulaire.setPriseEnChargeFlag(patient.getPriseEnChargeFlag());
-				PatientPcActuel patientPcActuel = PatientPcActuelDAO
-						.getInstance().getPatientPcByPatient(patient);
+			}
+			// pourcentage defini
+			else {
+				formulaire.setCoteAssureur(String.valueOf(Double
+						.parseDouble(formulaire.getCoteAssureur())
+						+ prixActe
+						* nbreActe * pourcentage / 100));
+				pcCouv.setNbreActesRestant(nbreActeRestant - nbreActe);
+				setPrestCouvAtList(pcCouv, formulaire);
+			}
+		}
 
-				if (!formulaire.getPriseEnChargeFlag().equals("aucune")) {
-					if (patientPcActuel != null) {
-						if (patientPcActuel.getType().equals("badge")
-								&& patientPcActuel.getBadge() != null) {
-							formulaire.setNumeroBadge(patientPcActuel
-									.getBadge().getNumeroBadge());
-						} else {
-							formulaire.setNumeroBadge("");
-						}
+	}
 
-						formulaire.setLibeleAssureur(patient.getCategorie()
-								.getNomCategorie());
-						formulaire.setCategorieId(String.valueOf(patient
-								.getCategorie().getCategorieId()));
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * clinique.metier.gestion.commerciale.IGestionCommercialeBO#addActePC(clinique
+	 * .model.gestion.commerciale.GestionCommercialeForm, double)
+	 */
+	@Override
+	public void addActePC(GestionCommercialeForm formulaire, double prixActe) {
+		PrestationCouvertesPc pcCouv = getPrestationCouverte(formulaire);
+		int nbreActeRestant = 0;
+		int pourcentage = formulaire.getPriseEnCharge().getPourcentage();
+		int nbreActe = Integer.parseInt(formulaire.getNombreActe());
+		@SuppressWarnings("unused")
+		double montantFacture = Double.parseDouble(formulaire.getTotalApayer())
+				+ formulaire.getPriseEnCharge().getMontantFact();
+		// plafond defini
+		if (pcCouv != null) {
+			if (formulaire.getPriseEnCharge().getPlafond() == 0) {
+
+				// nbre actes limité
+				if (pcCouv.getLimite().equals("1")
+						&& pcCouv.getNbreActesRestant() > 0) {
+
+					addActeNombreActeLimiteSansPlafond(formulaire, pourcentage,
+							nbreActe, pcCouv, prixActe, nbreActeRestant);
+				}
+
+				// nbre actes non limité
+				else {
+					// pourcentage non defini
+					if (pourcentage == 0) {
+						formulaire.setCoteAssureur(String.valueOf(Double
+								.parseDouble(formulaire.getCoteAssureur())
+								+ prixActe * nbreActe));
+					}
+					// pourcentage defini
+					else {
+						formulaire.setCoteAssureur(String.valueOf(Double
+								.parseDouble(formulaire.getCoteAssureur())
+								+ prixActe * nbreActe * pourcentage / 100));
+
 					}
 				}
 
-				formulaire.setTelephone(patient.getTelephone());
-
-				result = true;
-
 			}
 
-		} catch (Exception e) {
-			e.printStackTrace();
-			log.fatal(e.getMessage());
+			// palfond defini
+			else {
+
+				double plafondRestant = formulaire.getPriseEnCharge()
+						.getPlafond()
+						- (formulaire.getPriseEnCharge().getMontantFact() + Double
+								.parseDouble(formulaire.getTotalApayer()));
+				if (plafondRestant >= 0) {
+					// nbre actes limité
+					if (pcCouv.getLimite().equals("1")
+							&& pcCouv.getNbreActesRestant() > 0) {
+						addActeNombreActeLimiteAvecPlafond(formulaire,
+								pourcentage, nbreActe, pcCouv, prixActe,
+								nbreActeRestant, plafondRestant);
+					}
+
+					// nbre actes non limité
+					else {
+						// pourcentage non defini
+						if (pourcentage == 0) {
+							if (prixActe * nbreActe > plafondRestant) {
+								formulaire.setCoteAssureur(String
+										.valueOf(Double.parseDouble(formulaire
+												.getCoteAssureur())
+												+ plafondRestant));
+							} else {
+								formulaire.setCoteAssureur(String
+										.valueOf(Double.parseDouble(formulaire
+												.getCoteAssureur())
+												+ prixActe
+												* nbreActe));
+							}
+
+						}
+						// pourcentage defini
+						else {
+							if (prixActe * nbreActe > plafondRestant) {
+								formulaire.setCoteAssureur(String
+										.valueOf(Double.parseDouble(formulaire
+												.getCoteAssureur())
+												+ plafondRestant
+												* pourcentage
+												/ 100));
+							} else {
+								formulaire
+										.setCoteAssureur(String.valueOf(Double
+												.parseDouble(formulaire
+														.getCoteAssureur())
+												+ prixActe
+												* nbreActe
+												* pourcentage / 100));
+							}
+
+						}
+					}
+				}
+			}
+
 		}
 
-		finally {
-			// session.close();
-			log.debug("********** Debut showHospForSortie GestionCommercialeBO **********");
-			return result;
-		}
 	}
 
-	@SuppressWarnings("finally")
-	public boolean showHospInfosForSortie(GestionCommercialeForm formulaire)
-			throws Exception {
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see clinique.metier.gestion.commerciale.IGestionCommercialeBO#
+	 * addActePCFromDetailFacture
+	 * (clinique.model.gestion.commerciale.GestionCommercialeForm, double,
+	 * clinique.mapping.DetailFacture)
+	 */
+	@Override
+	public void addActePCFromDetailFacture(GestionCommercialeForm formulaire,
+			double prixActe, DetailFacture df) {
+		PrestationCouvertesPc pcCouv = getPrestationCouverte(formulaire);
+		int nbreActeRestant = 0;
+		int pourcentage = formulaire.getPriseEnCharge().getPourcentage();
+		int nbreActe = df.getNbrActes();
+		@SuppressWarnings("unused")
+		double montantFacture = Double.parseDouble(formulaire.getTotalApayer())
+				+ formulaire.getPriseEnCharge().getMontantFact();
+		// plafond defini
+		if (pcCouv != null) {
+			if (formulaire.getPriseEnCharge().getPlafond() == 0) {
 
-		log.debug("********** Debut showHospInfosForSortie GestionCommercialeBO **********");
-		// Session session=SessionFactoryUtil.getInstance().openSession();
-		boolean result = false;
-		try {
+				// nbre actes limité
+				if (pcCouv.getLimite().equals("1")
+						&& pcCouv.getNbreActesRestant() > 0) {
 
-			Hospitalisation hospitalisation = HospitalisationDAO
-					.getInstance()
-					.getHospitalisation(formulaire.getHospitalisaionId().trim());
-			if (hospitalisation != null) {
-				formulaire.setHospitalisation(hospitalisation);
-				formulaire.setDateEntree(UtilDate.getInstance().dateToString(
-						hospitalisation.getDateEntree()));
-				formulaire.setChambreActuelle(hospitalisation.getChambre()
-						.getChambreLibelle());
-				formulaire.setAvance(String.valueOf(hospitalisation
-						.getFacture().getAvance()));
-				formulaire.setPatient(hospitalisation.getPatient());
-				formulaire.setFacture(hospitalisation.getFacture());
-				formulaire.setDetailsFactureList(hospitalisation.getFacture()
-						.getDetailFactures());
-				formulaire.setChambresHospList(hospitalisation
-						.getChambresHospitalisation());
-				formulaire.setDateSortie(UtilDate.getInstance().dateToString(
-						hospitalisation.getDateSortie()));
-			}
+					addActeNombreActeLimiteSansPlafond(formulaire, pourcentage,
+							nbreActe, pcCouv, prixActe, nbreActeRestant);
+				}
 
-			// Patient
-			// patient=PatientDAO.getInstance().getPatient(formulaire.getPatientId());
-			Patient patient = formulaire.getPatient();
-			if (patient != null) {
-				formulaire.setPatientId(String.valueOf(patient.getPatientId()));
-				formulaire.setNom(patient.getNom());
-				formulaire.setPrenom(patient.getPrenom());
-				formulaire.setAdresse(patient.getAdresse());
-				formulaire.setCni(patient.getCni());
-				formulaire.setDateNaissance(UtilDate.getInstance()
-						.dateToString(patient.getDateNaissance()));
+				// nbre actes non limité
+				else {
+					// pourcentage non defini
+					if (pourcentage == 0) {
+						formulaire.setCoteAssureur(String.valueOf(Double
+								.parseDouble(formulaire.getCoteAssureur())
+								+ prixActe * nbreActe));
 
-				formulaire.setDateDerniereVisite(UtilDate.getInstance()
-						.dateToString(patient.getDateDerniereVisite()));
-				formulaire.setDatePremiereVisite(UtilDate.getInstance()
-						.dateToString(patient.getDatePremiereViste()));
-				formulaire.setLieuNaissance(patient.getLieuNaissance());
-				formulaire.setNni(patient.getNni());
-				formulaire.setPriseEnChargeFlag(patient.getPriseEnChargeFlag());
-				PatientPcActuel patientPcActuel = PatientPcActuelDAO
-						.getInstance().getPatientPcByPatient(patient);
+					}
+					// pourcentage defini
+					else {
+						formulaire.setCoteAssureur(String.valueOf(Double
+								.parseDouble(formulaire.getCoteAssureur())
+								+ prixActe * nbreActe * pourcentage / 100));
 
-				if (!formulaire.getPriseEnChargeFlag().equals("aucune")) {
-					if (patientPcActuel != null) {
-						if (patientPcActuel.getType().equals("badge")
-								&& patientPcActuel.getBadge() != null) {
-							formulaire.setNumeroBadge(patientPcActuel
-									.getBadge().getNumeroBadge());
-						} else {
-							formulaire.setNumeroBadge("");
-						}
-
-						formulaire.setLibeleAssureur(patient.getCategorie()
-								.getNomCategorie());
-						formulaire.setCategorieId(String.valueOf(patient
-								.getCategorie().getCategorieId()));
 					}
 				}
 
-				formulaire.setTelephone(patient.getTelephone());
+			}
 
-				result = true;
+			// palfond defini
+			else {
+
+				double plafondRestant = formulaire.getPriseEnCharge()
+						.getPlafond()
+						- (formulaire.getPriseEnCharge().getMontantFact() + Double
+								.parseDouble(formulaire.getTotalApayer()));
+				if (plafondRestant >= 0) {
+					// nbre actes limité
+					if (pcCouv.getLimite().equals("1")
+							&& pcCouv.getNbreActesRestant() > 0) {
+
+						addActeNombreActeLimiteAvecPlafond(formulaire,
+								pourcentage, nbreActe, pcCouv, prixActe,
+								nbreActeRestant, plafondRestant);
+					}
+
+					// nbre actes non limité
+					else {
+						// pourcentage non defini
+						if (pourcentage == 0) {
+							if (prixActe * nbreActe > plafondRestant) {
+								formulaire.setCoteAssureur(String
+										.valueOf(Double.parseDouble(formulaire
+												.getCoteAssureur())
+												+ plafondRestant));
+							} else {
+								formulaire.setCoteAssureur(String
+										.valueOf(Double.parseDouble(formulaire
+												.getCoteAssureur())
+												+ prixActe
+												* nbreActe));
+							}
+
+						}
+						// pourcentage defini
+						else {
+							if (prixActe * nbreActe > plafondRestant) {
+								formulaire.setCoteAssureur(String
+										.valueOf(Double.parseDouble(formulaire
+												.getCoteAssureur())
+												+ plafondRestant
+												* pourcentage
+												/ 100));
+							} else {
+								formulaire
+										.setCoteAssureur(String.valueOf(Double
+												.parseDouble(formulaire
+														.getCoteAssureur())
+												+ prixActe
+												* nbreActe
+												* pourcentage / 100));
+							}
+
+						}
+					}
+				}
+			}
+
+		}
+
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see clinique.metier.gestion.commerciale.IGestionCommercialeBO#
+	 * addActePCWithoutPrestationCouv
+	 * (clinique.model.gestion.commerciale.GestionCommercialeForm, double)
+	 */
+	@Override
+	public void addActePCWithoutPrestationCouv(
+			GestionCommercialeForm formulaire, double prixActe) {
+
+		// int nbreActeRestant=0;
+		int pourcentage = formulaire.getPriseEnCharge().getPourcentage();
+		int nbreActe = Integer.parseInt(formulaire.getNombreActe());
+		@SuppressWarnings("unused")
+		double montantFacture = Double.parseDouble(formulaire.getTotalApayer())
+				+ formulaire.getPriseEnCharge().getMontantFact();
+		// plafond non defini
+		if (formulaire.getPriseEnCharge().getPlafond() == 0) {
+
+			// pourcentage defini
+			if (pourcentage > 0) {
+				formulaire.setCoteAssureur(String.valueOf(Double
+						.parseDouble(formulaire.getCoteAssureur())
+						+ prixActe
+						* nbreActe * pourcentage / 100));
 
 			}
 
-		} catch (Exception e) {
-			e.printStackTrace();
-			log.fatal(e.getMessage());
 		}
 
-		finally {
-			// session.close();
-			log.debug("********** Debut showHospInfosForSortie GestionCommercialeBO **********");
-			return result;
+		// palfond defini
+		else {
+			double plafondRestant = formulaire.getPriseEnCharge().getPlafond()
+					- (formulaire.getPriseEnCharge().getMontantFact() + Double
+							.parseDouble(formulaire.getTotalApayer()));
+			if (plafondRestant >= 0) {
+
+				// pourcentage non defini
+				if (pourcentage == 0) {
+					if (prixActe * nbreActe > plafondRestant) {
+						formulaire.setCoteAssureur(String.valueOf(Double
+								.parseDouble(formulaire.getCoteAssureur())
+								+ plafondRestant));
+					} else {
+						formulaire.setCoteAssureur(String.valueOf(Double
+								.parseDouble(formulaire.getCoteAssureur())
+								+ prixActe * nbreActe));
+					}
+
+				}
+				// pourcentage defini
+				else {
+					if (prixActe * nbreActe > plafondRestant) {
+						formulaire.setCoteAssureur(String.valueOf(Double
+								.parseDouble(formulaire.getCoteAssureur())
+								+ plafondRestant * pourcentage / 100));
+					} else {
+						formulaire.setCoteAssureur(String.valueOf(Double
+								.parseDouble(formulaire.getCoteAssureur())
+								+ prixActe * nbreActe * pourcentage / 100));
+					}
+
+				}
+
+			}
 		}
+
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see clinique.metier.gestion.commerciale.IGestionCommercialeBO#
+	 * addActePCWithoutPrestationCouvFromDetailFacture
+	 * (clinique.model.gestion.commerciale.GestionCommercialeForm, double,
+	 * clinique.mapping.DetailFacture)
+	 */
+	@Override
+	public void addActePCWithoutPrestationCouvFromDetailFacture(
+			GestionCommercialeForm formulaire, double prixActe, DetailFacture df) {
+
+		// int nbreActeRestant=0;
+		int pourcentage = formulaire.getPriseEnCharge().getPourcentage();
+		int nbreActe = df.getNbrActes();
+		@SuppressWarnings("unused")
+		double montantFacture = Double.parseDouble(formulaire.getTotalApayer())
+				+ formulaire.getPriseEnCharge().getMontantFact();
+		// plafond non defini
+		if (formulaire.getPriseEnCharge().getPlafond() == 0) {
+
+			// pourcentage defini
+			if (pourcentage > 0) {
+				formulaire.setCoteAssureur(String.valueOf(Double
+						.parseDouble(formulaire.getCoteAssureur())
+						+ prixActe
+						* nbreActe * pourcentage / 100));
+
+			}
+
+		}
+
+		// palfond defini
+		else {
+			double plafondRestant = formulaire.getPriseEnCharge().getPlafond()
+					- (formulaire.getPriseEnCharge().getMontantFact() + Double
+							.parseDouble(formulaire.getTotalApayer()));
+			if (plafondRestant >= 0) {
+
+				// pourcentage non defini
+				if (pourcentage == 0) {
+					if (prixActe * nbreActe > plafondRestant) {
+						formulaire.setCoteAssureur(String.valueOf(Double
+								.parseDouble(formulaire.getCoteAssureur())
+								+ plafondRestant));
+					} else {
+						formulaire.setCoteAssureur(String.valueOf(Double
+								.parseDouble(formulaire.getCoteAssureur())
+								+ prixActe * nbreActe));
+					}
+
+				}
+				// pourcentage defini
+				else {
+					if (prixActe * nbreActe > plafondRestant) {
+						formulaire.setCoteAssureur(String.valueOf(Double
+								.parseDouble(formulaire.getCoteAssureur())
+								+ plafondRestant * pourcentage / 100));
+					} else {
+						formulaire.setCoteAssureur(String.valueOf(Double
+								.parseDouble(formulaire.getCoteAssureur())
+								+ prixActe * nbreActe * pourcentage / 100));
+					}
+
+				}
+
+			}
+		}
+
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see clinique.metier.gestion.commerciale.IGestionCommercialeBO#
+	 * addAncienDevisPatientWithoutPCInfos
+	 * (clinique.model.gestion.commerciale.GestionCommercialeForm)
+	 */
+	@Override
 	@SuppressWarnings({ "finally", "unchecked" })
-	public boolean showHospForAddPrestation(GestionCommercialeForm formulaire)
-			throws Exception {
-
-		log.debug("********** Debut patientPrestationsFormulaire GestionCommercialeBO **********");
-		// Session session=SessionFactoryUtil.getInstance().openSession();
-		boolean result = false;
-		try {
-
-			Hospitalisation hospitalisation = HospitalisationDAO.getInstance()
-					.getHospitalisation(formulaire.getHospitalisaionId());
-			formulaire.setDetailsFactureList(new ArrayList());
-
-			if (hospitalisation != null) {
-				formulaire.setHospitalisation(hospitalisation);
-				formulaire.setDateEntree(UtilDate.getInstance().dateToString(
-						hospitalisation.getDateEntree()));
-				formulaire.setChambreActuelle(hospitalisation.getChambre()
-						.getChambreLibelle());
-				formulaire.setAvance(String.valueOf(hospitalisation
-						.getFacture().getAvance()));
-				formulaire.setPatient(hospitalisation.getPatient());
-				formulaire.setFacture(hospitalisation.getFacture());
-			}
-
-			System.out.println("bbbbbbbbbb " + formulaire.getOperateur());
-			Recu recu = new Recu();
-			recu.setRecuId(ConstantesMetier.ID_RECU
-					+ UtilDate.getInstance().getDateForId()
-					+ ""
-					+ getUserDao().getUserByLogin(formulaire.getOperateur())
-							.getUserId());
-			recu.setDateRecu(UtilDate.getInstance().getDateToday());
-			recu.setFacture(formulaire.getFacture());
-			recu.setOperateur(formulaire.getOperateur());
-			formulaire.setRecu(recu);
-
-			// Patient
-			// patient=PatientDAO.getInstance().getPatient(formulaire.getPatientId());
-			Patient patient = formulaire.getPatient();
-			if (patient != null) {
-				formulaire.setPatientId(String.valueOf(patient.getPatientId()));
-				formulaire.setNom(patient.getNom());
-				formulaire.setPrenom(patient.getPrenom());
-				formulaire.setAdresse(patient.getAdresse());
-				formulaire.setCni(patient.getCni());
-				formulaire.setDateNaissance(UtilDate.getInstance()
-						.dateToString(patient.getDateNaissance()));
-
-				formulaire.setDateDerniereVisite(UtilDate.getInstance()
-						.dateToString(patient.getDateDerniereVisite()));
-				formulaire.setDatePremiereVisite(UtilDate.getInstance()
-						.dateToString(patient.getDatePremiereViste()));
-				formulaire.setLieuNaissance(patient.getLieuNaissance());
-				formulaire.setNni(patient.getNni());
-				formulaire.setPriseEnChargeFlag(patient.getPriseEnChargeFlag());
-
-				if (!formulaire.getPriseEnChargeFlag().equals("aucune")) {
-					PatientPcActuel patientPcActuel = PatientPcActuelDAO
-							.getInstance().getPatientPcByPatient(patient);
-					if (patientPcActuel != null) {
-						if (patientPcActuel.getType().equals("badge")
-								&& patientPcActuel.getBadge() != null) {
-
-							formulaire.setNumeroBadge(patientPcActuel
-									.getBadge().getNumeroBadge());
-						} else {
-							formulaire.setNumeroBadge("");
-						}
-
-						formulaire.setLibeleAssureur(patient.getCategorie()
-								.getNomCategorie());
-						formulaire.setCategorieId(String.valueOf(patient
-								.getCategorie().getCategorieId()));
-					}
-				}
-				formulaire.setTelephone(patient.getTelephone());
-
-				// formulaire.setDetailsFactureList(null);
-
-				result = true;
-
-			}
-
-		} catch (Exception e) {
-			e.printStackTrace();
-			log.fatal(e.getMessage());
-
-		}
-
-		finally {
-			// session.close();
-			log.debug("********** Debut patientPrestationsFormulaire GestionCommercialeBO **********");
-			return result;
-		}
-	}
-
-	@SuppressWarnings("finally")
-	public boolean patientPrestationsFormulaireAncien(
+	public boolean addAncienDevisPatientWithoutPCInfos(
 			GestionCommercialeForm formulaire) throws Exception {
 
-		log.debug("********** Debut patientPrestationsFormulaire GestionCommercialeBO **********");
+		log.debug("********** Debut addAncienPatientWithoutPCInfos GestionCommercialeBO **********");
 		boolean result = false;
 
-		// Session session=SessionFactoryUtil.getInstance().openSession();
+		try {
+
+			Patient patient = formulaire.getPatient();
+			patient.setDateDerniereVisite(UtilDate.getInstance().getDateToday());
+
+			formulaire.setPatient(patient);
+			formulaire.setOperation("ancienWithoutPC");
+			result = true;
+		} catch (Exception e) {
+			result = false;
+			log.fatal(e.getMessage());
+		}
+
+		finally {
+			log.debug("********** Debut addAncienPatientWithoutPCInfos GestionCommercialeBO **********");
+			return result;
+		}
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see clinique.metier.gestion.commerciale.IGestionCommercialeBO#
+	 * addAncienPatientWithoutPCInfos
+	 * (clinique.model.gestion.commerciale.GestionCommercialeForm)
+	 */
+	@Override
+	@SuppressWarnings({ "finally", "unchecked" })
+	public boolean addAncienPatientWithoutPCInfos(
+			GestionCommercialeForm formulaire) throws Exception {
+
+		log.debug("********** Debut addAncienPatientWithoutPCInfos GestionCommercialeBO **********");
+		boolean result = false;
 
 		try {
-			Patient patient;
-			if (formulaire.getPatientId().equals("")
-					|| formulaire.getPatientId().isEmpty()) {
-				patient = null;
 
-			} else {
-				patient = PatientDAO.getInstance().getPatient(
-						formulaire.getPatientId().trim());
-				formulaire.setPatient(patient);
-				formulaire.setTypePatient("ancien");
+			Patient patient = formulaire.getPatient();
+			patient.setDateDerniereVisite(UtilDate.getInstance().getDateToday());
+
+			if (formulaire.getPriseEnChargeFlag().equals("priseEnCharge")) {
+				PriseEnCharge pc = new PriseEnCharge();
+				patient.setCategorie(getCategorieDAO().getCategorie(
+						Integer.parseInt(formulaire.getCategorieId())));
+
+				// debut id pc 14
+				formulaire.setPcId(ConstantesMetier.ID_PRISEENCHARGE
+						+ UtilDate.getInstance().getDateForId()
+						+ ""
+						+ getUserDao()
+								.getUserByLogin(formulaire.getOperateur())
+								.getUserId());
+
+				pc.setPcId(formulaire.getPcId());
+				pc.setPatient(patient);
+				pc.setPcNum(formulaire.getNumPC());
+
+				if (!UtilDate.getInstance().isVide(formulaire.getPlafond())) {
+					pc.setPlafond(Double.parseDouble(formulaire.getPlafond()));
+				}
+
+				if (!UtilDate.getInstance().isVide(formulaire.getPourcentage())) {
+					pc.setPourcentage(Integer.parseInt(formulaire
+							.getPourcentage()));
+				}
+
+				if (!UtilDate.getInstance()
+						.isVide(formulaire.getDateCreation())) {
+					pc.setDateCreation(UtilDate.getInstance().stringToDate(
+							formulaire.getDateCreation()));
+
+					if (!UtilDate.getInstance().isVide(
+							formulaire.getFinValidite())) {
+						pc.setFinValidite(UtilDate.getInstance().stringToDate(
+								formulaire.getFinValidite()));
+					} else {
+						pc.setFinValidite(UtilDate.getInstance().plusUnMois(
+								UtilDate.getInstance().stringToDate(
+										formulaire.getDateCreation())));
+					}
+				}
+
+				else {
+					pc.setFinValidite(UtilDate.getInstance().plusUnMois(
+							UtilDate.getInstance().getDateToday()));
+				}
+
+				pc.setStatut("1");
+				pc.setMontantFact(0);
+				pc.setOperateur(formulaire.getOperateur());
+
+				List prestCouvList = formulaire.getPrestationCouvertesPcs();
+
+				for (Iterator iter = prestCouvList.iterator(); iter.hasNext();) {
+					PrestationCouvertesPc element = (PrestationCouvertesPc) iter
+							.next();
+					element.setStatut("1");
+					element.setPriseEnCharge(pc);
+					pc.getPrestationCouvertesPcs().add(element);
+				}
+
+				formulaire.setPriseEnCharge(pc);
+
 			}
-			// Patient patient=formulaire.getPatient();
 
-			if (patient != null) {
-				formulaire.setPatientId(String.valueOf(patient.getPatientId()));
-				formulaire.setNom(patient.getNom());
-				formulaire.setPrenom(patient.getPrenom());
-				formulaire.setAdresse(patient.getAdresse());
-				formulaire.setCni(patient.getCni());
-				formulaire.setDateNaissance(UtilDate.getInstance()
-						.dateToString(patient.getDateNaissance()));
+			else if (formulaire.getPriseEnChargeFlag().equals("badge")) {
+				patient.setCategorie(getCategorieDAO().getCategorie(
+						Integer.parseInt(formulaire.getCategorieId())));
 
-				formulaire.setDateDerniereVisite(UtilDate.getInstance()
-						.dateToString(patient.getDateDerniereVisite()));
-				formulaire.setDatePremiereVisite(UtilDate.getInstance()
-						.dateToString(patient.getDatePremiereViste()));
-				formulaire.setLieuNaissance(patient.getLieuNaissance());
-				formulaire.setNni(patient.getNni());
-
-				formulaire.setTelephone(patient.getTelephone());
-				getAncienPatientInfosAssureur(patient, formulaire);
-
-				formulaire.setDevisList(DevisAssureurDAO.getInstance()
-						.listDevisAssureurs(patient.getPatientId()));
-
-				// formulaire.setDetailsFactureList(null);
-				formulaire.setFactureId("");
-				formulaire.setRecuId("");
-
-				result = true;
-
+				Badge badge = new Badge();
+				// debut id badge 19
+				badge.setBadgeId(ConstantesMetier.ID_BADGE
+						+ UtilDate.getInstance().getDateForId()
+						+ ""
+						+ getUserDao()
+								.getUserByLogin(formulaire.getOperateur())
+								.getUserId());
+				badge.setCategorie(getCategorieDAO().getCategorie(
+						Integer.parseInt(formulaire.getCategorieId())));
+				badge.setDateDebut(UtilDate.getInstance().getDateToday());
+				badge.setStatut("1");
+				badge.setPatient(patient);
+				formulaire.setBadge(badge);
 			}
 
+			formulaire.setPatient(patient);
+			formulaire.setOperation("ancienWithoutPC");
+			result = true;
 		} catch (Exception e) {
-			e.printStackTrace();
+			result = false;
 			log.fatal(e.getMessage());
 		}
 
 		finally {
 			// session.close();
-			log.debug("********** Debut patientPrestationsFormulaire GestionCommercialeBO **********");
+			log.debug("********** Debut addAncienPatientWithoutPCInfos GestionCommercialeBO **********");
 			return result;
 		}
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see clinique.metier.gestion.commerciale.IGestionCommercialeBO#
+	 * addAncienPatientWithPC
+	 * (clinique.model.gestion.commerciale.GestionCommercialeForm)
+	 */
+	@Override
+	@SuppressWarnings({ "finally", "unchecked" })
+	public boolean addAncienPatientWithPC(GestionCommercialeForm formulaire)
+			throws Exception {
+
+		log.debug("********** Debut addAncienPatientWithPC GestionCommercialeBO **********");
+		boolean result = false;
+
+		try {
+
+			Patient patient = formulaire.getPatient();
+			patient.setDateDerniereVisite(UtilDate.getInstance().getDateToday());
+
+			formulaire.setPatient(patient);
+			formulaire.setOperation("ancienWithPC");
+			result = true;
+		} catch (Exception e) {
+			result = false;
+			log.fatal(e.getMessage());
+		}
+
+		finally {
+			log.debug("********** Fin addAncienPatientWithPC GestionCommercialeBO **********");
+			return result;
+		}
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * clinique.metier.gestion.commerciale.IGestionCommercialeBO#addFraisChambre
+	 * (clinique.model.gestion.commerciale.GestionCommercialeForm, double)
+	 */
+	@Override
+	public void addFraisChambre(GestionCommercialeForm formulaire, double frais) {
+		double totalApayer = Double.parseDouble(formulaire.getTotalApayer())
+				+ frais;
+		formulaire.setTotalApayer(String.valueOf(totalApayer));
+
+		double coteClinique = Double.parseDouble(formulaire.getCoteClinique())
+				+ frais;
+		formulaire.setCoteClinique(String.valueOf(coteClinique));
+
+		double coteCliniqueReductible = Double.parseDouble(formulaire
+				.getCoteCliniqueReductible()) + frais;
+		formulaire.setCoteCliniqueReductible(String
+				.valueOf(coteCliniqueReductible));
+
+		formulaire.setResteApayer(String.valueOf(totalApayer
+				- Double.parseDouble(formulaire.getCoteAssureur())));
+
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see clinique.metier.gestion.commerciale.IGestionCommercialeBO#
+	 * addPatientForPrestations
+	 * (clinique.model.gestion.commerciale.GestionCommercialeForm)
+	 */
+	@Override
 	@SuppressWarnings({ "finally", "unchecked" })
 	public boolean addPatientForPrestations(GestionCommercialeForm formulaire)
 			throws Exception {
 
 		log.debug("********** Debut addPatientForPrestations GestionCommercialeBO **********");
-		// Session session=SessionFactoryUtil.getInstance().openSession();
 		boolean result = false;
 		String idPatient = null;
 		try {
@@ -704,7 +1099,7 @@ public class GestionCommercialeBO implements ConstantesMetier {
 
 			if (formulaire.getPriseEnChargeFlag().equals("priseEnCharge")) {
 				PriseEnCharge pc = new PriseEnCharge();
-				patient.setCategorie(CategorieDAO.getInstance().getCategorie(
+				patient.setCategorie(getCategorieDAO().getCategorie(
 						Integer.parseInt(formulaire.getCategorieId())));
 
 				formulaire.setPcId(ConstantesMetier.ID_PRISEENCHARGE
@@ -772,7 +1167,7 @@ public class GestionCommercialeBO implements ConstantesMetier {
 			}
 
 			else if (formulaire.getPriseEnChargeFlag().equals("badge")) {
-				patient.setCategorie(CategorieDAO.getInstance().getCategorie(
+				patient.setCategorie(getCategorieDAO().getCategorie(
 						Integer.parseInt(formulaire.getCategorieId())));
 
 				Badge badge = new Badge();
@@ -783,7 +1178,7 @@ public class GestionCommercialeBO implements ConstantesMetier {
 						+ getUserDao()
 								.getUserByLogin(formulaire.getOperateur())
 								.getUserId());
-				badge.setCategorie(CategorieDAO.getInstance().getCategorie(
+				badge.setCategorie(getCategorieDAO().getCategorie(
 						Integer.parseInt(formulaire.getCategorieId())));
 				badge.setDateDebut(UtilDate.getInstance().getDateToday());
 				badge.setStatut("1");
@@ -815,12 +1210,19 @@ public class GestionCommercialeBO implements ConstantesMetier {
 		}
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see clinique.metier.gestion.commerciale.IGestionCommercialeBO#
+	 * addPatientForPrestationsDevis
+	 * (clinique.model.gestion.commerciale.GestionCommercialeForm)
+	 */
+	@Override
 	@SuppressWarnings({ "finally", "unchecked" })
 	public boolean addPatientForPrestationsDevis(
 			GestionCommercialeForm formulaire) throws Exception {
 
 		log.debug("********** Debut addPatientForPrestationsDevis GestionCommercialeBO **********");
-		// Session session=SessionFactoryUtil.getInstance().openSession();
 		boolean result = false;
 		String idPatient = null;
 		try {
@@ -886,453 +1288,56 @@ public class GestionCommercialeBO implements ConstantesMetier {
 		}
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * clinique.metier.gestion.commerciale.IGestionCommercialeBO#addReglementAvance
+	 * (clinique.model.gestion.commerciale.GestionCommercialeForm)
+	 */
+	@Override
 	@SuppressWarnings({ "finally", "unchecked" })
-	public boolean addAncienPatientWithoutPCInfos(
-			GestionCommercialeForm formulaire) throws Exception {
-
-		log.debug("********** Debut addAncienPatientWithoutPCInfos GestionCommercialeBO **********");
-		// sSession session=SessionFactoryUtil.getInstance().openSession();
-		boolean result = false;
-
-		try {
-
-			Patient patient = formulaire.getPatient();
-			patient.setDateDerniereVisite(UtilDate.getInstance().getDateToday());
-
-			if (formulaire.getPriseEnChargeFlag().equals("priseEnCharge")) {
-				PriseEnCharge pc = new PriseEnCharge();
-				patient.setCategorie(CategorieDAO.getInstance().getCategorie(
-						Integer.parseInt(formulaire.getCategorieId())));
-
-				// debut id pc 14
-				formulaire.setPcId(ConstantesMetier.ID_PRISEENCHARGE
-						+ UtilDate.getInstance().getDateForId()
-						+ ""
-						+ getUserDao()
-								.getUserByLogin(formulaire.getOperateur())
-								.getUserId());
-
-				pc.setPcId(formulaire.getPcId());
-				pc.setPatient(patient);
-				pc.setPcNum(formulaire.getNumPC());
-
-				if (!UtilDate.getInstance().isVide(formulaire.getPlafond())) {
-					pc.setPlafond(Double.parseDouble(formulaire.getPlafond()));
-				}
-
-				if (!UtilDate.getInstance().isVide(formulaire.getPourcentage())) {
-					pc.setPourcentage(Integer.parseInt(formulaire
-							.getPourcentage()));
-				}
-
-				if (!UtilDate.getInstance()
-						.isVide(formulaire.getDateCreation())) {
-					pc.setDateCreation(UtilDate.getInstance().stringToDate(
-							formulaire.getDateCreation()));
-
-					if (!UtilDate.getInstance().isVide(
-							formulaire.getFinValidite())) {
-						pc.setFinValidite(UtilDate.getInstance().stringToDate(
-								formulaire.getFinValidite()));
-					} else {
-						pc.setFinValidite(UtilDate.getInstance().plusUnMois(
-								UtilDate.getInstance().stringToDate(
-										formulaire.getDateCreation())));
-					}
-				}
-
-				else {
-					pc.setFinValidite(UtilDate.getInstance().plusUnMois(
-							UtilDate.getInstance().getDateToday()));
-				}
-
-				pc.setStatut("1");
-				pc.setMontantFact(0);
-				pc.setOperateur(formulaire.getOperateur());
-
-				List prestCouvList = formulaire.getPrestationCouvertesPcs();
-
-				for (Iterator iter = prestCouvList.iterator(); iter.hasNext();) {
-					PrestationCouvertesPc element = (PrestationCouvertesPc) iter
-							.next();
-					element.setStatut("1");
-					element.setPriseEnCharge(pc);
-					pc.getPrestationCouvertesPcs().add(element);
-				}
-
-				formulaire.setPriseEnCharge(pc);
-
-			}
-
-			else if (formulaire.getPriseEnChargeFlag().equals("badge")) {
-				patient.setCategorie(CategorieDAO.getInstance().getCategorie(
-						Integer.parseInt(formulaire.getCategorieId())));
-
-				Badge badge = new Badge();
-				// debut id badge 19
-				badge.setBadgeId(ConstantesMetier.ID_BADGE
-						+ UtilDate.getInstance().getDateForId()
-						+ ""
-						+ getUserDao()
-								.getUserByLogin(formulaire.getOperateur())
-								.getUserId());
-				badge.setCategorie(CategorieDAO.getInstance().getCategorie(
-						Integer.parseInt(formulaire.getCategorieId())));
-				badge.setDateDebut(UtilDate.getInstance().getDateToday());
-				badge.setStatut("1");
-				badge.setPatient(patient);
-				formulaire.setBadge(badge);
-			}
-
-			formulaire.setPatient(patient);
-			formulaire.setOperation("ancienWithoutPC");
-			result = true;
-		} catch (Exception e) {
-			result = false;
-			log.fatal(e.getMessage());
-		}
-
-		finally {
-			// session.close();
-			log.debug("********** Debut addAncienPatientWithoutPCInfos GestionCommercialeBO **********");
-			return result;
-		}
-	}
-
-	private UserDAO getUserDao() {
-		return UserDAO.getInstance();
-	}
-
-	@SuppressWarnings({ "finally", "unchecked" })
-	public boolean addAncienDevisPatientWithoutPCInfos(
-			GestionCommercialeForm formulaire) throws Exception {
-
-		log.debug("********** Debut addAncienPatientWithoutPCInfos GestionCommercialeBO **********");
-		// sSession session=SessionFactoryUtil.getInstance().openSession();
-		boolean result = false;
-
-		try {
-
-			Patient patient = formulaire.getPatient();
-			patient.setDateDerniereVisite(UtilDate.getInstance().getDateToday());
-
-			formulaire.setPatient(patient);
-			formulaire.setOperation("ancienWithoutPC");
-			result = true;
-		} catch (Exception e) {
-			result = false;
-			log.fatal(e.getMessage());
-		}
-
-		finally {
-			// session.close();
-			log.debug("********** Debut addAncienPatientWithoutPCInfos GestionCommercialeBO **********");
-			return result;
-		}
-	}
-
-	@SuppressWarnings({ "finally", "unchecked" })
-	public boolean addAncienPatientWithPC(GestionCommercialeForm formulaire)
+	public boolean addReglementAvance(GestionCommercialeForm formulaire)
 			throws Exception {
 
-		log.debug("********** Debut addAncienPatientWithPC GestionCommercialeBO **********");
 		boolean result = false;
+		log.debug("********** Debut addReglementAvance GestionCommercialeBO **********");
 
 		try {
+			if (Double.parseDouble(formulaire.getAvance()) > 0) {
+				List reglementsList = formulaire.getReglementsList();
 
-			Patient patient = formulaire.getPatient();
-			patient.setDateDerniereVisite(UtilDate.getInstance().getDateToday());
+				Reglement reglement = new Reglement();
+				reglement.setReglementId(ConstantesMetier.ID_REGLEMENT
+						+ UtilDate.getInstance().getDateForId()
+						+ ""
+						+ getUserDao()
+								.getUserByLogin(formulaire.getOperateur())
+								.getUserId());
 
-			formulaire.setPatient(patient);
-			formulaire.setOperation("ancienWithPC");
-			result = true;
-		} catch (Exception e) {
-			result = false;
-			log.fatal(e.getMessage());
-		}
-
-		finally {
-			log.debug("********** Fin addAncienPatientWithPC GestionCommercialeBO **********");
-			return result;
-		}
-	}
-
-	@SuppressWarnings({ "unchecked", "finally" })
-	public boolean construireListePrestCouvertes(
-			GestionCommercialeForm formulaire) throws Exception {
-
-		boolean result = false;
-		log.debug("********** Debut ajouterActe GestionCommercialeBO **********");
-		Session session = SessionFactoryUtil.getInstance().openSession();
-
-		try {
-			List prestCouvList = formulaire.getPrestationCouvertesPcs();
-
-			// ajouter classe ou famille ou acte
-
-			// debut id prestation couverte 15
-			PrestationCouvertesPc pc = new PrestationCouvertesPc();
-			pc.setPresCouvId(ConstantesMetier.ID_PRESTATIONCOUVERTEPC
-					+ UtilDate.getInstance().getDateForId()
-					+ ""
-					+ getUserDao().getUserByLogin(formulaire.getOperateur())
-							.getUserId());
-
-			Acte a = ActeDAO.getInstance().getActe(
-					Integer.parseInt(formulaire.getActeId()));
-			pc.setType("acte");
-			pc.setLibelle(a.getNomActe());
-			pc.setActe(a);
-			// }
-
-			if (formulaire.getActesLimite().equals("non")) {
-				pc.setLimite("0");
-			} else {
-				pc.setNbreActes(Integer.parseInt(formulaire.getNombreActesPC()));
-				pc.setNbreActesRestant(Integer.parseInt(formulaire
-						.getNombreActesPC()));
-				pc.setLimite("1");
-			}
-			pc.setStatut("1");
-			prestCouvList.add(pc);
-			formulaire.setPrestationCouvertesPcs(prestCouvList);
-			// formulaire.setTypePcCouverte("famille");
-			result = true;
-
-		} catch (Exception e) {
-
-			e.printStackTrace();
-			log.fatal(e.getMessage());
-
-		}
-
-		finally {
-			// session.close();
-			log.debug("********** Fin ajouterActe GestionCommercialeBO **********");
-			// SessionFactoryUtil.getInstance().close();
-			return result;
-		}
-	}
-
-	@SuppressWarnings({ "unchecked", "finally" })
-	public boolean supprimerDetailDrgFromListeDetailDrgCnamFacture(
-			GestionCommercialeForm formulaire) throws Exception {
-
-		boolean result = false;
-		log.debug("********** Debut supprimerDetailDrgFromListeDetailDrgCnamFacture GestionCommercialeBO **********");
-
-		try {
-			List detailDrgCnamFactureList = formulaire
-					.getDetailDrgCnamListFacture();
-			DetailDgrCnamFacture detail = new DetailDgrCnamFacture();
-			int pourcentage = CategorieDAO
-					.getInstance()
-					.getCategorie(Integer.parseInt(formulaire.getCategorieId()))
-					.getPourcentage();
-
-			for (Iterator iter = detailDrgCnamFactureList.iterator(); iter
-					.hasNext();) {
-				DetailDgrCnamFacture element = (DetailDgrCnamFacture) iter
-						.next();
-
-				if (element.getDetailDrgCnamId().equals(
-						formulaire.getIdDetailDrgAsupprimer())) {
-					detail = element;
+				if (Double.parseDouble(formulaire.getaRendre()) == 0) {
+					reglement.setMontant(Double.parseDouble(formulaire
+							.getAvance()));
+					reglement.setPetitMonnaie(0);
+				} else {
+					reglement.setMontant(Double.parseDouble(formulaire
+							.getAvance())
+							- Double.parseDouble(formulaire.getaRendre()));
+					reglement.setPetitMonnaie(Double.parseDouble(formulaire
+							.getaRendre())
+							- Double.parseDouble(formulaire.getRendu()));
 				}
-			}
 
-			DrgCnam drg = detail.getDrgCnam();
-			double montantDrg = drg.getMontant() * pourcentage / 100;
-			double totalMontantDrg = 0;
+				reglement.setDateReglement(UtilDate.getInstance()
+						.getDateToday());
+				reglement.setDescription("avance");
 
-			double cotePartAssureur;
-
-			totalMontantDrg = Double.parseDouble(formulaire
-					.getTotalMontantDrg()) - drg.getMontant();
-			formulaire.setTotalMontantDrg(String.valueOf(totalMontantDrg));
-
-			cotePartAssureur = Double.parseDouble(formulaire.getCoteAssureur())
-					- montantDrg;
-			formulaire.setCoteAssureur(String.valueOf(cotePartAssureur));
-
-			double totalApayer = Double
-					.parseDouble(formulaire.getTotalApayer());
-
-			double resteApayer = totalApayer - cotePartAssureur;
-
-			formulaire.setResteApayer(String.valueOf(resteApayer));
-
-			System.out.println(" total a payer " + totalApayer);
-			System.out.println(" total montant DRG " + totalMontantDrg);
-			System.out.println(" cp Ass " + cotePartAssureur);
-			System.out.println(" resteApayer " + resteApayer);
-
-			detailDrgCnamFactureList.remove(detail);
-			formulaire.setDetailDrgCnamListFacture(detailDrgCnamFactureList);
-
-			result = true;
-
-		} catch (Exception e) {
-
-			e.printStackTrace();
-			log.fatal(e.getMessage());
-
-		}
-
-		finally {
-			log.debug("********** Fin supprimerDetailDrgFromListeDetailDrgCnamFacture GestionCommercialeBO **********");
-			// SessionFactoryUtil.getInstance().close();
-			return result;
-		}
-	}
-
-	@SuppressWarnings({ "unchecked", "finally" })
-	public boolean supprimerPrestFromListePrestCouvertes(
-			GestionCommercialeForm formulaire) throws Exception {
-
-		boolean result = false;
-		log.debug("********** Debut ajouterActe GestionCommercialeBO **********");
-
-		try {
-			List prestCouvList = formulaire.getPrestationCouvertesPcs();
-			PrestationCouvertesPc pcCouv = new PrestationCouvertesPc();
-			for (Iterator iter = prestCouvList.iterator(); iter.hasNext();) {
-				PrestationCouvertesPc element = (PrestationCouvertesPc) iter
-						.next();
-
-				if (element.getPresCouvId().equals(
-						formulaire.getIdPrestAsupprimer())) {
-					pcCouv = element;
-				}
-			}
-			prestCouvList.remove(pcCouv);
-			formulaire.setPrestationCouvertesPcs(prestCouvList);
-			formulaire.setTypePcCouverte("famille");
-			result = true;
-
-		} catch (Exception e) {
-
-			e.printStackTrace();
-			log.fatal(e.getMessage());
-
-		}
-
-		finally {
-			log.debug("********** Fin ajouterActe GestionCommercialeBO **********");
-			// SessionFactoryUtil.getInstance().close();
-			return result;
-		}
-	}
-
-	@SuppressWarnings({ "finally", "unchecked" })
-	public boolean supprimerReglementFromListeReglement(
-			GestionCommercialeForm formulaire) throws Exception {
-
-		boolean result = false;
-		log.debug("********** Debut supprimerReglementFromListeReglement GestionCommercialeBO **********");
-
-		try {
-			List reglementsList = formulaire.getReglementsList();
-			Reglement reglement = new Reglement();
-			double resteApayerMajoration = Double.parseDouble(formulaire
-					.getResteApayerMajoration());
-			double resteApayer = Double
-					.parseDouble(formulaire.getResteApayer());
-
-			for (Iterator iter = reglementsList.iterator(); iter.hasNext();) {
-				Reglement element = (Reglement) iter.next();
-
-				if (element.getReglementId().equals(
-						formulaire.getIdReglementAsupprimer())) {
-					reglement = element;
-				}
-			}
-
-			if (reglement.getMajore().equals("0")) {
-				resteApayer = resteApayer + reglement.getMontant();
-				resteApayerMajoration = (1 + calculMajoration(formulaire))
-						* resteApayer / 100;
-				formulaire.setResteApayer(String.valueOf(resteApayer));
-				formulaire.setResteApayerMajoration(String
-						.valueOf(resteApayerMajoration));
-
-				reglementsList.remove(reglement);
+				reglement.setTypePayement(getTypePayementDAO().getTypePayement(
+						1));
+				reglement.setStatut("1");
+				reglementsList.add(reglement);
 				formulaire.setReglementsList(reglementsList);
-				formulaire.setRecuRegle("0");
 
-			} else {
-				resteApayerMajoration = resteApayerMajoration
-						+ reglement.getMontant();
-				resteApayer = 100 * resteApayerMajoration
-						/ (100 + calculMajoration(formulaire));
-				formulaire.setResteApayer(String.valueOf(resteApayer));
-				formulaire.setResteApayerMajoration(String
-						.valueOf(resteApayerMajoration));
-
-				reglementsList.remove(reglement);
-				formulaire.setReglementsList(reglementsList);
-				formulaire.setRecuRegle("0");
-			}
-
-			result = true;
-
-		} catch (Exception e) {
-
-			e.printStackTrace();
-			log.fatal(e.getMessage());
-
-		}
-
-		finally {
-			log.debug("********** Fin supprimerReglementFromListeReglement GestionCommercialeBO **********");
-			// SessionFactoryUtil.getInstance().close();
-			return result;
-		}
-	}
-
-	@SuppressWarnings({ "finally", "unchecked" })
-	public boolean supprimerReglementHospFromListeReglement(
-			GestionCommercialeForm formulaire) throws Exception {
-
-		boolean result = false;
-		log.debug("********** Debut supprimerReglementHospFromListeReglement GestionCommercialeBO **********");
-		// Session session=SessionFactoryUtil.getInstance().openSession();
-
-		try {
-			List reglementsList = formulaire.getReglementsList();
-			Reglement reglement = new Reglement();
-			// double
-			// resteApayer=Double.parseDouble(formulaire.getResteApayer());
-			double resteApayerMajoration = Double.parseDouble(formulaire
-					.getResteApayerMajoration());
-			// double dejapayer=Double.parseDouble(formulaire.getDejapaye());
-			for (Iterator iter = reglementsList.iterator(); iter.hasNext();) {
-				Reglement element = (Reglement) iter.next();
-
-				if (element.getReglementId().equals(
-						formulaire.getIdReglementAsupprimer())) {
-					reglement = element;
-				}
-			}
-
-			if (reglement.getTypePayement().getTypePayementId() == 1) {
-				reglementsList.clear();
-				if (ajouterActesHosp(formulaire)) {
-					setSortie(formulaire);
-					checkRemise(formulaire);
-					setValeursResteApyerHosp(formulaire);
-					initialiserCombosTypePyement(formulaire);
-					initialiserCombosPcPersonnel(formulaire);
-				}
-
-			} else {
-				resteApayerMajoration = resteApayerMajoration
-						+ reglement.getMontant();
-				formulaire.setResteApayerMajoration(String
-						.valueOf(resteApayerMajoration));
-				reglementsList.remove(reglement);
-				formulaire.setReglementsList(reglementsList);
-				formulaire.setRecuRegle("0");
 			}
 
 			result = true;
@@ -1346,89 +1351,141 @@ public class GestionCommercialeBO implements ConstantesMetier {
 
 		finally {
 			// session.close();
-			log.debug("********** Fin supprimerReglementHospFromListeReglement GestionCommercialeBO **********");
-			// SessionFactoryUtil.getInstance().close();
+			log.debug("********** Fin addReglementAvance GestionCommercialeBO **********");
 			return result;
 		}
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * clinique.metier.gestion.commerciale.IGestionCommercialeBO#ajouterActe
+	 * (clinique.model.gestion.commerciale.GestionCommercialeForm)
+	 */
+	@Override
 	@SuppressWarnings({ "finally", "unchecked" })
-	public boolean ajouterActeForModificationFacture(
-			GestionCommercialeForm formulaire) throws Exception {
+	public boolean ajouterActe(GestionCommercialeForm formulaire)
+			throws Exception {
 
 		boolean result = false;
-		log.debug("********** Debut ajouterActeForModificationFacture GestionCommercialeBO **********");
+		log.debug("********** Debut ajouterActe GestionCommercialeBO **********");
 		// Session session=SessionFactoryUtil.getInstance().openSession();
 		try {
-			List detailsFactureMList = formulaire
-					.getDetailsFactureModifieesList();
+			List detailsFactureList = formulaire.getDetailsFactureList();
+			if (formulaire.getFactureId().equals("")) {
+				// debut id facture 11
+				formulaire.setFactureId(ConstantesMetier.ID_FACTURE
+						+ UtilDate.getInstance().getDateForId()
+						+ ""
+						+ getUserDao()
+								.getUserByLogin(formulaire.getOperateur())
+								.getUserId());
+			}
 
-			FactureModifiees factureM = FactureModifieesDAO.getInstance()
-					.getFactureModifiees(
-							formulaire.getFactureModifieeId().trim());
+			int majoration = calculMajoration(formulaire);
 
 			// ajouter une prestation dans détails facture
+
+			DetailFacture df = new DetailFacture();
+
 			// debut id detail facture 13
-			DetailFactureModifiees df = new DetailFactureModifiees();
 			df.setDetailFactId(ConstantesMetier.ID_DETAILFACTURE
 					+ UtilDate.getInstance().getDateForId()
 					+ ""
 					+ getUserDao().getUserByLogin(formulaire.getOperateur())
 							.getUserId());
-			df.setActe(ActeDAO.getInstance().getActe(
+			df.setActe(getActeDAO().getActe(
 					Integer.parseInt(formulaire.getActeId())));
-			df.setNomActe(ActeDAO.getInstance()
-					.getActe(Integer.parseInt(formulaire.getActeId()))
-					.getNomActe());
+			df.setNomActe(getActeDAO().getActe(
+					Integer.parseInt(formulaire.getActeId())).getNomActe());
 			df.setNbrActes(Integer.parseInt(formulaire.getNombreActe()));
-			df.setFacture(factureM);
+
+			// calcul QPC
+			df.setQpActeur(calculQPActeur(formulaire));
+			df.setQpAssistant(calculQPAssistant(formulaire));
+			// int qpc=100-(df.getQpActeur()+df.getQpAssistant());
+			double montantQPC = 0;
 
 			if (formulaire.getInfirmierChoix().equals("oui")
 					&& !UtilDate.getInstance().isVide(
 							formulaire.getActeurActeIdInf())) {
-				df.setInfirmier(ActeurDAO.getInstance().getActeur(
+				df.setInfirmier(getActeurDAO().getActeur(
 						Integer.parseInt(formulaire.getActeurActeIdInf())));
 				df.setInfirmierExiste("1");
 			} else {
 				df.setInfirmierExiste("0");
 			}
 
+			double montantTotal;
+			double prixActe;
 			if (formulaire.getTypeActe().equals("normal")) {
 				if (formulaire.getMedecinChoix().equals("oui")
 						&& !UtilDate.getInstance().isVide(
 								formulaire.getActeurActeId())) {
-					ActeurActe medecin = ActeurActeDAO.getInstance()
-							.getActeurActe(
-									Integer.parseInt(formulaire
-											.getActeurActeId()));
+					ActeurActe medecin = getActeurActeDAO().getActeurActe(
+							Integer.parseInt(formulaire.getActeurActeId()));
+					if (medecin.getIsException().equals("1")) {
+						prixActe = medecin.getPrix();
+					} else {
+						prixActe = getActeDAO().getActe(
+								Integer.parseInt(formulaire.getActeId()))
+								.getPrix();
+					}
 
 					df.setMedecin(medecin.getActeur());
 					df.setMedecinExiste("1");
 				} else {
-					// prixActe=ActeDAO.getInstance().getActe(Integer.parseInt(formulaire.getActeId())).getPrix();
+					prixActe = getActeDAO().getActe(
+							Integer.parseInt(formulaire.getActeId())).getPrix();
 					df.setMedecinExiste("0");
 				}
 				df.setUrgenceActe(0);
 				df.setDepl(0);
+
+				df.setPrixReel(prixActe);
+
+				prixActe = prixActe + majoration * prixActe / 100;
+				df.setPrix(prixActe);
+
+				montantTotal = prixActe
+						* Integer.parseInt(formulaire.getNombreActe());
+				df.setMontantTotal(montantTotal);
 
 				df.setType("normal");
 			} else if (formulaire.getTypeActe().equals("urgence")) {
 				if (formulaire.getMedecinChoix().equals("oui")
 						&& !UtilDate.getInstance().isVide(
 								formulaire.getActeurActeId())) {
-					ActeurActe medecin = ActeurActeDAO.getInstance()
-							.getActeurActe(
-									Integer.parseInt(formulaire
-											.getActeurActeId()));
+					ActeurActe medecin = getActeurActeDAO().getActeurActe(
+							Integer.parseInt(formulaire.getActeurActeId()));
+					if (medecin.getIsException().equals("1")) {
+						prixActe = medecin.getPrixUrg();
+					} else {
+						prixActe = getActeDAO().getActe(
+								Integer.parseInt(formulaire.getActeId()))
+								.getPrixUrg();
+					}
 
 					df.setMedecin(medecin.getActeur());
 					df.setMedecinExiste("1");
 				} else {
-					// prixActe=ActeDAO.getInstance().getActe(Integer.parseInt(formulaire.getActeId())).getPrixUrg();
+					prixActe = getActeDAO().getActe(
+							Integer.parseInt(formulaire.getActeId()))
+							.getPrixUrg();
 					df.setMedecinExiste("0");
 				}
 				df.setUrgenceActe(1);
 				df.setDepl(0);
+
+				df.setPrixReel(prixActe);
+
+				prixActe = prixActe + majoration * prixActe / 100;
+				df.setPrixUrg(prixActe);
+
+				montantTotal = prixActe
+						* Integer.parseInt(formulaire.getNombreActe());
+				df.setMontantTotal(montantTotal);
 
 				df.setType("urgence");
 
@@ -1436,36 +1493,112 @@ public class GestionCommercialeBO implements ConstantesMetier {
 				if (formulaire.getMedecinChoix().equals("oui")
 						&& !UtilDate.getInstance().isVide(
 								formulaire.getActeurActeId())) {
-					ActeurActe medecin = ActeurActeDAO.getInstance()
-							.getActeurActe(
-									Integer.parseInt(formulaire
-											.getActeurActeId()));
+					ActeurActe medecin = getActeurActeDAO().getActeurActe(
+							Integer.parseInt(formulaire.getActeurActeId()));
+					if (medecin.getIsException().equals("1")) {
+						prixActe = medecin.getPrixUrg();
+					} else {
+						prixActe = getActeDAO().getActe(
+								Integer.parseInt(formulaire.getActeId()))
+								.getPrixUrg();
+					}
 
 					df.setMedecin(medecin.getActeur());
 					df.setMedecinExiste("1");
 				} else {
-					// prixActe=ActeDAO.getInstance().getActe(Integer.parseInt(formulaire.getActeId())).getPrixUrg();
+					prixActe = getActeDAO().getActe(
+							Integer.parseInt(formulaire.getActeId()))
+							.getPrixUrg();
 					df.setMedecinExiste("0");
 				}
 				df.setUrgenceActe(0);
 				df.setDepl(1);
 
+				df.setPrixReel(prixActe);
+
+				prixActe = prixActe + majoration * prixActe / 100;
+				df.setPrixDepl(prixActe);
+
+				montantTotal = prixActe
+						* Integer.parseInt(formulaire.getNombreActe());
+				df.setMontantTotal(montantTotal);
 				df.setType("deplacement");
 
 			}
 
-			setInfosDfm(df);
+			montantQPC = montantTotal
+					- (df.getQpActeur() + df.getQpAssistant())
+					* df.getPrixReel() * df.getNbrActes() / 100;
+			double montantQpcNonMajore = df.getPrixReel() * df.getNbrActes()
+					- (df.getQpActeur() + df.getQpAssistant())
+					* df.getPrixReel() * df.getNbrActes() / 100;
 
-			if (df.getType().equals("normal")) {
-				df.setMontantTotal(df.getNbrActes() * df.getPrix());
-			} else if (df.getType().equals("urgence")) {
-				df.setMontantTotal(df.getNbrActes() * df.getPrixUrg());
-			} else {
-				df.setMontantTotal(df.getNbrActes() * df.getPrixDepl());
+			df.setCoteClinique(montantQpcNonMajore);
+			df.setCoteCliniqueMajore(montantQPC);
+
+			if (UtilDate.getInstance().isVide(formulaire.getTotalApayer())) {
+				formulaire.setTotalApayer("0");
 			}
 
-			detailsFactureMList.add(df);
-			formulaire.setDetailsFactureModifieesList(detailsFactureMList);
+			if (UtilDate.getInstance().isVide(formulaire.getCoteClinique())) {
+				formulaire.setCoteClinique("0");
+			}
+
+			if (UtilDate.getInstance().isVide(formulaire.getCoteAssureur())) {
+				formulaire.setCoteAssureur("0");
+			}
+
+			if (formulaire.getPriseEnChargeFlag().equals("priseEnCharge")
+					&& !formulaire.getLibeleAssureur().equals("CNAM")) {
+				if (checkPcValide(formulaire.getPriseEnCharge(), formulaire)) {
+					if (checkActePC(formulaire)) {
+						addActePC(formulaire, prixActe);
+					} else if (formulaire.getPriseEnCharge()
+							.getPrestationCouvertesPcs().size() == 0) {
+						addActePCWithoutPrestationCouv(formulaire, prixActe);
+					}
+
+				}
+			}
+
+			System.out.println(" libele CNAM" + formulaire.getLibeleAssureur());
+
+			if (formulaire.getPriseEnChargeFlag().equals("badge")
+					&& !formulaire.getLibeleAssureur().equals("CNAM")) {
+				if (getExclusionActeAssureurDAO()
+						.getExclusionActeAssureurByActe(
+								getActeDAO()
+										.getActe(
+												Integer.parseInt(formulaire
+														.getActeId()))) == null) {
+					addActeBadge(formulaire, prixActe);
+				}
+			}
+
+			double totalApayer = Double
+					.parseDouble(formulaire.getTotalApayer()) + montantTotal;
+			formulaire.setTotalApayer(String.valueOf(totalApayer));
+
+			double coteClinique = Double.parseDouble(formulaire
+					.getCoteClinique()) + montantQPC;
+			formulaire.setCoteClinique(String.valueOf(coteClinique));
+
+			if (getActeDAO().getActe(Integer.parseInt(formulaire.getActeId()))
+					.getReductible().equals("1")) {
+				double coteCliniqueReductible = Double.parseDouble(formulaire
+						.getCoteCliniqueReductible()) + montantQPC;
+				formulaire.setCoteCliniqueReductible(String
+						.valueOf(coteCliniqueReductible));
+			}
+
+			formulaire.setResteApayer(String.valueOf(totalApayer
+					- Double.parseDouble(formulaire.getCoteAssureur())));
+			formulaire.setTotalApayer(String.valueOf(totalApayer));
+
+			df.setDateDetail(UtilDate.getInstance().getDateToday());
+			df.setOperateur(formulaire.getOperateur());
+			detailsFactureList.add(df);
+			formulaire.setDetailsFactureList(detailsFactureList);
 			result = true;
 
 		} catch (Exception e) {
@@ -1477,12 +1610,161 @@ public class GestionCommercialeBO implements ConstantesMetier {
 
 		finally {
 			// session.close();
-			log.debug("********** Fin ajouterActeForModificationFacture GestionCommercialeBO **********");
+			log.debug("********** Fin ajouterActe GestionCommercialeBO **********");
 			// SessionFactoryUtil.getInstance().close();
 			return result;
 		}
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * clinique.metier.gestion.commerciale.IGestionCommercialeBO#ajouterActeDevis
+	 * (clinique.model.gestion.commerciale.GestionCommercialeForm)
+	 */
+	@Override
+	@SuppressWarnings({ "finally", "unchecked" })
+	public boolean ajouterActeDevis(GestionCommercialeForm formulaire)
+			throws Exception {
+
+		boolean result = false;
+		log.debug("********** Debut ajouterActeDevis GestionCommercialeBO **********");
+		// Session session=SessionFactoryUtil.getInstance().openSession();
+		try {
+			List devisActesList = formulaire.getDevisActesList();
+
+			// int
+			// pourcentageAssureur=CategorieDAO.getInstance().getCategorie(Integer.parseInt(formulaire.getCategorieId())).getPourcentage();
+
+			// ajouter une prestation dans détails facture
+			// debut id detail facture 13
+			DevisActes da = new DevisActes();
+			da.setDevisActesId(ConstantesMetier.ID_DEVISACTE
+					+ UtilDate.getInstance().getDateForId()
+					+ ""
+					+ getUserDao().getUserByLogin(formulaire.getOperateur())
+							.getUserId());
+			da.setActe(getActeDAO().getActe(
+					Integer.parseInt(formulaire.getActeId())));
+
+			da.setNbre(Integer.parseInt(formulaire.getNombreActe()));
+
+			double montantTotal;
+			double prixActe;
+			if (formulaire.getTypeActe().equals("normal")) {
+				if (formulaire.getMedecinChoix().equals("oui")
+						&& !UtilDate.getInstance().isVide(
+								formulaire.getActeurActeId())) {
+					ActeurActe medecin = getActeurActeDAO().getActeurActe(
+							Integer.parseInt(formulaire.getActeurActeId()));
+					if (medecin.getIsException().equals("1")) {
+						prixActe = medecin.getPrix();
+					} else {
+						prixActe = getActeDAO().getActe(
+								Integer.parseInt(formulaire.getActeId()))
+								.getPrix();
+					}
+
+				} else {
+					prixActe = getActeDAO().getActe(
+							Integer.parseInt(formulaire.getActeId())).getPrix();
+
+				}
+
+				da.setPrix(prixActe);
+
+				montantTotal = prixActe
+						* Integer.parseInt(formulaire.getNombreActe());
+				da.setTotal(montantTotal);
+
+			} else if (formulaire.getTypeActe().equals("urgence")) {
+				if (formulaire.getMedecinChoix().equals("oui")
+						&& !UtilDate.getInstance().isVide(
+								formulaire.getActeurActeId())) {
+					ActeurActe medecin = getActeurActeDAO().getActeurActe(
+							Integer.parseInt(formulaire.getActeurActeId()));
+					if (medecin.getIsException().equals("1")) {
+						prixActe = medecin.getPrixUrg();
+					} else {
+						prixActe = getActeDAO().getActe(
+								Integer.parseInt(formulaire.getActeId()))
+								.getPrixUrg();
+					}
+
+				} else {
+					prixActe = getActeDAO().getActe(
+							Integer.parseInt(formulaire.getActeId()))
+							.getPrixUrg();
+
+				}
+
+				da.setPrix(prixActe);
+
+				montantTotal = prixActe
+						* Integer.parseInt(formulaire.getNombreActe());
+				da.setTotal(montantTotal);
+
+			} else {
+				if (formulaire.getMedecinChoix().equals("oui")
+						&& !UtilDate.getInstance().isVide(
+								formulaire.getActeurActeId())) {
+					ActeurActe medecin = getActeurActeDAO().getActeurActe(
+							Integer.parseInt(formulaire.getActeurActeId()));
+					if (medecin.getIsException().equals("1")) {
+						prixActe = medecin.getPrixUrg();
+					} else {
+						prixActe = getActeDAO().getActe(
+								Integer.parseInt(formulaire.getActeId()))
+								.getPrixUrg();
+					}
+
+				} else {
+					prixActe = getActeDAO().getActe(
+							Integer.parseInt(formulaire.getActeId()))
+							.getPrixUrg();
+
+				}
+
+				da.setPrix(prixActe);
+
+				montantTotal = prixActe
+						* Integer.parseInt(formulaire.getNombreActe());
+				da.setTotal(montantTotal);
+
+			}
+
+			devisActesList.add(da);
+			double totalDevis = Double.valueOf(formulaire.getTotalDevis());
+			totalDevis = totalDevis + da.getTotal();
+			formulaire.setTotalDevis(String.valueOf(totalDevis));
+			formulaire.setDevisActesList(devisActesList);
+			result = true;
+
+		} catch (Exception e) {
+
+			e.printStackTrace();
+			log.fatal(e.getMessage());
+
+		}
+
+		finally {
+			// session.close();
+			log.debug("********** Fin ajouterActeDevis GestionCommercialeBO **********");
+			// SessionFactoryUtil.getInstance().close();
+			return result;
+		}
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see clinique.metier.gestion.commerciale.IGestionCommercialeBO#
+	 * ajouterActeForFactureHosp
+	 * (clinique.model.gestion.commerciale.GestionCommercialeForm,
+	 * clinique.mapping.DetailFacture)
+	 */
+	@Override
 	@SuppressWarnings({ "finally" })
 	public boolean ajouterActeForFactureHosp(GestionCommercialeForm formulaire,
 			DetailFacture df) throws Exception {
@@ -1518,7 +1800,7 @@ public class GestionCommercialeBO implements ConstantesMetier {
 
 			if (formulaire.getPriseEnChargeFlag().equals("badge")
 					&& !formulaire.getLibeleAssureur().equals("CNAM")) {
-				if (ExclusionActeAssureurDAO.getInstance()
+				if (getExclusionActeAssureurDAO()
 						.getExclusionActeAssureurByActe(df.getActe()) == null) {
 					addActeBadge(formulaire, prixActe);
 				}
@@ -1554,41 +1836,72 @@ public class GestionCommercialeBO implements ConstantesMetier {
 
 		finally {
 			log.debug("********** Fin ajouterActeForFactureHosp GestionCommercialeBO **********");
-			// SessionFactoryUtil.getInstance().close();
 			return result;
 		}
 	}
 
-	public void initialiserElementsPaymentHospFacture(
-			GestionCommercialeForm formulaire) {
-
-		formulaire.setTotalApayer("0");
-
-		formulaire.setCoteClinique("0");
-
-		formulaire.setCoteAssureur("0");
-
-		formulaire.setCoteCliniqueReductible("0");
-
-	}
-
-	@SuppressWarnings({ "finally", "unchecked" })
-	public boolean ajouterActesHosp(GestionCommercialeForm formulaire)
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see clinique.metier.gestion.commerciale.IGestionCommercialeBO#
+	 * ajouterActeForFactureModifiee
+	 * (clinique.model.gestion.commerciale.GestionCommercialeForm,
+	 * clinique.mapping.DetailFacture)
+	 */
+	@Override
+	@SuppressWarnings({ "finally" })
+	public boolean ajouterActeForFactureModifiee(
+			GestionCommercialeForm formulaire, DetailFacture df)
 			throws Exception {
 
 		boolean result = false;
-		log.debug("********** Debut ajouterActesHosp GestionCommercialeBO **********");
+		log.debug("********** Debut ajouterActeForFactureModifiee GestionCommercialeBO **********");
 
 		try {
-			getInfosPC(formulaire);
-			// formulaire.setFacture(FactureDAO.getInstance().getFacture(formulaire.getFactureId()));
-			initialiserElementsPaymentHospFacture(formulaire);
-			List detailsFactureList = formulaire.getDetailsFactureList();
+			// calcul QPC
+			int qpc = 100 - (calculQPActeur(df) + calculQPAssistant(df));
 
-			for (Iterator iter = detailsFactureList.iterator(); iter.hasNext();) {
-				DetailFacture df = (DetailFacture) iter.next();
-				ajouterActeForFactureHosp(formulaire, df);
+			double montantTotal = df.getMontantTotal();
+			double prixActe;
+
+			prixActe = getPrixActeFromDetailFacture(df);
+
+			if (formulaire.getPriseEnChargeFlag().equals("priseEnCharge")) {
+				if (checkPcValide(formulaire.getPriseEnCharge(), formulaire)) {
+					if (checkActePC(formulaire)) {
+						addActePCFromDetailFacture(formulaire, prixActe, df);
+					} else if (formulaire.getPriseEnCharge()
+							.getPrestationCouvertesPcs().size() == 0) {
+						addActePCWithoutPrestationCouvFromDetailFacture(
+								formulaire, prixActe, df);
+					}
+
+				}
 			}
+
+			if (formulaire.getPriseEnChargeFlag().equals("badge")) {
+				addActeBadgeFromDetailFacture(formulaire, prixActe, df);
+			}
+
+			double totalApayer = Double
+					.parseDouble(formulaire.getTotalApayer()) + montantTotal;
+			formulaire.setTotalApayer(String.valueOf(totalApayer));
+
+			double coteClinique = Double.parseDouble(formulaire
+					.getCoteClinique()) + montantTotal * qpc / 100;
+			formulaire.setCoteClinique(String.valueOf(coteClinique));
+
+			if (df.getActe().getReductible().equals("1")) {
+				double coteCliniqueReductible = Double.parseDouble(formulaire
+						.getCoteCliniqueReductible())
+						+ montantTotal
+						* qpc
+						/ 100;
+				formulaire.setCoteCliniqueReductible(String
+						.valueOf(coteCliniqueReductible));
+			}
+			formulaire.setResteApayer(String.valueOf(totalApayer
+					- Double.parseDouble(formulaire.getCoteAssureur())));
 
 			result = true;
 
@@ -1600,19 +1913,26 @@ public class GestionCommercialeBO implements ConstantesMetier {
 		}
 
 		finally {
-			log.debug("********** Fin ajouterActesHosp GestionCommercialeBO **********");
+			log.debug("********** Fin ajouterActeForFactureModifiee GestionCommercialeBO **********");
 			// SessionFactoryUtil.getInstance().close();
 			return result;
 		}
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * clinique.metier.gestion.commerciale.IGestionCommercialeBO#ajouterActeForHosp
+	 * (clinique.model.gestion.commerciale.GestionCommercialeForm)
+	 */
+	@Override
 	@SuppressWarnings({ "finally", "unchecked" })
 	public boolean ajouterActeForHosp(GestionCommercialeForm formulaire)
 			throws Exception {
 
 		boolean result = false;
 		log.debug("********** Debut ajouterActeForHosp GestionCommercialeBO **********");
-		// Session session=SessionFactoryUtil.getInstance().openSession();
 
 		try {
 			List detailsFactureList = formulaire.getDetailsFactureList();
@@ -1639,11 +1959,10 @@ public class GestionCommercialeBO implements ConstantesMetier {
 					+ ""
 					+ getUserDao().getUserByLogin(formulaire.getOperateur())
 							.getUserId());
-			df.setActe(ActeDAO.getInstance().getActe(
+			df.setActe(getActeDAO().getActe(
 					Integer.parseInt(formulaire.getActeId())));
-			df.setNomActe(ActeDAO.getInstance()
-					.getActe(Integer.parseInt(formulaire.getActeId()))
-					.getNomActe());
+			df.setNomActe(getActeDAO().getActe(
+					Integer.parseInt(formulaire.getActeId())).getNomActe());
 			df.setNbrActes(Integer.parseInt(formulaire.getNombreActe()));
 
 			// calcul QPC
@@ -1655,7 +1974,7 @@ public class GestionCommercialeBO implements ConstantesMetier {
 			if (formulaire.getInfirmierChoix().equals("oui")
 					&& !UtilDate.getInstance().isVide(
 							formulaire.getActeurActeIdInf())) {
-				df.setInfirmier(ActeurDAO.getInstance().getActeur(
+				df.setInfirmier(getActeurDAO().getActeur(
 						Integer.parseInt(formulaire.getActeurActeIdInf())));
 				df.setInfirmierExiste("1");
 			} else {
@@ -1668,26 +1987,21 @@ public class GestionCommercialeBO implements ConstantesMetier {
 				if (formulaire.getMedecinChoix().equals("oui")
 						&& !UtilDate.getInstance().isVide(
 								formulaire.getActeurActeId())) {
-					ActeurActe medecin = ActeurActeDAO.getInstance()
-							.getActeurActe(
-									Integer.parseInt(formulaire
-											.getActeurActeId()));
+					ActeurActe medecin = getActeurActeDAO().getActeurActe(
+							Integer.parseInt(formulaire.getActeurActeId()));
 					if (medecin.getIsException().equals("1")) {
 						prixActe = medecin.getPrix();
 					} else {
-						prixActe = ActeDAO
-								.getInstance()
-								.getActe(
-										Integer.parseInt(formulaire.getActeId()))
+						prixActe = getActeDAO().getActe(
+								Integer.parseInt(formulaire.getActeId()))
 								.getPrix();
 					}
 
 					df.setMedecin(medecin.getActeur());
 					df.setMedecinExiste("1");
 				} else {
-					prixActe = ActeDAO.getInstance()
-							.getActe(Integer.parseInt(formulaire.getActeId()))
-							.getPrix();
+					prixActe = getActeDAO().getActe(
+							Integer.parseInt(formulaire.getActeId())).getPrix();
 					df.setMedecinExiste("0");
 				}
 				df.setUrgenceActe(0);
@@ -1707,25 +2021,21 @@ public class GestionCommercialeBO implements ConstantesMetier {
 				if (formulaire.getMedecinChoix().equals("oui")
 						&& !UtilDate.getInstance().isVide(
 								formulaire.getActeurActeId())) {
-					ActeurActe medecin = ActeurActeDAO.getInstance()
-							.getActeurActe(
-									Integer.parseInt(formulaire
-											.getActeurActeId()));
+					ActeurActe medecin = getActeurActeDAO().getActeurActe(
+							Integer.parseInt(formulaire.getActeurActeId()));
 					if (medecin.getIsException().equals("1")) {
 						prixActe = medecin.getPrixUrg();
 					} else {
-						prixActe = ActeDAO
-								.getInstance()
-								.getActe(
-										Integer.parseInt(formulaire.getActeId()))
+						prixActe = getActeDAO().getActe(
+								Integer.parseInt(formulaire.getActeId()))
 								.getPrixUrg();
 					}
 
 					df.setMedecin(medecin.getActeur());
 					df.setMedecinExiste("1");
 				} else {
-					prixActe = ActeDAO.getInstance()
-							.getActe(Integer.parseInt(formulaire.getActeId()))
+					prixActe = getActeDAO().getActe(
+							Integer.parseInt(formulaire.getActeId()))
 							.getPrixUrg();
 					df.setMedecinExiste("0");
 				}
@@ -1747,25 +2057,21 @@ public class GestionCommercialeBO implements ConstantesMetier {
 				if (formulaire.getMedecinChoix().equals("oui")
 						&& !UtilDate.getInstance().isVide(
 								formulaire.getActeurActeId())) {
-					ActeurActe medecin = ActeurActeDAO.getInstance()
-							.getActeurActe(
-									Integer.parseInt(formulaire
-											.getActeurActeId()));
+					ActeurActe medecin = getActeurActeDAO().getActeurActe(
+							Integer.parseInt(formulaire.getActeurActeId()));
 					if (medecin.getIsException().equals("1")) {
 						prixActe = medecin.getPrixUrg();
 					} else {
-						prixActe = ActeDAO
-								.getInstance()
-								.getActe(
-										Integer.parseInt(formulaire.getActeId()))
+						prixActe = getActeDAO().getActe(
+								Integer.parseInt(formulaire.getActeId()))
 								.getPrixUrg();
 					}
 
 					df.setMedecin(medecin.getActeur());
 					df.setMedecinExiste("1");
 				} else {
-					prixActe = ActeDAO.getInstance()
-							.getActe(Integer.parseInt(formulaire.getActeId()))
+					prixActe = getActeDAO().getActe(
+							Integer.parseInt(formulaire.getActeId()))
 							.getPrixUrg();
 					df.setMedecinExiste("0");
 				}
@@ -1812,20 +2118,25 @@ public class GestionCommercialeBO implements ConstantesMetier {
 		}
 
 		finally {
-			// session.close();
 			log.debug("********** Fin ajouterActeForHosp GestionCommercialeBO **********");
-			// SessionFactoryUtil.getInstance().close();
 			return result;
 		}
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see clinique.metier.gestion.commerciale.IGestionCommercialeBO#
+	 * ajouterActeForHosp_Old
+	 * (clinique.model.gestion.commerciale.GestionCommercialeForm)
+	 */
+	@Override
 	@SuppressWarnings("finally")
 	public boolean ajouterActeForHosp_Old(GestionCommercialeForm formulaire)
 			throws Exception {
 
 		boolean result = false;
 		log.debug("********** Debut ajouterActeForHosp GestionCommercialeBO **********");
-		// Session session=SessionFactoryUtil.getInstance().openSession();
 
 		try {
 			List detailsFactureList = formulaire.getDetailsFactureList();
@@ -1837,11 +2148,10 @@ public class GestionCommercialeBO implements ConstantesMetier {
 					+ ""
 					+ getUserDao().getUserByLogin(formulaire.getOperateur())
 							.getUserId());
-			df.setActe(ActeDAO.getInstance().getActe(
+			df.setActe(getActeDAO().getActe(
 					Integer.parseInt(formulaire.getActeId())));
-			df.setNomActe(ActeDAO.getInstance()
-					.getActe(Integer.parseInt(formulaire.getActeId()))
-					.getNomActe());
+			df.setNomActe(getActeDAO().getActe(
+					Integer.parseInt(formulaire.getActeId())).getNomActe());
 			df.setNbrActes(Integer.parseInt(formulaire.getNombreActe()));
 
 			double montantTotal;
@@ -1850,7 +2160,7 @@ public class GestionCommercialeBO implements ConstantesMetier {
 			if (formulaire.getInfirmierChoix().equals("oui")
 					&& !UtilDate.getInstance().isVide(
 							formulaire.getActeurActeIdInf())) {
-				df.setInfirmier(ActeurDAO.getInstance().getActeur(
+				df.setInfirmier(getActeurDAO().getActeur(
 						Integer.parseInt(formulaire.getActeurActeIdInf())));
 				df.setInfirmierExiste("1");
 			} else {
@@ -1861,26 +2171,21 @@ public class GestionCommercialeBO implements ConstantesMetier {
 				if (formulaire.getMedecinChoix().equals("oui")
 						&& !UtilDate.getInstance().isVide(
 								formulaire.getActeurActeId())) {
-					ActeurActe medecin = ActeurActeDAO.getInstance()
-							.getActeurActe(
-									Integer.parseInt(formulaire
-											.getActeurActeId()));
+					ActeurActe medecin = getActeurActeDAO().getActeurActe(
+							Integer.parseInt(formulaire.getActeurActeId()));
 					if (medecin.getIsException().equals("1")) {
 						prixActe = medecin.getPrix();
 					} else {
-						prixActe = ActeDAO
-								.getInstance()
-								.getActe(
-										Integer.parseInt(formulaire.getActeId()))
+						prixActe = getActeDAO().getActe(
+								Integer.parseInt(formulaire.getActeId()))
 								.getPrix();
 					}
 
 					df.setMedecin(medecin.getActeur());
 					df.setMedecinExiste("1");
 				} else {
-					prixActe = ActeDAO.getInstance()
-							.getActe(Integer.parseInt(formulaire.getActeId()))
-							.getPrix();
+					prixActe = getActeDAO().getActe(
+							Integer.parseInt(formulaire.getActeId())).getPrix();
 					df.setMedecinExiste("0");
 				}
 				df.setUrgenceActe(0);
@@ -1895,25 +2200,21 @@ public class GestionCommercialeBO implements ConstantesMetier {
 				if (formulaire.getMedecinChoix().equals("oui")
 						&& !UtilDate.getInstance().isVide(
 								formulaire.getActeurActeId())) {
-					ActeurActe medecin = ActeurActeDAO.getInstance()
-							.getActeurActe(
-									Integer.parseInt(formulaire
-											.getActeurActeId()));
+					ActeurActe medecin = getActeurActeDAO().getActeurActe(
+							Integer.parseInt(formulaire.getActeurActeId()));
 					if (medecin.getIsException().equals("1")) {
 						prixActe = medecin.getPrixUrg();
 					} else {
-						prixActe = ActeDAO
-								.getInstance()
-								.getActe(
-										Integer.parseInt(formulaire.getActeId()))
+						prixActe = getActeDAO().getActe(
+								Integer.parseInt(formulaire.getActeId()))
 								.getPrixUrg();
 					}
 
 					df.setMedecin(medecin.getActeur());
 					df.setMedecinExiste("1");
 				} else {
-					prixActe = ActeDAO.getInstance()
-							.getActe(Integer.parseInt(formulaire.getActeId()))
+					prixActe = getActeDAO().getActe(
+							Integer.parseInt(formulaire.getActeId()))
 							.getPrixUrg();
 					df.setMedecinExiste("0");
 				}
@@ -1930,25 +2231,21 @@ public class GestionCommercialeBO implements ConstantesMetier {
 				if (formulaire.getMedecinChoix().equals("oui")
 						&& !UtilDate.getInstance().isVide(
 								formulaire.getActeurActeId())) {
-					ActeurActe medecin = ActeurActeDAO.getInstance()
-							.getActeurActe(
-									Integer.parseInt(formulaire
-											.getActeurActeId()));
+					ActeurActe medecin = getActeurActeDAO().getActeurActe(
+							Integer.parseInt(formulaire.getActeurActeId()));
 					if (medecin.getIsException().equals("1")) {
 						prixActe = medecin.getPrixUrg();
 					} else {
-						prixActe = ActeDAO
-								.getInstance()
-								.getActe(
-										Integer.parseInt(formulaire.getActeId()))
+						prixActe = getActeDAO().getActe(
+								Integer.parseInt(formulaire.getActeId()))
 								.getPrixUrg();
 					}
 
 					df.setMedecin(medecin.getActeur());
 					df.setMedecinExiste("1");
 				} else {
-					prixActe = ActeDAO.getInstance()
-							.getActe(Integer.parseInt(formulaire.getActeId()))
+					prixActe = getActeDAO().getActe(
+							Integer.parseInt(formulaire.getActeId()))
 							.getPrixUrg();
 					df.setMedecinExiste("0");
 				}
@@ -1979,137 +2276,260 @@ public class GestionCommercialeBO implements ConstantesMetier {
 		finally {
 			// session.close();
 			log.debug("********** Fin ajouterActeForHosp GestionCommercialeBO **********");
+			return result;
+		}
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see clinique.metier.gestion.commerciale.IGestionCommercialeBO#
+	 * ajouterActeForModificationFacture
+	 * (clinique.model.gestion.commerciale.GestionCommercialeForm)
+	 */
+	@Override
+	@SuppressWarnings({ "finally", "unchecked" })
+	public boolean ajouterActeForModificationFacture(
+			GestionCommercialeForm formulaire) throws Exception {
+
+		boolean result = false;
+		log.debug("********** Debut ajouterActeForModificationFacture GestionCommercialeBO **********");
+		try {
+			List detailsFactureMList = formulaire
+					.getDetailsFactureModifieesList();
+
+			FactureModifiees factureM = factureModifieesDAO
+					.getFactureModifiees(formulaire.getFactureModifieeId()
+							.trim());
+
+			// ajouter une prestation dans détails facture
+			// debut id detail facture 13
+			DetailFactureModifiees df = new DetailFactureModifiees();
+			df.setDetailFactId(ConstantesMetier.ID_DETAILFACTURE
+					+ UtilDate.getInstance().getDateForId()
+					+ ""
+					+ getUserDao().getUserByLogin(formulaire.getOperateur())
+							.getUserId());
+			df.setActe(getActeDAO().getActe(
+					Integer.parseInt(formulaire.getActeId())));
+			df.setNomActe(getActeDAO().getActe(
+					Integer.parseInt(formulaire.getActeId())).getNomActe());
+			df.setNbrActes(Integer.parseInt(formulaire.getNombreActe()));
+			df.setFacture(factureM);
+
+			if (formulaire.getInfirmierChoix().equals("oui")
+					&& !UtilDate.getInstance().isVide(
+							formulaire.getActeurActeIdInf())) {
+				df.setInfirmier(getActeurDAO().getActeur(
+						Integer.parseInt(formulaire.getActeurActeIdInf())));
+				df.setInfirmierExiste("1");
+			} else {
+				df.setInfirmierExiste("0");
+			}
+
+			if (formulaire.getTypeActe().equals("normal")) {
+				if (formulaire.getMedecinChoix().equals("oui")
+						&& !UtilDate.getInstance().isVide(
+								formulaire.getActeurActeId())) {
+					ActeurActe medecin = getActeurActeDAO().getActeurActe(
+							Integer.parseInt(formulaire.getActeurActeId()));
+
+					df.setMedecin(medecin.getActeur());
+					df.setMedecinExiste("1");
+				} else {
+					df.setMedecinExiste("0");
+				}
+				df.setUrgenceActe(0);
+				df.setDepl(0);
+
+				df.setType("normal");
+			} else if (formulaire.getTypeActe().equals("urgence")) {
+				if (formulaire.getMedecinChoix().equals("oui")
+						&& !UtilDate.getInstance().isVide(
+								formulaire.getActeurActeId())) {
+					ActeurActe medecin = getActeurActeDAO().getActeurActe(
+							Integer.parseInt(formulaire.getActeurActeId()));
+
+					df.setMedecin(medecin.getActeur());
+					df.setMedecinExiste("1");
+				} else {
+					df.setMedecinExiste("0");
+				}
+				df.setUrgenceActe(1);
+				df.setDepl(0);
+
+				df.setType("urgence");
+
+			} else {
+				if (formulaire.getMedecinChoix().equals("oui")
+						&& !UtilDate.getInstance().isVide(
+								formulaire.getActeurActeId())) {
+					ActeurActe medecin = getActeurActeDAO().getActeurActe(
+							Integer.parseInt(formulaire.getActeurActeId()));
+
+					df.setMedecin(medecin.getActeur());
+					df.setMedecinExiste("1");
+				} else {
+					// prixActe=ActeDAO.getInstance().getActe(Integer.parseInt(formulaire.getActeId())).getPrixUrg();
+					df.setMedecinExiste("0");
+				}
+				df.setUrgenceActe(0);
+				df.setDepl(1);
+
+				df.setType("deplacement");
+
+			}
+
+			setInfosDfm(df);
+
+			if (df.getType().equals("normal")) {
+				df.setMontantTotal(df.getNbrActes() * df.getPrix());
+			} else if (df.getType().equals("urgence")) {
+				df.setMontantTotal(df.getNbrActes() * df.getPrixUrg());
+			} else {
+				df.setMontantTotal(df.getNbrActes() * df.getPrixDepl());
+			}
+
+			detailsFactureMList.add(df);
+			formulaire.setDetailsFactureModifieesList(detailsFactureMList);
+			result = true;
+
+		} catch (Exception e) {
+
+			e.printStackTrace();
+			log.fatal(e.getMessage());
+
+		}
+
+		finally {
+			// session.close();
+			log.debug("********** Fin ajouterActeForModificationFacture GestionCommercialeBO **********");
 			// SessionFactoryUtil.getInstance().close();
 			return result;
 		}
 	}
 
-	public void addActeBadge(GestionCommercialeForm formulaire, double prixActe) {
-		int pourcentage = CategorieDAO.getInstance()
-				.getCategorie(Integer.parseInt(formulaire.getCategorieId()))
-				.getPourcentage();
-		int nbreActe = Integer.parseInt(formulaire.getNombreActe());
-
-		formulaire.setCoteAssureur(String.valueOf(Double.parseDouble(formulaire
-				.getCoteAssureur()) + prixActe * nbreActe * pourcentage / 100));
-
-	}
-
-	public void addActeBadgeFromDetailFacture(
-			GestionCommercialeForm formulaire, double prixActe, DetailFacture df) {
-		int pourcentage = CategorieDAO.getInstance()
-				.getCategorie(Integer.parseInt(formulaire.getCategorieId()))
-				.getPourcentage();
-		int nbreActe = df.getNbrActes();
-
-		formulaire.setCoteAssureur(String.valueOf(Double.parseDouble(formulaire
-				.getCoteAssureur()) + prixActe * nbreActe * pourcentage / 100));
-
-	}
-
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * clinique.metier.gestion.commerciale.IGestionCommercialeBO#ajouterActesHosp
+	 * (clinique.model.gestion.commerciale.GestionCommercialeForm)
+	 */
+	@Override
 	@SuppressWarnings({ "finally", "unchecked" })
-	public boolean ajouterRegelement(GestionCommercialeForm formulaire)
+	public boolean ajouterActesHosp(GestionCommercialeForm formulaire)
 			throws Exception {
 
 		boolean result = false;
-		log.debug("********** Debut ajouterRegelement GestionCommercialeBO **********");
+		log.debug("********** Debut ajouterActesHosp GestionCommercialeBO **********");
+
+		try {
+			getInfosPC(formulaire);
+			initialiserElementsPaymentHospFacture(formulaire);
+			List detailsFactureList = formulaire.getDetailsFactureList();
+
+			for (Iterator iter = detailsFactureList.iterator(); iter.hasNext();) {
+				DetailFacture df = (DetailFacture) iter.next();
+				ajouterActeForFactureHosp(formulaire, df);
+			}
+
+			result = true;
+
+		} catch (Exception e) {
+
+			e.printStackTrace();
+			log.fatal(e.getMessage());
+
+		}
+
+		finally {
+			log.debug("********** Fin ajouterActesHosp GestionCommercialeBO **********");
+			return result;
+		}
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see clinique.metier.gestion.commerciale.IGestionCommercialeBO#
+	 * ajouterDrgCnamDansDetailDrgCnamList
+	 * (clinique.model.gestion.commerciale.GestionCommercialeForm)
+	 */
+	@Override
+	@SuppressWarnings({ "finally", "unchecked" })
+	public boolean ajouterDrgCnamDansDetailDrgCnamList(
+			GestionCommercialeForm formulaire) throws Exception {
+
+		boolean result = false;
+		log.debug("********** Debut ajouterDrgCnamDansDetailDrgCnamList GestionCommercialeBO **********");
 		// Session session=SessionFactoryUtil.getInstance().openSession();
 
 		try {
-			List reglementsList = formulaire.getReglementsList();
-			Reglement reglement = new Reglement();
+			List detailDrgCnamListFacture = formulaire
+					.getDetailDrgCnamListFacture();
+			DetailDgrCnamFacture detailDrg = new DetailDgrCnamFacture();
+			DrgCnam drg = getDrgCnamDAO().getDrgCnam(formulaire.getDrgCnamId());
+			int pourcentage = getCategorieDAO().getCategorie(
+					Integer.parseInt(formulaire.getCategorieId()))
+					.getPourcentage();
 			// debut id reglement 16
-			reglement.setReglementId(ConstantesMetier.ID_REGLEMENT
-					+ UtilDate.getInstance().getDateForId()
-					+ ""
-					+ getUserDao().getUserByLogin(formulaire.getOperateur())
-							.getUserId());
+			detailDrg
+					.setDetailDrgCnamId(ConstantesMetier.ID_DETAILDRGCNAMLISTFACTURE
+							+ UtilDate.getInstance().getDateForId()
+							+ ""
+							+ getUserDao().getUserByLogin(
+									formulaire.getOperateur()).getUserId());
 
-			double montant = Double.parseDouble(formulaire
-					.getTypePayementValeur());
-			double resteApayer = Double
-					.parseDouble(formulaire.getResteApayer());
-			double resteApayerMajoration = Double.parseDouble(formulaire
-					.getResteApayerMajoration());
-			int pourcentageMaj = calculMajoration(formulaire);
-			// double dejapayer=Double.parseDouble(formulaire.getDejapaye());
+			detailDrg.setDateDetail(UtilDate.getInstance().getDateToday());
+			detailDrg.setStatut("1");
+			detailDrg.setOperateur(formulaire.getOperateur());
+			detailDrg.setDrgCnam(drg);
 
-			// =============== Calcul de petite monnaie ===================
-			if (formulaire.getModeReglement().equals("immediat")) {
-				if (montant > resteApayer) {
+			detailDrgCnamListFacture.add(detailDrg);
 
-					reglement.setPetitMonnaie(montant - resteApayer);
-					montant = resteApayer;
-					formulaire.setRecuRegle("1");
-				} else {
-					if (montant == resteApayer) {
-						formulaire.setRecuRegle("1");
-					} else {
-						formulaire.setRecuRegle("0");
-					}
-					reglement.setPetitMonnaie(0);
-				}
+			double montantDrg = drg.getMontant() * pourcentage / 100;
+			double totalMontantDrg = 0;
 
-				resteApayer = resteApayer - montant;
-				resteApayerMajoration = resteApayer + resteApayer
-						* pourcentageMaj / 100;
-				reglement.setRemiseCash(montant * pourcentageMaj / 100);
-				reglement.setMajore("0");
-			} else {
-				if (montant > resteApayerMajoration) {
+			double cotePartAssureur;
 
-					reglement.setPetitMonnaie(montant - resteApayerMajoration);
-					montant = resteApayerMajoration;
-					formulaire.setRecuRegle("1");
-				} else {
-					if (montant == resteApayerMajoration) {
-						formulaire.setRecuRegle("1");
-					} else {
-						formulaire.setRecuRegle("0");
-					}
-					reglement.setPetitMonnaie(0);
-				}
-
-				resteApayerMajoration = resteApayerMajoration - montant;
-				resteApayer = 100 * resteApayerMajoration
-						/ (100 + pourcentageMaj);
-				reglement.setMajore("1");
-			}
-			// =============== Fin calcul de petite monnaie ===================
-
-			reglement.setMontant(montant);
-			reglement.setDateReglement(UtilDate.getInstance().getDateToday());
-
-			if (formulaire.getTypePayementId().equals("2")
-					|| formulaire.getTypePayementId().equals("3")) {
-				reglement.setDescription(formulaire.getDescription());
-			} else if (formulaire.getTypePayementId().equals("4")) {
-				reglement
-						.setDescription(PcPersonnelDAO
-								.getInstance()
-								.getPcPersonnel(
-										Integer.parseInt(formulaire
-												.getPcPersonnelId()))
-								.getPcNom());
-				reglement
-						.setPcPersonnel(PcPersonnelDAO.getInstance()
-								.getPcPersonnel(
-										Integer.parseInt(formulaire
-												.getPcPersonnelId())));
-				reglement.setTypePC("personne");
+			if (formulaire.getTotalMontantDrg().isEmpty()) {
+				totalMontantDrg = 0;
+				formulaire.setTotalMontantDrg("0");
 			}
 
-			reglement.setTypePayement(TypePayementDAO.getInstance()
-					.getTypePayement(
-							Integer.parseInt(formulaire.getTypePayementId())));
-			reglementsList.add(reglement);
+			totalMontantDrg = Double.parseDouble(formulaire
+					.getTotalMontantDrg()) + drg.getMontant();
+			formulaire.setTotalMontantDrg(String.valueOf(totalMontantDrg));
 
-			// dejapayer=dejapayer+montant;
+			if (formulaire.getCoteAssureur().isEmpty()) {
+				cotePartAssureur = 0;
+				formulaire.setCoteAssureur("0");
+			}
+
+			cotePartAssureur = Double.parseDouble(formulaire.getCoteAssureur());
+
+			double totalApayer = Double
+					.parseDouble(formulaire.getTotalApayer());
+			double resteApayer = totalApayer - cotePartAssureur;
+			double petitMonnaie = 0;
+
+			if (montantDrg > resteApayer) {
+				resteApayer = 0;
+				petitMonnaie = montantDrg - (totalApayer - cotePartAssureur);
+			}
+
+			detailDrg.setPetitMonnaie(petitMonnaie);
+
+			cotePartAssureur = Double.parseDouble(formulaire.getCoteAssureur())
+					+ montantDrg;
+			formulaire.setCoteAssureur(String.valueOf(cotePartAssureur));
+			if (resteApayer != 0) {
+				resteApayer = totalApayer - cotePartAssureur;
+			}
 			formulaire.setResteApayer(String.valueOf(resteApayer));
-			formulaire.setResteApayerMajoration(String
-					.valueOf(resteApayerMajoration));
-			// formulaire.setDejapaye(String.valueOf(dejapayer));
-			formulaire.setReglementsList(reglementsList);
+
+			formulaire.setDetailDrgCnamListFacture(detailDrgCnamListFacture);
 			result = true;
 
 		} catch (Exception e) {
@@ -2120,485 +2540,30 @@ public class GestionCommercialeBO implements ConstantesMetier {
 
 		finally {
 			// session.close();
-			log.debug("********** Fin ajouterRegelement GestionCommercialeBO **********");
+			log.debug("********** Fin ajouterDrgCnamDansDetailDrgCnamList GestionCommercialeBO **********");
 			return result;
 		}
 	}
 
-	@SuppressWarnings({ "finally", "unchecked" })
-	public boolean addReglementAvance(GestionCommercialeForm formulaire)
-			throws Exception {
-
-		boolean result = false;
-		log.debug("********** Debut addReglementAvance GestionCommercialeBO **********");
-		// Session session=SessionFactoryUtil.getInstance().openSession();
-
-		try {
-			if (Double.parseDouble(formulaire.getAvance()) > 0) {
-				List reglementsList = formulaire.getReglementsList();
-
-				Reglement reglement = new Reglement();
-				reglement.setReglementId(ConstantesMetier.ID_REGLEMENT
-						+ UtilDate.getInstance().getDateForId()
-						+ ""
-						+ getUserDao()
-								.getUserByLogin(formulaire.getOperateur())
-								.getUserId());
-
-				if (Double.parseDouble(formulaire.getaRendre()) == 0) {
-					reglement.setMontant(Double.parseDouble(formulaire
-							.getAvance()));
-					reglement.setPetitMonnaie(0);
-				} else {
-					reglement.setMontant(Double.parseDouble(formulaire
-							.getAvance())
-							- Double.parseDouble(formulaire.getaRendre()));
-					reglement.setPetitMonnaie(Double.parseDouble(formulaire
-							.getaRendre())
-							- Double.parseDouble(formulaire.getRendu()));
-				}
-
-				reglement.setDateReglement(UtilDate.getInstance()
-						.getDateToday());
-				reglement.setDescription("avance");
-
-				reglement.setTypePayement(TypePayementDAO.getInstance()
-						.getTypePayement(1));
-				reglement.setStatut("1");
-				reglementsList.add(reglement);
-				formulaire.setReglementsList(reglementsList);
-
-			}
-
-			result = true;
-
-		} catch (Exception e) {
-
-			e.printStackTrace();
-			log.fatal(e.getMessage());
-
-		}
-
-		finally {
-			// session.close();
-			log.debug("********** Fin addReglementAvance GestionCommercialeBO **********");
-			return result;
-		}
-	}
-
-	@SuppressWarnings({ "finally", "unchecked" })
-	public boolean reserverChambre(GestionCommercialeForm formulaire)
-			throws Exception {
-
-		boolean result = false;
-		log.debug("********** Debut reserverChambre GestionCommercialeBO **********");
-		Session session = SessionFactoryUtil.getInstance().openSession();
-		Transaction trx = null;
-		try {
-
-			Chambre chambre = ChambreDAO.getInstance().getChambre(
-					Integer.parseInt(formulaire.getChambreId().trim()));
-
-			trx = session.beginTransaction();
-
-			// enregistrer facture
-			if (formulaire.getFactureId().equals("")) {
-				formulaire.setFactureId(ConstantesMetier.ID_FACTURE
-						+ UtilDate.getInstance().getDateForId()
-						+ ""
-						+ getUserDao()
-								.getUserByLogin(formulaire.getOperateur())
-								.getUserId());
-			}
-			Patient patient = formulaire.getPatient();
-			Facture facture = new Facture();
-
-			facture.setFactureId(formulaire.getFactureId());
-			facture.setPatient(patient);
-
-			if (formulaire.getOperation().equals("ancienWithPC")
-					|| formulaire.getOperation().equals("ancienWithoutPC")) {
-				session.update(patient);
-
-			} else {
-				session.save(patient);
-
-			}
-
-			if (chambre != null) {
-				chambre.setEtat("0");
-				session.update(chambre);
-
-			}
-
-			Hospitalisation hospitalisation = new Hospitalisation();
-			// debut id hospitalisation 17
-			hospitalisation
-					.setHospitalisationId(ConstantesMetier.ID_HOSPITALISATION
-							+ UtilDate.getInstance().getDateForId()
-							+ ""
-							+ getUserDao().getUserByLogin(
-									formulaire.getOperateur()).getUserId());
-			hospitalisation.setPatient(patient);
-			hospitalisation.setChambre(chambre);
-			if (!UtilDate.getInstance().isVide(formulaire.getDateEntree())) {
-				hospitalisation.setDateEntree(UtilDate.getInstance()
-						.stringToDate(formulaire.getDateEntree()));
-			}
-
-			hospitalisation.setStatut("1");
-			hospitalisation.setEncours("1");
-			hospitalisation.setFacture(facture);
-
-			if (formulaire.getAvanceChoix().equals("oui")) {
-				facture.setAvance(Double.parseDouble(formulaire.getAvance()));
-			} else {
-				facture.setAvance(0);
-			}
-
-			PatientPcActuel patientPcActuel = new PatientPcActuel();
-			patientPcActuel
-					.setPatientPcActuelId(ConstantesMetier.ID_PATIENTPCACTUEL
-							+ UtilDate.getInstance().getDateForId()
-							+ ""
-							+ getUserDao().getUserByLogin(
-									formulaire.getOperateur()).getUserId());
-
-			patientPcActuel.setType("aucune");
-			patientPcActuel.setPatient(patient);
-
-			if (formulaire.getPriseEnChargeFlag().equals("priseEnCharge")) {
-				if (!formulaire.getOperation().equals("ancienWithPC")) {
-					PriseEnCharge pc = formulaire.getPriseEnCharge();
-					session.save(pc);
-
-				}
-				patientPcActuel.setType("priseEnCharge");
-				patientPcActuel.setPriseEnCharge(formulaire.getPriseEnCharge());
-			} else if (formulaire.getPriseEnChargeFlag().equals("badge")) {
-
-				Badge badge = formulaire.getBadge();
-				session.save(badge);
-
-				patientPcActuel.setBadge(badge);
-				patientPcActuel.setType("badge");
-			}
-
-			facture.setStatut("1");
-			session.save(facture);
-
-			PatientPcActuelDAO.getInstance().deletePatientPcByPatient(patient,
-					session);
-			patientPcActuel.setStatut("1");
-			session.save(patientPcActuel);
-
-			ChambresHospitalisation chaHospitalisation = new ChambresHospitalisation();
-			// debut id chambreHospitalisation 18
-			chaHospitalisation
-					.setChambreHospitalisationId(ConstantesMetier.ID_HOSPITALISATIONCHAMBRE
-							+ UtilDate.getInstance().getDateForId()
-							+ ""
-							+ getUserDao().getUserByLogin(
-									formulaire.getOperateur()).getUserId());
-			if (!UtilDate.getInstance().isVide(formulaire.getDateEntree())) {
-				chaHospitalisation.setDateEntree(UtilDate.getInstance()
-						.stringToDate(formulaire.getDateEntree()));
-			}
-			chaHospitalisation.setStatut("0");
-			chaHospitalisation.setHeureEntree(Integer.parseInt(formulaire
-					.getHeureHosp()));
-			chaHospitalisation.setChambre(chambre);
-			chaHospitalisation.setHospitalisation(hospitalisation);
-			hospitalisation.getChambresHospitalisation()
-					.add(chaHospitalisation);
-
-			session.save(hospitalisation);
-
-			trx.commit();
-			// session.flush();
-			initialiserInfosChambre(formulaire);
-			result = true;
-
-		} catch (Exception e) {
-			trx.rollback();
-			e.printStackTrace();
-			log.fatal(e.getMessage());
-
-		}
-
-		finally {
-			session.close();
-			log.debug("********** Fin reserverChambre GestionCommercialeBO **********");
-			return result;
-		}
-	}
-
-	@SuppressWarnings({ "finally", "unchecked" })
-	public boolean changerChambre(GestionCommercialeForm formulaire)
-			throws Exception {
-
-		boolean result = false;
-		log.debug("********** Debut changerChambre GestionCommercialeBO **********");
-		Session session = SessionFactoryUtil.getInstance().openSession();
-		Transaction trx = null;
-		try {
-
-			Hospitalisation hospitalisation = HospitalisationDAO
-					.getInstance()
-					.getHospitalisation(formulaire.getHospitalisaionId().trim());
-			Chambre ancienneChambre = hospitalisation.getChambre();
-
-			Chambre Nvellechambre = ChambreDAO.getInstance().getChambre(
-					Integer.parseInt(formulaire.getChambreId().trim()));
-
-			trx = session.beginTransaction();
-			if (ancienneChambre != null) {
-				System.out.println("ancienneChambre");
-				ancienneChambre.setEtat("1");
-				session.update(ancienneChambre);
-				System.out.println("ancienneChambre2"
-						+ ancienneChambre.getEtat());
-				// session.merge(ancienneChambre);
-			}
-
-			int i = 0, j = 0;
-			boolean chambresHospitalisationExiste = false;
-			ChambresHospitalisation chambresHospitalisation = null;
-			for (Object element2 : hospitalisation.getChambresHospitalisation()) {
-				ChambresHospitalisation element = (ChambresHospitalisation) element2;
-				if (element.getChambre().getChambreId() == ancienneChambre
-						.getChambreId()
-						&& element.getStatut().equals(STATUT_SUPPRIME)) {
-					System.out.println("ChambresHospitalisation");
-					element.setStatut("1");
-					element.setDateSortie(UtilDate.getInstance().stringToDate(
-							formulaire.getDateEntreeChambre()));
-					element.setHeureSortie(Integer.parseInt(formulaire
-							.getHeureHosp()));
-					// session.update(element);
-					// session.merge(element);
-					j = i;
-					chambresHospitalisationExiste = true;
-				}
-				i++;
-			}
-
-			if (chambresHospitalisationExiste
-					&& chambresHospitalisation != null) {
-				hospitalisation.getChambresHospitalisation().set(j,
-						chambresHospitalisation);
-			}
-
-			if (Nvellechambre != null) {
-				System.out.println("Nvellechambre1");
-				Nvellechambre.setEtat("0");
-				session.merge(Nvellechambre);
-				System.out.println("Nvellechambre");
-
-				ChambresHospitalisation chaHospitalisation = new ChambresHospitalisation();
-				chaHospitalisation
-						.setChambreHospitalisationId(ConstantesMetier.ID_HOSPITALISATIONCHAMBRE
-								+ UtilDate.getInstance().getDateForId()
-								+ ""
-								+ getUserDao().getUserByLogin(
-										formulaire.getOperateur()).getUserId());
-				if (!UtilDate.getInstance().isVide(formulaire.getDateEntree())) {
-					chaHospitalisation.setDateEntree(UtilDate.getInstance()
-							.stringToDate(formulaire.getDateEntreeChambre()));
-				}
-				chaHospitalisation.setStatut("0");
-				chaHospitalisation.setChambre(Nvellechambre);
-				chaHospitalisation.setHeureEntree(Integer.parseInt(formulaire
-						.getHeureHosp()));
-				chaHospitalisation.setHospitalisation(hospitalisation);
-				hospitalisation.getChambresHospitalisation().add(
-						chaHospitalisation);
-				// session.save(chaHospitalisation);
-				// session.merge(chaHospitalisation);
-
-			}
-
-			hospitalisation.setChambre(Nvellechambre);
-			session.update(hospitalisation);
-
-			trx.commit();
-			session.flush();
-
-			initialiserInfosChambre(formulaire);
-			result = true;
-
-		} catch (Exception e) {
-			trx.rollback();
-			e.printStackTrace();
-			log.fatal(e.getMessage());
-
-		}
-
-		finally {
-
-			session.close();
-			log.debug("********** Fin changerChambre GestionCommercialeBO **********");
-			return result;
-		}
-	}
-
-	@SuppressWarnings({ "finally", "unchecked" })
-	public boolean setSortie(GestionCommercialeForm formulaire)
-			throws Exception {
-
-		boolean result = false;
-		log.debug("********** Debut setSortie GestionCommercialeBO **********");
-
-		try {
-			Hospitalisation hospitalisation = formulaire.getHospitalisation();
-			formulaire.setChambresHospList(hospitalisation
-					.getChambresHospitalisation());
-
-			int i = 0;
-			for (Iterator iter = formulaire.getChambresHospList().iterator(); iter
-					.hasNext();) {
-				ChambresHospitalisation element = (ChambresHospitalisation) iter
-						.next();
-				if (element.getStatut().equals("0")) {
-					element.setStatut("1");
-					element.setDateSortie(UtilDate.getInstance().stringToDate(
-							formulaire.getDateSortie()));
-					element.setHeureSortie(Integer.parseInt(formulaire
-							.getHeureHosp()));
-					formulaire.getChambresHospList().set(i, element);
-
-				}
-				i++;
-			}
-
-			int nbreChambresHosp = i;
-			int majoration = calculMajoration(formulaire);
-			i = 0;
-			double frais = 0;
-			for (Iterator iter = formulaire.getChambresHospList().iterator(); iter
-					.hasNext();) {
-				ChambresHospitalisation element = (ChambresHospitalisation) iter
-						.next();
-				frais = getChambreFrais(element);
-				element.setTotalReel(frais);
-				frais = frais + majoration * frais / 100;
-				element.setTotal(frais);
-				formulaire.getChambresHospList().set(i, element);
-				addFraisChambre(formulaire, frais);
-				i++;
-			}
-
-			for (i = 0; i < nbreChambresHosp; i++) {
-				ChambresHospitalisation element = (ChambresHospitalisation) formulaire
-						.getChambresHospList().get(i);
-				formulaire.getHospitalisation().getChambresHospitalisation()
-						.set(i, element);
-			}
-
-			formulaire.getHospitalisation().setEncours("0");
-
-			result = true;
-
-		} catch (Exception e) {
-
-			e.printStackTrace();
-			log.fatal(e.getMessage());
-
-		}
-
-		finally {
-			log.debug("********** Fin setSortie GestionCommercialeBO **********");
-			SessionFactoryUtil.getInstance().close();
-			return result;
-		}
-	}
-
-	@SuppressWarnings({ "finally", "unchecked" })
-	public boolean setLibererChambre(GestionCommercialeForm formulaire)
-			throws Exception {
-
-		boolean result = false;
-		log.debug("********** Debut setLibererChambre GestionCommercialeBO **********");
-
-		try {
-			Hospitalisation hospitalisation = formulaire.getHospitalisation();
-			formulaire.setChambresHospList(hospitalisation
-					.getChambresHospitalisation());
-
-			int i = 0;
-			for (Iterator iter = formulaire.getChambresHospList().iterator(); iter
-					.hasNext();) {
-				ChambresHospitalisation element = (ChambresHospitalisation) iter
-						.next();
-				if (element.getStatut().equals("0")) {
-					element.setStatut("1");
-					element.setDateSortie(UtilDate.getInstance().stringToDate(
-							formulaire.getDateSortie()));
-					element.setHeureSortie(Integer.parseInt(formulaire
-							.getHeureHosp()));
-					formulaire.getChambresHospList().set(i, element);
-
-				}
-				i++;
-			}
-
-			int nbreChambresHosp = i;
-			int majoration = calculMajoration(formulaire);
-			i = 0;
-			double frais = 0;
-			for (Iterator iter = formulaire.getChambresHospList().iterator(); iter
-					.hasNext();) {
-				ChambresHospitalisation element = (ChambresHospitalisation) iter
-						.next();
-				frais = getChambreFrais(element);
-				element.setTotalReel(frais);
-				frais = frais + majoration * frais / 100;
-				element.setTotal(frais);
-				formulaire.getChambresHospList().set(i, element);
-
-				i++;
-			}
-
-			for (i = 0; i < nbreChambresHosp; i++) {
-				ChambresHospitalisation element = (ChambresHospitalisation) formulaire
-						.getChambresHospList().get(i);
-				formulaire.getHospitalisation().getChambresHospitalisation()
-						.set(i, element);
-			}
-
-			formulaire.getHospitalisation().setEncours("2");
-
-			result = true;
-
-		} catch (Exception e) {
-
-			e.printStackTrace();
-			log.fatal(e.getMessage());
-
-		}
-
-		finally {
-			log.debug("********** Fin setLibererChambre GestionCommercialeBO **********");
-			SessionFactoryUtil.getInstance().close();
-			return result;
-		}
-	}
-
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * clinique.metier.gestion.commerciale.IGestionCommercialeBO#ajouterRecuFacture
+	 * (clinique.model.gestion.commerciale.GestionCommercialeForm)
+	 */
+	@Override
 	@SuppressWarnings({ "finally", "unchecked" })
 	public boolean ajouterRecuFacture(GestionCommercialeForm formulaire)
 			throws Exception {
 
 		boolean result = false;
 		log.debug("********** Debut AjouterRecuFacture GestionCommercialeBO **********");
-		Session session = SessionFactoryUtil.getInstance().openSession();
-		Transaction trx = null;
 		try {
 			List transactionComptes = new ArrayList();
 			List transactionCompteCategories = new ArrayList();
 			// List comptes=new ArrayList();
 			// List compteCategories=new ArrayList();
-
-			trx = session.beginTransaction();
 
 			// enregistrer facture
 			if (formulaire.getFactureId().equals("")) {
@@ -2680,9 +2645,9 @@ public class GestionCommercialeBO implements ConstantesMetier {
 
 			if (formulaire.getOperation().equals("ancienWithPC")
 					|| formulaire.getOperation().equals("ancienWithoutPC")) {
-				session.update(patient);
+				getPatientDAO().update(patient);
 			} else {
-				session.save(patient);
+				getPatientDAO().save(patient);
 			}
 
 			facture.setTypePc("aucune");
@@ -2699,11 +2664,11 @@ public class GestionCommercialeBO implements ConstantesMetier {
 
 				if (formulaire.getOperation().equals("ancienWithPC")) {
 					if (pc != null) {
-						session.update(pc);
+						priseEnChargeDAO.update(pc);
 					}
 				} else {
 					pc.setCategorie(patient.getCategorie());
-					session.save(pc);
+					priseEnChargeDAO.save(pc);
 				}
 
 				patientPcActuel.setType("priseEnCharge");
@@ -2718,12 +2683,12 @@ public class GestionCommercialeBO implements ConstantesMetier {
 				Badge badge = formulaire.getBadge();
 
 				if (!formulaire.getOperation().equals("ancienWithPC")) {
-					session.save(badge);
+					badgeDAO.save(badge);
 				}
 
 				else {
 					if (badge != null) {
-						session.update(badge);
+						badgeDAO.update(badge);
 					}
 				}
 
@@ -2736,20 +2701,18 @@ public class GestionCommercialeBO implements ConstantesMetier {
 			}
 
 			patientPcActuel.setStatut("1");
-			PatientPcActuelDAO.getInstance().deletePatientPcByPatient(patient,
-					session);
-			session.save(patientPcActuel);
+			getPatientPcActuelDAO().deletePatientPcByPatient(patient);
+			getPatientPcActuelDAO().save(patientPcActuel);
 
 			facture.setTauxMajoration(calculMajoration(formulaire));
 			facture.setStatut("1");
 			facture.setDateFact(UtilDate.getInstance().getDateToday());
 			facture.setOperateur(formulaire.getOperateur());
-			session.save(facture);
+			getFactureDAO().save(facture);
 
 			for (Iterator iter = transactionComptes.iterator(); iter.hasNext();) {
 				TransactionCompte element = (TransactionCompte) iter.next();
-				// session.evict(element);
-				session.save(element);
+				transactionCompteDAO.save(element);
 
 			}
 
@@ -2758,56 +2721,42 @@ public class GestionCommercialeBO implements ConstantesMetier {
 				TransactionCompteCategorie element = (TransactionCompteCategorie) iter
 						.next();
 
-				session.save(element);
+				transactionCompteCategorieDAO.save(element);
 
 			}
 
-			/*
-			 * for (Iterator iter = comptes.iterator(); iter.hasNext();) {
-			 * Compte element = (Compte) iter.next(); session.evict(element);
-			 * session.update(element);
-			 * 
-			 * }
-			 * 
-			 * for (Iterator iter = compteCategories.iterator();
-			 * iter.hasNext();) { CompteCategorie element = (CompteCategorie)
-			 * iter.next(); session.evict(element); session.update(element);
-			 * 
-			 * }
-			 */
-
-			trx.commit();
-			// session.flush();
 			result = true;
 
 		} catch (Exception e) {
-			trx.rollback();
-
-			e.printStackTrace();
 			log.fatal(e.getMessage());
 
 		}
 
 		finally {
-			session.close();
 			log.debug("********** Fin AjouterRecuFacture GestionCommercialeBO **********");
 			return result;
 		}
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see clinique.metier.gestion.commerciale.IGestionCommercialeBO#
+	 * ajouterRecuFactureHosp
+	 * (clinique.model.gestion.commerciale.GestionCommercialeForm)
+	 */
+	@Override
 	@SuppressWarnings({ "finally", "unchecked" })
 	public boolean ajouterRecuFactureHosp(GestionCommercialeForm formulaire)
 			throws Exception {
 
 		boolean result = false;
 		log.debug("********** Debut AjouterRecuFacture GestionCommercialeBO **********");
-		Session session = SessionFactoryUtil.getInstance().openSession();
-		Transaction trx = null;
 		try {
 
 			// enregistrer facture
 
-			Hospitalisation hospitalisation = HospitalisationDAO.getInstance()
+			Hospitalisation hospitalisation = getHospitalisationDAO()
 					.getHospitalisation(
 							formulaire.getHospitalisation()
 									.getHospitalisationId());
@@ -2852,8 +2801,6 @@ public class GestionCommercialeBO implements ConstantesMetier {
 
 			double remiseCash = 0;
 
-			trx = session.beginTransaction();
-
 			for (Iterator iter = formulaire.getReglementsList().iterator(); iter
 					.hasNext();) {
 				Reglement element = (Reglement) iter.next();
@@ -2862,7 +2809,7 @@ public class GestionCommercialeBO implements ConstantesMetier {
 				remiseCash = remiseCash + element.getRemiseCash();
 				element.setStatut("1");
 				element.setFacture(facture);
-				session.save(element);
+				reglementDAO.save(element);
 			}
 
 			facture.setRemiseCash(remiseCash);
@@ -2902,13 +2849,13 @@ public class GestionCommercialeBO implements ConstantesMetier {
 			facture.setOperateur(formulaire.getOperateur());
 
 			chambre.setEtat("1");
-			session.update(chambre);
+			getChambreDAO().update(chambre);
 
-			session.update(facture);
+			getFactureDAO().update(facture);
 
 			for (Object element2 : hospitalisation.getChambresHospitalisation()) {
 				ChambresHospitalisation element = (ChambresHospitalisation) element2;
-				session.evict(element);
+				chambresHospitalisationDAO.evict(element);
 			}
 
 			for (int i = 0; i < nbreChambresHosp; i++) {
@@ -2922,642 +2869,474 @@ public class GestionCommercialeBO implements ConstantesMetier {
 			hospitalisation.setEncours("0");
 			// session.update(hospitalisation);
 
-			trx.commit();
-			session.flush();
 			result = true;
 
 		} catch (Exception e) {
-			trx.rollback();
-			e.printStackTrace();
 			log.fatal(e.getMessage());
 
 		}
 
 		finally {
-			session.close();
 			log.debug("********** Fin AjouterRecuFacture GestionCommercialeBO **********");
 			return result;
 		}
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * clinique.metier.gestion.commerciale.IGestionCommercialeBO#ajouterRegelement
+	 * (clinique.model.gestion.commerciale.GestionCommercialeForm)
+	 */
+	@Override
 	@SuppressWarnings({ "finally", "unchecked" })
-	public boolean setSortieSansReglement(GestionCommercialeForm formulaire)
+	public boolean ajouterRegelement(GestionCommercialeForm formulaire)
 			throws Exception {
 
 		boolean result = false;
-		log.debug("********** Debut setSortieSansReglement GestionCommercialeBO **********");
-		Session session = SessionFactoryUtil.getInstance().openSession();
-		Transaction trx = null;
+		log.debug("********** Debut ajouterRegelement GestionCommercialeBO **********");
+
 		try {
-
-			// enregistrer facture
-
-			Hospitalisation hospitalisation = HospitalisationDAO.getInstance()
-					.getHospitalisation(
-							formulaire.getHospitalisation()
-									.getHospitalisationId());
-
-			Chambre chambre = hospitalisation.getChambre();
-
-			trx = session.beginTransaction();
-
-			chambre.setEtat("1");
-			session.update(chambre);
-
-			for (Object element2 : hospitalisation.getChambresHospitalisation()) {
-				ChambresHospitalisation element = (ChambresHospitalisation) element2;
-				session.evict(element);
-			}
-
-			int nbreChambresHosp = formulaire.getChambresHospList().size();
-
-			for (int i = 0; i < nbreChambresHosp; i++) {
-				ChambresHospitalisation element = (ChambresHospitalisation) formulaire
-						.getChambresHospList().get(i);
-				hospitalisation.getChambresHospitalisation().set(i, element);
-			}
-
-			hospitalisation.setDateSortie(UtilDate.getInstance().stringToDate(
-					formulaire.getDateSortie()));
-			hospitalisation.setEncours("2");
-			session.update(hospitalisation);
-
-			trx.commit();
-			session.flush();
-			result = true;
-
-		} catch (Exception e) {
-			trx.rollback();
-			e.printStackTrace();
-			log.fatal(e.getMessage());
-
-		}
-
-		finally {
-			session.close();
-			log.debug("********** Fin setSortieSansReglement GestionCommercialeBO **********");
-			return result;
-		}
-	}
-
-	@SuppressWarnings({ "finally", "unchecked" })
-	public boolean creerRecuHosp(GestionCommercialeForm formulaire)
-			throws Exception {
-
-		boolean result = false;
-		log.debug("********** Debut AjouterRecuFacture GestionCommercialeBO **********");
-		Session session = SessionFactoryUtil.getInstance().openSession();
-		Transaction trx = null;
-		try {
-			trx = session.beginTransaction();
-
-			double total_HT = 0;
-
-			for (Iterator iter = formulaire.getDetailsFactureList().iterator(); iter
-					.hasNext();) {
-				DetailFacture element = (DetailFacture) iter.next();
-				total_HT = total_HT + element.getMontantTotal();
-				element.setStatut("1");
-				element.setFacture(formulaire.getFacture());
-				element.setRecu(formulaire.getRecu());
-				element.setHospitalisation(formulaire.getHospitalisation());
-				formulaire.getRecu().getDetailFactures().add(element);
-			}
-
-			// System.out.println("voila "+UserDAO.getInstance().getUserByLogin(formulaire.getOperateur()).getUserId());
+			List reglementsList = formulaire.getReglementsList();
 			Reglement reglement = new Reglement();
+			// debut id reglement 16
 			reglement.setReglementId(ConstantesMetier.ID_REGLEMENT
 					+ UtilDate.getInstance().getDateForId()
 					+ ""
 					+ getUserDao().getUserByLogin(formulaire.getOperateur())
 							.getUserId());
-			reglement.setTypePayement(TypePayementDAO.getInstance()
-					.getTypePayement(4));
+
+			double montant = Double.parseDouble(formulaire
+					.getTypePayementValeur());
+			double resteApayer = Double
+					.parseDouble(formulaire.getResteApayer());
+			double resteApayerMajoration = Double.parseDouble(formulaire
+					.getResteApayerMajoration());
+			int pourcentageMaj = calculMajoration(formulaire);
+			// double dejapayer=Double.parseDouble(formulaire.getDejapaye());
+
+			// =============== Calcul de petite monnaie ===================
+			if (formulaire.getModeReglement().equals("immediat")) {
+				if (montant > resteApayer) {
+
+					reglement.setPetitMonnaie(montant - resteApayer);
+					montant = resteApayer;
+					formulaire.setRecuRegle("1");
+				} else {
+					if (montant == resteApayer) {
+						formulaire.setRecuRegle("1");
+					} else {
+						formulaire.setRecuRegle("0");
+					}
+					reglement.setPetitMonnaie(0);
+				}
+
+				resteApayer = resteApayer - montant;
+				resteApayerMajoration = resteApayer + resteApayer
+						* pourcentageMaj / 100;
+				reglement.setRemiseCash(montant * pourcentageMaj / 100);
+				reglement.setMajore("0");
+			} else {
+				if (montant > resteApayerMajoration) {
+
+					reglement.setPetitMonnaie(montant - resteApayerMajoration);
+					montant = resteApayerMajoration;
+					formulaire.setRecuRegle("1");
+				} else {
+					if (montant == resteApayerMajoration) {
+						formulaire.setRecuRegle("1");
+					} else {
+						formulaire.setRecuRegle("0");
+					}
+					reglement.setPetitMonnaie(0);
+				}
+
+				resteApayerMajoration = resteApayerMajoration - montant;
+				resteApayer = 100 * resteApayerMajoration
+						/ (100 + pourcentageMaj);
+				reglement.setMajore("1");
+			}
+			// =============== Fin calcul de petite monnaie ===================
+
+			reglement.setMontant(montant);
 			reglement.setDateReglement(UtilDate.getInstance().getDateToday());
-			reglement.setDescription(formulaire.getHospitalisation()
-					.getChambre().getChambreLibelle());
-			reglement.setMontant(total_HT);
 
-			formulaire.getRecu().setReglement(reglement);
-			formulaire.getRecu().setTotal(total_HT);
-			formulaire.getRecu().setStatut("1");
-			session.save(reglement);
-			// session.merge(reglement);
+			if (formulaire.getTypePayementId().equals("2")
+					|| formulaire.getTypePayementId().equals("3")) {
+				reglement.setDescription(formulaire.getDescription());
+			} else if (formulaire.getTypePayementId().equals("4")) {
+				reglement.setDescription(getPcPersonnelDAO().getPcPersonnel(
+						Integer.parseInt(formulaire.getPcPersonnelId()))
+						.getPcNom());
+				reglement.setPcPersonnel(getPcPersonnelDAO().getPcPersonnel(
+						Integer.parseInt(formulaire.getPcPersonnelId())));
+				reglement.setTypePC("personne");
+			}
 
-			Recu recu = formulaire.getRecu();
-			session.save(recu);
-			// session.merge(recu);
+			reglement.setTypePayement(getTypePayementDAO().getTypePayement(
+					Integer.parseInt(formulaire.getTypePayementId())));
+			reglementsList.add(reglement);
 
-			trx.commit();
-
+			// dejapayer=dejapayer+montant;
+			formulaire.setResteApayer(String.valueOf(resteApayer));
+			formulaire.setResteApayerMajoration(String
+					.valueOf(resteApayerMajoration));
+			// formulaire.setDejapaye(String.valueOf(dejapayer));
+			formulaire.setReglementsList(reglementsList);
 			result = true;
 
 		} catch (Exception e) {
-			trx.rollback();
 			e.printStackTrace();
 			log.fatal(e.getMessage());
 
 		}
 
 		finally {
-			session.close();
-			log.debug("********** Fin AjouterRecuFacture GestionCommercialeBO **********");
+			// session.close();
+			log.debug("********** Fin ajouterRegelement GestionCommercialeBO **********");
 			return result;
 		}
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * clinique.metier.gestion.commerciale.IGestionCommercialeBO#calculCoteAssureur
+	 * (clinique.model.gestion.commerciale.GestionCommercialeForm, double)
+	 */
+	@Override
+	public void calculCoteAssureur(GestionCommercialeForm formulaire,
+			double prixActe) {
+		// PriseEnCharge
+		// pc=PriseEnChargeDAO.getInstance().getPriseEnCharge(sformulaire.getPcId())
+		// ;
+
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * clinique.metier.gestion.commerciale.IGestionCommercialeBO#calculMajoration
+	 * (clinique.model.gestion.commerciale.GestionCommercialeForm)
+	 */
+	@Override
+	public int calculMajoration(GestionCommercialeForm formulaire) {
+		int majoration = 0;
+
+		if (!formulaire.getPriseEnChargeFlag().equals("aucune")) {
+			Categorie categorie = formulaire.getPatient().getCategorie();
+			if (categorie != null) {
+				majoration = categorie.getMajoration();
+			}
+
+			if (majoration == 0) {
+				majoration = Integer.valueOf(getParametresCliniqueDAO()
+						.getParametresCliniqueByParametreNom("majoration")
+						.getValeur()) / 100;
+			}
+		} else {
+			majoration = Integer.valueOf(getParametresCliniqueDAO()
+					.getParametresCliniqueByParametreNom("majoration")
+					.getValeur()) / 100;
+		}
+
+		return majoration;
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * clinique.metier.gestion.commerciale.IGestionCommercialeBO#calculQPActeur
+	 * (clinique.mapping.DetailFacture)
+	 */
+	@Override
+	public int calculQPActeur(DetailFacture df) {
+		// calcul qp praticien
+		int qpActeur = 0;
+		if (df.getMedecinExiste().equals("1")) {
+			ActeurActe praticien = getActeurActeDAO().getActeurActe(
+					df.getMedecin(), df.getActe());
+
+			if (praticien != null) {
+				if (df.getType().equals("normal")) {
+					if (praticien.getPourcentage() != 0) {
+						qpActeur = praticien.getPourcentage();
+					} else {
+						qpActeur = df.getActe().getTauxPraticien();
+					}
+				} else {
+					if (praticien.getPourcentageUrg() != 0) {
+						qpActeur = praticien.getPourcentageUrg();
+					} else {
+						qpActeur = df.getActe().getTauxPraticienUrg();
+					}
+				}
+			} else {
+				if (df.getType().equals("normal")) {
+					qpActeur = df.getActe().getTauxPraticien();
+				} else {
+					qpActeur = df.getActe().getTauxPraticienUrg();
+					// else qpActeur=acte.getTauxDepPraticien();
+				}
+			}
+		}
+
+		return qpActeur;
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * clinique.metier.gestion.commerciale.IGestionCommercialeBO#calculQPActeur
+	 * (clinique.model.gestion.commerciale.GestionCommercialeForm)
+	 */
+	@Override
+	public int calculQPActeur(GestionCommercialeForm formulaire) {
+		// calcul qp praticien
+		int qpActeur = 0;
+		if (formulaire.getMedecinChoix().equals("oui")
+				&& !UtilDate.getInstance().isVide(formulaire.getActeurActeId())) {
+			ActeurActe praticien = getActeurActeDAO().getActeurActe(
+					Integer.parseInt(formulaire.getActeurActeId()));
+
+			if (praticien != null) {
+				if (formulaire.getTypeActe().equals("normal")) {
+					if (praticien.getPourcentage() != 0) {
+						qpActeur = praticien.getPourcentage();
+					} else {
+						Acte acte = getActeDAO().getActe(
+								Integer.parseInt(formulaire.getActeId()));
+						qpActeur = acte.getTauxPraticien();
+					}
+				} else {
+					if (praticien.getPourcentageUrg() != 0) {
+						qpActeur = praticien.getPourcentageUrg();
+					} else {
+						Acte acte = getActeDAO().getActe(
+								Integer.parseInt(formulaire.getActeId()));
+						qpActeur = acte.getTauxPraticienUrg();
+					}
+				}
+			} else {
+				Acte acte = getActeDAO().getActe(
+						Integer.parseInt(formulaire.getActeId()));
+				if (formulaire.getTypeActe().equals("normal")) {
+					qpActeur = acte.getTauxPraticien();
+				} else {
+					qpActeur = acte.getTauxPraticienUrg();
+					// else qpActeur=acte.getTauxDepPraticien();
+				}
+			}
+		}
+
+		return qpActeur;
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * clinique.metier.gestion.commerciale.IGestionCommercialeBO#calculQPAssistant
+	 * (clinique.mapping.DetailFacture)
+	 */
+	@Override
+	public int calculQPAssistant(DetailFacture df) {
+		// calcul qp praticien
+		int qpAssistant = 0;
+		if (df.getInfirmierExiste().equals("1")) {
+			Acte acte = df.getActe();
+			if (df.getType().equals("normal")) {
+				qpAssistant = acte.getTauxAssistant();
+			} else if (df.getType().equals("urgence")) {
+				qpAssistant = acte.getTauxAssistantUrg();
+			} else {
+				qpAssistant = acte.getTauxDepAssistant();
+			}
+		}
+		return qpAssistant;
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * clinique.metier.gestion.commerciale.IGestionCommercialeBO#calculQPAssistant
+	 * (clinique.model.gestion.commerciale.GestionCommercialeForm)
+	 */
+	@Override
+	public int calculQPAssistant(GestionCommercialeForm formulaire) {
+		// calcul qp praticien
+		int qpAssistant = 0;
+		if (formulaire.getInfirmierChoix().equals("oui")
+				&& !UtilDate.getInstance().isVide(
+						formulaire.getActeurActeIdInf())) {
+			Acte acte = getActeDAO().getActe(
+					Integer.parseInt(formulaire.getActeId()));
+			if (formulaire.getTypeActe().equals("normal")) {
+				qpAssistant = acte.getTauxAssistant();
+			} else if (formulaire.getTypeActe().equals("urgence")) {
+				qpAssistant = acte.getTauxAssistantUrg();
+			} else {
+				qpAssistant = acte.getTauxDepAssistant();
+			}
+		}
+		return qpAssistant;
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * clinique.metier.gestion.commerciale.IGestionCommercialeBO#changerChambre
+	 * (clinique.model.gestion.commerciale.GestionCommercialeForm)
+	 */
+	@Override
 	@SuppressWarnings({ "finally", "unchecked" })
-	public boolean creerDevis(GestionCommercialeForm formulaire)
+	public boolean changerChambre(GestionCommercialeForm formulaire)
 			throws Exception {
 
 		boolean result = false;
-		log.debug("********** Debut creerDevis GestionCommercialeBO **********");
-		Session session = SessionFactoryUtil.getInstance().openSession();
-		Transaction trx = null;
+		log.debug("********** Debut changerChambre GestionCommercialeBO **********");
 		try {
-			trx = session.beginTransaction();
 
-			Patient patient = formulaire.getPatient();
-			DevisAssureur devisAssureur = new DevisAssureur();
-			devisAssureur.setDevisAssureurId(ConstantesMetier.ID_DEVISASSUREUR
-					+ UtilDate.getInstance().getDateForId()
-					+ ""
-					+ getUserDao().getUserByLogin(formulaire.getOperateur())
-							.getUserId());
-			devisAssureur.setCategorie(CategorieDAO.getInstance().getCategorie(
-					Integer.valueOf(formulaire.getCategorieId().trim())));
+			Hospitalisation hospitalisation = getHospitalisationDAO()
+					.getHospitalisation(formulaire.getHospitalisaionId().trim());
+			Chambre ancienneChambre = hospitalisation.getChambre();
 
-			devisAssureur.setDateDevis(UtilDate.getInstance().getDateToday());
-			devisAssureur.setTotal(Double.valueOf(formulaire.getTotalDevis()));
+			Chambre Nvellechambre = getChambreDAO().getChambre(
+					Integer.parseInt(formulaire.getChambreId().trim()));
 
-			if (formulaire.getOperation().equals("ancienWithPC")
-					|| formulaire.getOperation().equals("ancienWithoutPC")) {
-				session.update(patient);
+			if (ancienneChambre != null) {
+				System.out.println("ancienneChambre");
+				ancienneChambre.setEtat("1");
+				getChambreDAO().update(ancienneChambre);
+			}
 
-			} else {
-				patient.setStatut("1");
-				session.save(patient);
+			int i = 0, j = 0;
+			boolean chambresHospitalisationExiste = false;
+			ChambresHospitalisation chambresHospitalisation = null;
+			for (Object element2 : hospitalisation.getChambresHospitalisation()) {
+				ChambresHospitalisation element = (ChambresHospitalisation) element2;
+				if (element.getChambre().getChambreId() == ancienneChambre
+						.getChambreId()
+						&& element.getStatut().equals(STATUT_SUPPRIME)) {
+					System.out.println("ChambresHospitalisation");
+					element.setStatut("1");
+					element.setDateSortie(UtilDate.getInstance().stringToDate(
+							formulaire.getDateEntreeChambre()));
+					element.setHeureSortie(Integer.parseInt(formulaire
+							.getHeureHosp()));
+					j = i;
+					chambresHospitalisationExiste = true;
+				}
+				i++;
+			}
 
-				PatientPcActuel patientPcActuel = new PatientPcActuel();
-				patientPcActuel
-						.setPatientPcActuelId(ConstantesMetier.ID_PATIENTPCACTUEL
+			if (chambresHospitalisationExiste
+					&& chambresHospitalisation != null) {
+				hospitalisation.getChambresHospitalisation().set(j,
+						chambresHospitalisation);
+			}
+
+			if (Nvellechambre != null) {
+				System.out.println("Nvellechambre1");
+				Nvellechambre.setEtat("0");
+				getChambreDAO().merge(Nvellechambre);
+				System.out.println("Nvellechambre");
+
+				ChambresHospitalisation chaHospitalisation = new ChambresHospitalisation();
+				chaHospitalisation
+						.setChambreHospitalisationId(ConstantesMetier.ID_HOSPITALISATIONCHAMBRE
 								+ UtilDate.getInstance().getDateForId()
 								+ ""
 								+ getUserDao().getUserByLogin(
 										formulaire.getOperateur()).getUserId());
-
-				patientPcActuel.setType("aucune");
-				patientPcActuel.setPatient(patient);
-				patientPcActuel.setStatut("1");
-				session.save(patientPcActuel);
+				if (!UtilDate.getInstance().isVide(formulaire.getDateEntree())) {
+					chaHospitalisation.setDateEntree(UtilDate.getInstance()
+							.stringToDate(formulaire.getDateEntreeChambre()));
+				}
+				chaHospitalisation.setStatut("0");
+				chaHospitalisation.setChambre(Nvellechambre);
+				chaHospitalisation.setHeureEntree(Integer.parseInt(formulaire
+						.getHeureHosp()));
+				chaHospitalisation.setHospitalisation(hospitalisation);
+				hospitalisation.getChambresHospitalisation().add(
+						chaHospitalisation);
 
 			}
 
-			devisAssureur.setPatient(patient);
-			devisAssureur.setStatut("1");
-			devisAssureur.setOperateur(formulaire.getOperateur().trim());
-			session.save(devisAssureur);
+			hospitalisation.setChambre(Nvellechambre);
+			getHospitalisationDAO().update(hospitalisation);
 
-			for (Iterator iter = formulaire.getDevisActesList().iterator(); iter
-					.hasNext();) {
-				DevisActes element = (DevisActes) iter.next();
-				element.setDevisAssureur(devisAssureur);
-				element.setStatut("1");
-				element.setOperateur(formulaire.getOperateur().trim());
-				devisAssureur.getDevisActes().add(element);
-			}
-
-			trx.commit();
-
+			initialiserInfosChambre(formulaire);
 			result = true;
 
 		} catch (Exception e) {
-			trx.rollback();
 			e.printStackTrace();
 			log.fatal(e.getMessage());
 
 		}
 
 		finally {
-			session.close();
-			log.debug("********** Fin creerDevis GestionCommercialeBO **********");
+
+			log.debug("********** Fin changerChambre GestionCommercialeBO **********");
 			return result;
 		}
 	}
 
-	@SuppressWarnings({ "finally", "unchecked" })
-	public boolean checkFacture(GestionCommercialeForm formulaire)
-			throws Exception {
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * clinique.metier.gestion.commerciale.IGestionCommercialeBO#chargerPrestations
+	 * (clinique.model.gestion.commerciale.GestionCommercialeForm)
+	 */
+	@Override
+	public void chargerPrestations(GestionCommercialeForm formulaire) {
+		// if (!UtilDate.getInstance().isVide(formulaire.getFactureId()))
+		// formulaire.setDetailsFactureList(FactureDAO.getInstance().getFacture(Integer.parseInt(formulaire.getFactureId())).getDetailFactures());
+		// else formulaire.setDetailsFactureList(null);
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * clinique.metier.gestion.commerciale.IGestionCommercialeBO#checkActe(clinique
+	 * .mapping.Acte)
+	 */
+	@Override
+	@SuppressWarnings({ "unchecked", "finally" })
+	public boolean checkActe(Acte acte) {
 
 		boolean result = false;
-		log.debug("********** Debut checkFacture GestionCommercialeBO **********");
-		Session session = SessionFactoryUtil.getInstance().getCurrentSession();
-		Transaction trx = session.getTransaction();
+		// int nbreMedecin=0;
+		// int nbreInf=0;
 		try {
 
-			int nbreFact = 0;
-			Facture facture = new Facture();
-			if (PatientDAO.getInstance().getPatient(formulaire.getPatientId())
-					.getFactures().size() > 0) {
-				for (Object element : PatientDAO.getInstance()
-						.getPatient(formulaire.getPatientId()).getFactures()) {
-
-					Facture fact = (Facture) element;
-					if (fact.getStatut().equals(STATUT_SUPPRIME)) {
-						if (nbreFact == 0) {
-							facture = fact;
-						}
-						nbreFact++;
-					}
-
-				}
-			}
-
-			if (nbreFact > 1) {
-				return result = false;
-			} else {
-
-				trx = session.beginTransaction();
-
-				if (nbreFact == 1) {
-					formulaire.setFactureId(String.valueOf(facture
-							.getFactureId()));
-				} else {
-					Patient patient = PatientDAO.getInstance().getPatient(
-							formulaire.getPatientId());
-					facture.setPatient(patient);
-					session.save(facture);
-					// session.merge(facture);
-					formulaire.setFactureId("");
-				}
-
-				trx.commit();
+			if (acte.getStatut().equals("1")) {
 				result = true;
 			}
-
 		} catch (Exception e) {
-			e.printStackTrace();
-			trx.rollback();
-			log.fatal(e.getMessage());
-
-		}
-
-		finally {
-			session.close();
-			log.debug("********** Fin checkFacture GestionCommercialeBO **********");
+			result = false;
+		} finally {
 			return result;
 		}
 	}
 
-	@SuppressWarnings("unchecked")
-	public void initialiserCombosPrestations(GestionCommercialeForm formulaire)
-			throws Exception {
-		log.debug("********** Debut initialiserCombosPrestations GestionCommercialeBO **********");
-		// Session session=SessionFactoryUtil.getInstance().openSession();
-		try {
-
-			Date date = new Date();
-			int heure = date.getHours();
-
-			if (heure > 20 && heure < 8) {
-				formulaire.setTypeActe("urgence");
-			} else {
-				formulaire.setTypeActe("normal");
-			}
-
-			ArrayList famillePrestList = new ArrayList();
-			ArrayList classeList = new ArrayList();
-			ArrayList actesListe = new ArrayList();
-
-			ArrayList acteursListe = new ArrayList();
-			ArrayList acteursInfListe = new ArrayList();
-
-			FamillePrestationDAO famillePrestDAO = FamillePrestationDAO
-					.getInstance();
-			ClasseDAO classeDAO = ClasseDAO.getInstance();
-			@SuppressWarnings("unused")
-			ActeDAO acteDAO = ActeDAO.getInstance();
-
-			FamillePrestation FirstSelectedFamillePrest = null;
-			Classe FirstSelectedClasse = null;
-
-			Acte FirstSelectedActe = null;
-
-			int i = 0;
-
-			// charger combo FamillePrest
-			for (Object element2 : famillePrestDAO.listFamillePrestations()) {
-				FamillePrestation element = (FamillePrestation) element2;
-				if (checkFamillePres(element)) {
-					if (i == 0) {
-						FirstSelectedFamillePrest = element;
-						i++;
-					}
-					famillePrestList.add(new LabelValueBean(element
-							.getLibelle(), String.valueOf(element
-							.getFamillePrestationId())));
-				}
-			}
-
-			i = 0;
-			// charger combo Classes
-			for (Object element2 : classeDAO.listClasses()) {
-				Classe element = (Classe) element2;
-				if (checkClasse(element)) {
-					if (i == 0) {
-						FirstSelectedClasse = element;
-						i++;
-
-					}
-					classeList.add(new LabelValueBean(element.getNomClasse(),
-							String.valueOf(element.getClasseId())));
-				}
-			}
-
-			i = 0;
-			// charger combo Actes
-			List actes = null;
-			if (formulaire.getChoixActePar().equals("famille")) {
-				actes = FirstSelectedFamillePrest.getActes();
-			} else if (formulaire.getChoixActePar().equals("classe")) {
-				actes = FirstSelectedClasse.getActes();
-			}
-			for (Iterator iter = actes.iterator(); iter.hasNext();) {
-				Acte element = (Acte) iter.next();
-				if (checkActe(element)) {
-					if (i == 0) {
-						FirstSelectedActe = element;
-						i++;
-
-					}
-					actesListe.add(new LabelValueBean(element.getNomActe(),
-							String.valueOf(element.getActeId())));
-				}
-			}
-
-			// charger combo ActeurActes
-			for (Object element2 : FirstSelectedActe.getActeurActes()) {
-				ActeurActe element = (ActeurActe) element2;
-				if (checkActeur(element)) {
-					if (element.getActeur().getAssistant().equals("0")) {
-						acteursListe.add(new LabelValueBean(element.getActeur()
-								.getNom(), String.valueOf(element
-								.getActeurActeId())));
-					} else {
-						acteursInfListe.add(new LabelValueBean(element
-								.getActeur().getNom(), String.valueOf(element
-								.getActeurActeId())));
-					}
-
-				}
-			}
-
-			formulaire
-					.setFamillePrestationId(String
-							.valueOf(FirstSelectedFamillePrest
-									.getFamillePrestationId()));
-			formulaire.setFamillesPrestList(famillePrestList);
-			formulaire.setClassesListe(classeList);
-			formulaire.setActesListe(actesListe);
-			formulaire.setActeurActeList(acteursListe);
-			formulaire.setActeurActeInfList(acteursInfListe);
-		} catch (Exception e) {
-			e.printStackTrace();
-			log.fatal(e.getMessage());
-		}
-
-		finally {
-			// session.close();
-			log.debug("********** Fin initialiserCombosPrestations GestionCommercialeBO **********");
-		}
-
-	}
-
-	@SuppressWarnings("unchecked")
-	public void initialiserCombosChambres(GestionCommercialeForm formulaire)
-			throws Exception {
-		log.debug("********** Debut initialiserCombosPrestations GestionCommercialeBO **********");
-		// Session session=SessionFactoryUtil.getInstance().openSession();
-		try {
-			formulaire.getChambreList().clear();
-			ArrayList chambresList = new ArrayList();
-
-			// charger combo chambre
-			for (Object element2 : ChambreDAO.getInstance()
-					.listChambresLibres()) {
-				Chambre element = (Chambre) element2;
-
-				chambresList.add(new LabelValueBean(
-						element.getChambreLibelle(), String.valueOf(element
-								.getChambreId())));
-			}
-
-			formulaire.setChambreList(chambresList);
-		} catch (Exception e) {
-			e.printStackTrace();
-			log.fatal(e.getMessage());
-		}
-
-		finally {
-			// session.close();
-			log.debug("********** Fin initialiserCombosPrestations GestionCommercialeBO **********");
-		}
-
-	}
-
-	@SuppressWarnings("unchecked")
-	public void initialiserCombosTypePyement(GestionCommercialeForm formulaire) {
-		log.debug("********** Debut initialiserCombosTypePyement GestionCommercialeAction **********");
-		// Session session=SessionFactoryUtil.getInstance().openSession();
-
-		try {
-			ArrayList typePayementList = new ArrayList();
-			for (Object element2 : TypePayementDAO.getInstance()
-					.listTypePayements()) {
-
-				TypePayement element = (TypePayement) element2;
-
-				/*
-				 * if (formulaire.getReglementsList().size()==0) {
-				 * typePayementList.add(new
-				 * LabelValueBean(element.getTypePayement
-				 * (),String.valueOf(element.getTypePayementId())));
-				 * formulaire.setCashDejaSaisi("0"); } else if
-				 * (element.getTypePayementId()!=1)
-				 */
-				if (formulaire.getModeReglement().equals("differe")) {
-					if (element.getTypePayementId() != 1) {
-						typePayementList.add(new LabelValueBean(element
-								.getTypePayement(), String.valueOf(element
-								.getTypePayementId())));
-					}
-				} else {
-					typePayementList.add(new LabelValueBean(element
-							.getTypePayement(), String.valueOf(element
-							.getTypePayementId())));
-				}
-
-			}
-			formulaire.setTypePayementList(typePayementList);
-		} catch (Exception e) {
-
-			e.printStackTrace();
-			log.fatal(e.getMessage());
-
-		} finally {
-			// session.close();
-			log.debug("********** Fin initialiserCombosTypePyement GestionCommercialeBO **********");
-		}
-	}
-
-	@SuppressWarnings("unchecked")
-	public void initialiserCombosPcPersonnel(GestionCommercialeForm formulaire) {
-		log.debug("********** Debut initialiserCombosPcPersonnel GestionCommercialeAction **********");
-		// Session session=SessionFactoryUtil.getInstance().openSession();
-
-		try {
-
-			ArrayList pcPersonnelList = new ArrayList();
-			for (Object element2 : PcPersonnelDAO.getInstance()
-					.listPcPersonnels()) {
-
-				PcPersonnel element = (PcPersonnel) element2;
-
-				pcPersonnelList.add(new LabelValueBean(element.getPcNom(),
-						String.valueOf(element.getPcPersonnelId())));
-
-			}
-			formulaire.setPcPersonnelList(pcPersonnelList);
-		} catch (Exception e) {
-
-			e.printStackTrace();
-			log.fatal(e.getMessage());
-
-		}
-
-		finally {
-			// session.close();
-			log.debug("********** Fin initialiserCombosPcPersonnel GestionCommercialeBO **********");
-		}
-	}
-
-	@SuppressWarnings("unchecked")
-	public void initialiserCombosAssureur(GestionCommercialeForm formulaire)
-			throws Exception {
-		log.debug("********** Debut initialiserCombosAssureur GestionCommercialeBO **********");
-		Session session = SessionFactoryUtil.getInstance().openSession();
-		try {
-			ArrayList assureurList = new ArrayList();
-			ArrayList entrepriseList = new ArrayList();
-			ArrayList categorieListe = new ArrayList();
-
-			AssureurDAO assureurDAO = AssureurDAO.getInstance();
-
-			Assureur FirstSelectedAssureur = null;
-			Entreprise FirstSelectedEntreprise = null;
-
-			int i = 0;
-
-			// charger combo assureur
-			for (Object element2 : assureurDAO.listAssureurs()) {
-				Assureur element = (Assureur) element2;
-				if (checkAssureur(element)) {
-					if (i == 0) {
-						FirstSelectedAssureur = element;
-						i++;
-					}
-					assureurList.add(new LabelValueBean(element
-							.getNomAssureur(), String.valueOf(element
-							.getAssureurId())));
-				}
-			}
-
-			i = 0;
-			// charger combo entreprise
-			for (Object element2 : assureurDAO.getAssureur(
-					FirstSelectedAssureur.getAssureurId()).getEntreprises()) {
-				Entreprise element = (Entreprise) element2;
-				if (checkEntreprise(element)) {
-					if (i == 0) {
-						FirstSelectedEntreprise = element;
-						i++;
-
-					}
-					entrepriseList.add(new LabelValueBean(element
-							.getNomEntreprise(), String.valueOf(element
-							.getEntrepriseId())));
-				}
-			}
-
-			// charger combo categorie
-			for (Object element2 : FirstSelectedEntreprise.getCategories()) {
-				Categorie element = (Categorie) element2;
-				if (checkCategorie(element)) {
-
-					categorieListe.add(new LabelValueBean(element
-							.getNomCategorie(), String.valueOf(element
-							.getCategorieId())));
-
-				}
-			}
-
-			formulaire.setAssureurListe(assureurList);
-			formulaire.setEntrepriseList(entrepriseList);
-			formulaire.setCategorieList(categorieListe);
-
-		} catch (Exception e) {
-			e.getStackTrace();
-			log.fatal(e.getMessage());
-		}
-
-		finally {
-			// session.close();
-			log.debug("********** Fin initialiserCombosAssureur GestionCommercialeBO **********");
-		}
-
-	}
-
-	@SuppressWarnings("unchecked")
-	public void initialiserCombosDrgCnam(GestionCommercialeForm formulaire)
-			throws Exception {
-		log.debug("********** Debut initialiserCombosDrgCnam GestionCommercialeBO **********");
-		// Session session=SessionFactoryUtil.getInstance().openSession();
-		try {
-
-			ArrayList drgCnamListe = new ArrayList();
-
-			DrgCnamDAO drgCnamDAO = DrgCnamDAO.getInstance();
-
-			// charger combo drgCnam
-			for (Object element2 : drgCnamDAO.listDrgCnams()) {
-				DrgCnam element = (DrgCnam) element2;
-
-				drgCnamListe.add(new LabelValueBean(String.valueOf(element
-						.getNumDrg()), element.getDrgCnamId()));
-
-			}
-
-			formulaire.setDrgCnamListe(drgCnamListe);
-
-		} catch (Exception e) {
-			e.getStackTrace();
-			log.fatal(e.getMessage());
-		}
-
-		finally {
-			// session.close();
-			log.debug("********** Fin initialiserCombosDrgCnam GestionCommercialeBO **********");
-		}
-
-	}
-
-	public ActionMessages checkPrestCouvAdd(GestionCommercialeForm formulaire) {
-		ActionMessages errors1 = new ActionMessages();
-
-		errors1 = checkAddActePc(formulaire);
-		return errors1;
-	}
-
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * clinique.metier.gestion.commerciale.IGestionCommercialeBO#checkActeAdd
+	 * (clinique.model.gestion.commerciale.GestionCommercialeForm)
+	 */
+	@Override
 	@SuppressWarnings({ "unchecked", "finally" })
 	public ActionMessages checkActeAdd(GestionCommercialeForm formulaire) {
 		ActionMessages errors1 = new ActionMessages();
@@ -3567,10 +3346,8 @@ public class GestionCommercialeBO implements ConstantesMetier {
 		try {
 			List detailsFactureList = formulaire.getDetailsFactureList();
 			if (detailsFactureList.size() > 0) {
-				Acteur medecin = ActeurActeDAO
-						.getInstance()
-						.getActeurActe(
-								Integer.parseInt(formulaire.getActeurActeId()))
+				Acteur medecin = getActeurActeDAO().getActeurActe(
+						Integer.parseInt(formulaire.getActeurActeId()))
 						.getActeur();
 				for (Iterator iter = detailsFactureList.iterator(); iter
 						.hasNext();) {
@@ -3598,6 +3375,14 @@ public class GestionCommercialeBO implements ConstantesMetier {
 		}
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see clinique.metier.gestion.commerciale.IGestionCommercialeBO#
+	 * checkActeAddForModificationFacture
+	 * (clinique.model.gestion.commerciale.GestionCommercialeForm)
+	 */
+	@Override
 	@SuppressWarnings({ "unchecked", "finally" })
 	public ActionMessages checkActeAddForModificationFacture(
 			GestionCommercialeForm formulaire) {
@@ -3609,10 +3394,8 @@ public class GestionCommercialeBO implements ConstantesMetier {
 			List detailsFactureList = formulaire
 					.getDetailsFactureModifieesList();
 			if (detailsFactureList.size() > 0) {
-				Acteur medecin = ActeurActeDAO
-						.getInstance()
-						.getActeurActe(
-								Integer.parseInt(formulaire.getActeurActeId()))
+				Acteur medecin = getActeurActeDAO().getActeurActe(
+						Integer.parseInt(formulaire.getActeurActeId()))
 						.getActeur();
 				for (Iterator iter = detailsFactureList.iterator(); iter
 						.hasNext();) {
@@ -3641,62 +3424,56 @@ public class GestionCommercialeBO implements ConstantesMetier {
 		}
 	}
 
-	@SuppressWarnings({ "unchecked", "finally" })
-	public ActionMessages checkBadge(GestionCommercialeForm formulaire,
-			Patient patient) {
-		ActionMessages errors1 = new ActionMessages();
-		// Session session=SessionFactoryUtil.getInstance().openSession();
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * clinique.metier.gestion.commerciale.IGestionCommercialeBO#checkActePC
+	 * (clinique.model.gestion.commerciale.GestionCommercialeForm)
+	 */
+	@Override
+	@SuppressWarnings({ "finally", "unchecked" })
+	public boolean checkActePC(GestionCommercialeForm formulaire) {
+		boolean result = false;
 		try {
-			if (formulaire.getPriseEnChargeFlag().equals("badge")) {
-				PatientPcActuel patientPcActuel = PatientPcActuelDAO
-						.getInstance().getPatientPcByPatient(patient);
+			@SuppressWarnings("unused")
+			PrestationCouvertesPc pc = new PrestationCouvertesPc();
+			if (formulaire.getPrestationCouvertesPcs().size() > 0) {
 
-				for (Object element : CategorieDAO
-						.getInstance()
-						.getCategorie(
-								Integer.parseInt(formulaire.getCategorieId()))
-						.getBlackListes()) {
-
-					BlackListe blackListe = (BlackListe) element;
-
-					if (patientPcActuel.getType().equals("badge")
-							&& patientPcActuel.getBadge() != null) {
-
-						if (blackListe.getStatut().equals(STATUT_VALIDE)
-								&& blackListe.getNumeroBadge().equals(
-										patientPcActuel.getBadge()
-												.getNumeroBadge())) {
-							ActionError error = new ActionError(
-									"formulaire.badge.nonValide");
-							errors1.add("errorMsg", error);
-
-						}
+				for (Iterator iter = formulaire.getPrestationCouvertesPcs()
+						.iterator(); iter.hasNext();) {
+					PrestationCouvertesPc element = (PrestationCouvertesPc) iter
+							.next();
+					if (element.getActe().getActeId() == Integer
+							.parseInt(formulaire.getActeId())) {
+						result = true;
 
 					}
+				}
 
-				}
-				if (patientPcActuel.getType().equals("badge")
-						&& patientPcActuel.getBadge() != null) {
-					formulaire.setBadge(patientPcActuel.getBadge());
-				}
 			}
 		} catch (Exception e) {
-			throw e;
+			result = false;
 		} finally {
-			// session.close();
-			return errors1;
+			return result;
 		}
-
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * clinique.metier.gestion.commerciale.IGestionCommercialeBO#checkActeur
+	 * (clinique.mapping.ActeurActe)
+	 */
+	@Override
 	@SuppressWarnings({ "finally" })
 	public boolean checkActeur(ActeurActe acteurActe) {
 		boolean result = false;
 		try {
 
 			if (acteurActe.getStatut().equals("1")) {
-				if (CompteDAO.getInstance().getCompteFromActeur(
-						acteurActe.getActeur()) != null) {
+				if (getCompteDAO().getCompteFromActeur(acteurActe.getActeur()) != null) {
 					result = true;
 				}
 
@@ -3708,6 +3485,14 @@ public class GestionCommercialeBO implements ConstantesMetier {
 		}
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * clinique.metier.gestion.commerciale.IGestionCommercialeBO#checkAddActePc
+	 * (clinique.model.gestion.commerciale.GestionCommercialeForm)
+	 */
+	@Override
 	public ActionMessages checkAddActePc(GestionCommercialeForm formulaire) {
 		ActionMessages errors2 = new ActionMessages();
 
@@ -3715,7 +3500,7 @@ public class GestionCommercialeBO implements ConstantesMetier {
 		// Session session=SessionFactoryUtil.getInstance().openSession();
 
 		try {
-			Acte acte = ActeDAO.getInstance().getActe(
+			Acte acte = getActeDAO().getActe(
 					Integer.parseInt(formulaire.getActeId()));
 
 			List prestCouvList = formulaire.getPrestationCouvertesPcs();
@@ -3825,6 +3610,100 @@ public class GestionCommercialeBO implements ConstantesMetier {
 	 * }
 	 */
 
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * clinique.metier.gestion.commerciale.IGestionCommercialeBO#checkAssureur
+	 * (clinique.mapping.Assureur)
+	 */
+	@Override
+	@SuppressWarnings({ "finally", "unchecked" })
+	public boolean checkAssureur(Assureur assureur) {
+		boolean result = false;
+		try {
+
+			if (assureur.getStatut().equals("1")) {
+
+				if (assureur.getEntreprises().size() > 0) {
+					for (Object element : assureur.getEntreprises()) {
+
+						Entreprise ent = (Entreprise) element;
+
+						result = checkEntreprise(ent);
+					}
+				}
+			}
+		} catch (Exception e) {
+
+		} finally {
+			return result;
+		}
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * clinique.metier.gestion.commerciale.IGestionCommercialeBO#checkBadge(
+	 * clinique.model.gestion.commerciale.GestionCommercialeForm,
+	 * clinique.mapping.Patient)
+	 */
+	@Override
+	@SuppressWarnings({ "unchecked", "finally" })
+	public ActionMessages checkBadge(GestionCommercialeForm formulaire,
+			Patient patient) {
+		ActionMessages errors1 = new ActionMessages();
+		// Session session=SessionFactoryUtil.getInstance().openSession();
+		try {
+			if (formulaire.getPriseEnChargeFlag().equals("badge")) {
+				PatientPcActuel patientPcActuel = getPatientPcActuelDAO()
+						.getPatientPcByPatient(patient);
+
+				for (Object element : getCategorieDAO().getCategorie(
+						Integer.parseInt(formulaire.getCategorieId()))
+						.getBlackListes()) {
+
+					BlackListe blackListe = (BlackListe) element;
+
+					if (patientPcActuel.getType().equals("badge")
+							&& patientPcActuel.getBadge() != null) {
+
+						if (blackListe.getStatut().equals(STATUT_VALIDE)
+								&& blackListe.getNumeroBadge().equals(
+										patientPcActuel.getBadge()
+												.getNumeroBadge())) {
+							ActionError error = new ActionError(
+									"formulaire.badge.nonValide");
+							errors1.add("errorMsg", error);
+
+						}
+
+					}
+
+				}
+				if (patientPcActuel.getType().equals("badge")
+						&& patientPcActuel.getBadge() != null) {
+					formulaire.setBadge(patientPcActuel.getBadge());
+				}
+			}
+		} catch (Exception e) {
+			throw e;
+		} finally {
+			// session.close();
+			return errors1;
+		}
+
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * clinique.metier.gestion.commerciale.IGestionCommercialeBO#checkCategorie
+	 * (clinique.mapping.Categorie)
+	 */
+	@Override
 	@SuppressWarnings({ "finally" })
 	public boolean checkCategorie(Categorie categorie) {
 		boolean result = false;
@@ -3841,6 +3720,45 @@ public class GestionCommercialeBO implements ConstantesMetier {
 		}
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * clinique.metier.gestion.commerciale.IGestionCommercialeBO#checkClasse
+	 * (clinique.mapping.Classe)
+	 */
+	@Override
+	@SuppressWarnings({ "finally", "unchecked" })
+	public boolean checkClasse(Classe classe) {
+		boolean result = false;
+		try {
+
+			if (classe.getStatut().equals("1")) {
+
+				if (classe.getActes().size() > 0) {
+					for (Object element : classe.getActes()) {
+
+						Acte acte = (Acte) element;
+
+						result = checkActe(acte);
+					}
+				}
+			}
+		} catch (Exception e) {
+
+		} finally {
+			return result;
+		}
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * clinique.metier.gestion.commerciale.IGestionCommercialeBO#checkEntreprise
+	 * (clinique.mapping.Entreprise)
+	 */
+	@Override
 	@SuppressWarnings({ "unchecked", "finally" })
 	public boolean checkEntreprise(Entreprise entreprise) {
 		boolean result = false;
@@ -3866,47 +3784,75 @@ public class GestionCommercialeBO implements ConstantesMetier {
 		}
 	}
 
-	@SuppressWarnings({ "unchecked", "finally" })
-	public boolean checkActe(Acte acte) {
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * clinique.metier.gestion.commerciale.IGestionCommercialeBO#checkFacture
+	 * (clinique.model.gestion.commerciale.GestionCommercialeForm)
+	 */
+	@Override
+	public boolean checkFacture(GestionCommercialeForm formulaire)
+			throws Exception {
 
 		boolean result = false;
-		// int nbreMedecin=0;
-		// int nbreInf=0;
+		log.debug("********** Debut checkFacture GestionCommercialeBO **********");
 		try {
 
-			if (acte.getStatut().equals("1")) {
-				result = true;
-			}
-		} catch (Exception e) {
-			result = false;
-		} finally {
-			return result;
-		}
-	}
+			int nbreFact = 0;
+			Facture facture = new Facture();
+			if (getPatientDAO().getPatient(formulaire.getPatientId())
+					.getFactures().size() > 0) {
+				for (Object element : getPatientDAO().getPatient(
+						formulaire.getPatientId()).getFactures()) {
 
-	@SuppressWarnings({ "finally", "unchecked" })
-	public boolean checkClasse(Classe classe) {
-		boolean result = false;
-		try {
-
-			if (classe.getStatut().equals("1")) {
-
-				if (classe.getActes().size() > 0) {
-					for (Object element : classe.getActes()) {
-
-						Acte acte = (Acte) element;
-
-						result = checkActe(acte);
+					Facture fact = (Facture) element;
+					if (fact.getStatut().equals(STATUT_SUPPRIME)) {
+						if (nbreFact == 0) {
+							facture = fact;
+						}
+						nbreFact++;
 					}
+
 				}
 			}
+
+			if (nbreFact > 1) {
+				return result = false;
+			} else {
+
+				if (nbreFact == 1) {
+					formulaire.setFactureId(String.valueOf(facture
+							.getFactureId()));
+				} else {
+					Patient patient = getPatientDAO().getPatient(
+							formulaire.getPatientId());
+					facture.setPatient(patient);
+					getFactureDAO().save(facture);
+					// session.merge(facture);
+					formulaire.setFactureId("");
+				}
+
+				result = true;
+			}
+
 		} catch (Exception e) {
+			log.fatal(e.getMessage());
 
 		} finally {
+			log.debug("********** Fin checkFacture GestionCommercialeBO **********");
 			return result;
 		}
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * clinique.metier.gestion.commerciale.IGestionCommercialeBO#checkFamillePres
+	 * (clinique.mapping.FamillePrestation)
+	 */
+	@Override
 	@SuppressWarnings({ "finally", "unchecked" })
 	public boolean checkFamillePres(FamillePrestation famillePres) {
 		boolean result = false;
@@ -3928,409 +3874,14 @@ public class GestionCommercialeBO implements ConstantesMetier {
 		}
 	}
 
-	@SuppressWarnings({ "finally", "unchecked" })
-	public boolean checkAssureur(Assureur assureur) {
-		boolean result = false;
-		try {
-
-			if (assureur.getStatut().equals("1")) {
-
-				if (assureur.getEntreprises().size() > 0) {
-					for (Object element : assureur.getEntreprises()) {
-
-						Entreprise ent = (Entreprise) element;
-
-						result = checkEntreprise(ent);
-					}
-				}
-			}
-		} catch (Exception e) {
-
-		} finally {
-			return result;
-		}
-	}
-
-	public void calculCoteAssureur(GestionCommercialeForm formulaire,
-			double prixActe) {
-		// PriseEnCharge
-		// pc=PriseEnChargeDAO.getInstance().getPriseEnCharge(sformulaire.getPcId())
-		// ;
-
-	}
-
-	public boolean checkPcValide(PriseEnCharge pc,
-			GestionCommercialeForm formulaire) {
-		boolean result = false;
-		if (pc.getStatut().equals(STATUT_VALIDE)) {
-			if (!UtilDate.getInstance().beforeDateJour(pc.getFinValidite())) {
-				if (pc.getPlafond() == 0) {
-
-					result = checkNbreActesRestant(formulaire);
-				} else {
-					if (pc.getMontantFact()
-							+ Double.parseDouble(formulaire.getTotalApayer()) < pc
-								.getPlafond()) {
-						result = checkNbreActesRestant(formulaire);
-					}
-				}
-			}
-		}
-
-		return result;
-
-	}
-
-	public void addActePC(GestionCommercialeForm formulaire, double prixActe) {
-		PrestationCouvertesPc pcCouv = getPrestationCouverte(formulaire);
-		int nbreActeRestant = 0;
-		int pourcentage = formulaire.getPriseEnCharge().getPourcentage();
-		int nbreActe = Integer.parseInt(formulaire.getNombreActe());
-		@SuppressWarnings("unused")
-		double montantFacture = Double.parseDouble(formulaire.getTotalApayer())
-				+ formulaire.getPriseEnCharge().getMontantFact();
-		// plafond defini
-		if (pcCouv != null) {
-			if (formulaire.getPriseEnCharge().getPlafond() == 0) {
-
-				// nbre actes limité
-				if (pcCouv.getLimite().equals("1")
-						&& pcCouv.getNbreActesRestant() > 0) {
-
-					addActeNombreActeLimiteSansPlafond(formulaire, pourcentage,
-							nbreActe, pcCouv, prixActe, nbreActeRestant);
-				}
-
-				// nbre actes non limité
-				else {
-					// pourcentage non defini
-					if (pourcentage == 0) {
-						formulaire.setCoteAssureur(String.valueOf(Double
-								.parseDouble(formulaire.getCoteAssureur())
-								+ prixActe * nbreActe));
-					}
-					// pourcentage defini
-					else {
-						formulaire.setCoteAssureur(String.valueOf(Double
-								.parseDouble(formulaire.getCoteAssureur())
-								+ prixActe * nbreActe * pourcentage / 100));
-
-					}
-				}
-
-			}
-
-			// palfond defini
-			else {
-
-				double plafondRestant = formulaire.getPriseEnCharge()
-						.getPlafond()
-						- (formulaire.getPriseEnCharge().getMontantFact() + Double
-								.parseDouble(formulaire.getTotalApayer()));
-				if (plafondRestant >= 0) {
-					// nbre actes limité
-					if (pcCouv.getLimite().equals("1")
-							&& pcCouv.getNbreActesRestant() > 0) {
-						addActeNombreActeLimiteAvecPlafond(formulaire,
-								pourcentage, nbreActe, pcCouv, prixActe,
-								nbreActeRestant, plafondRestant);
-					}
-
-					// nbre actes non limité
-					else {
-						// pourcentage non defini
-						if (pourcentage == 0) {
-							if (prixActe * nbreActe > plafondRestant) {
-								formulaire.setCoteAssureur(String
-										.valueOf(Double.parseDouble(formulaire
-												.getCoteAssureur())
-												+ plafondRestant));
-							} else {
-								formulaire.setCoteAssureur(String
-										.valueOf(Double.parseDouble(formulaire
-												.getCoteAssureur())
-												+ prixActe
-												* nbreActe));
-							}
-
-						}
-						// pourcentage defini
-						else {
-							if (prixActe * nbreActe > plafondRestant) {
-								formulaire.setCoteAssureur(String
-										.valueOf(Double.parseDouble(formulaire
-												.getCoteAssureur())
-												+ plafondRestant
-												* pourcentage
-												/ 100));
-							} else {
-								formulaire
-										.setCoteAssureur(String.valueOf(Double
-												.parseDouble(formulaire
-														.getCoteAssureur())
-												+ prixActe
-												* nbreActe
-												* pourcentage / 100));
-							}
-
-						}
-					}
-				}
-			}
-
-		}
-
-	}
-
-	public void addActePCFromDetailFacture(GestionCommercialeForm formulaire,
-			double prixActe, DetailFacture df) {
-		PrestationCouvertesPc pcCouv = getPrestationCouverte(formulaire);
-		int nbreActeRestant = 0;
-		int pourcentage = formulaire.getPriseEnCharge().getPourcentage();
-		int nbreActe = df.getNbrActes();
-		@SuppressWarnings("unused")
-		double montantFacture = Double.parseDouble(formulaire.getTotalApayer())
-				+ formulaire.getPriseEnCharge().getMontantFact();
-		// plafond defini
-		if (pcCouv != null) {
-			if (formulaire.getPriseEnCharge().getPlafond() == 0) {
-
-				// nbre actes limité
-				if (pcCouv.getLimite().equals("1")
-						&& pcCouv.getNbreActesRestant() > 0) {
-
-					addActeNombreActeLimiteSansPlafond(formulaire, pourcentage,
-							nbreActe, pcCouv, prixActe, nbreActeRestant);
-				}
-
-				// nbre actes non limité
-				else {
-					// pourcentage non defini
-					if (pourcentage == 0) {
-						formulaire.setCoteAssureur(String.valueOf(Double
-								.parseDouble(formulaire.getCoteAssureur())
-								+ prixActe * nbreActe));
-
-					}
-					// pourcentage defini
-					else {
-						formulaire.setCoteAssureur(String.valueOf(Double
-								.parseDouble(formulaire.getCoteAssureur())
-								+ prixActe * nbreActe * pourcentage / 100));
-
-					}
-				}
-
-			}
-
-			// palfond defini
-			else {
-
-				double plafondRestant = formulaire.getPriseEnCharge()
-						.getPlafond()
-						- (formulaire.getPriseEnCharge().getMontantFact() + Double
-								.parseDouble(formulaire.getTotalApayer()));
-				if (plafondRestant >= 0) {
-					// nbre actes limité
-					if (pcCouv.getLimite().equals("1")
-							&& pcCouv.getNbreActesRestant() > 0) {
-
-						addActeNombreActeLimiteAvecPlafond(formulaire,
-								pourcentage, nbreActe, pcCouv, prixActe,
-								nbreActeRestant, plafondRestant);
-					}
-
-					// nbre actes non limité
-					else {
-						// pourcentage non defini
-						if (pourcentage == 0) {
-							if (prixActe * nbreActe > plafondRestant) {
-								formulaire.setCoteAssureur(String
-										.valueOf(Double.parseDouble(formulaire
-												.getCoteAssureur())
-												+ plafondRestant));
-							} else {
-								formulaire.setCoteAssureur(String
-										.valueOf(Double.parseDouble(formulaire
-												.getCoteAssureur())
-												+ prixActe
-												* nbreActe));
-							}
-
-						}
-						// pourcentage defini
-						else {
-							if (prixActe * nbreActe > plafondRestant) {
-								formulaire.setCoteAssureur(String
-										.valueOf(Double.parseDouble(formulaire
-												.getCoteAssureur())
-												+ plafondRestant
-												* pourcentage
-												/ 100));
-							} else {
-								formulaire
-										.setCoteAssureur(String.valueOf(Double
-												.parseDouble(formulaire
-														.getCoteAssureur())
-												+ prixActe
-												* nbreActe
-												* pourcentage / 100));
-							}
-
-						}
-					}
-				}
-			}
-
-		}
-
-	}
-
-	public void addActePCWithoutPrestationCouv(
-			GestionCommercialeForm formulaire, double prixActe) {
-
-		// int nbreActeRestant=0;
-		int pourcentage = formulaire.getPriseEnCharge().getPourcentage();
-		int nbreActe = Integer.parseInt(formulaire.getNombreActe());
-		@SuppressWarnings("unused")
-		double montantFacture = Double.parseDouble(formulaire.getTotalApayer())
-				+ formulaire.getPriseEnCharge().getMontantFact();
-		// plafond non defini
-		if (formulaire.getPriseEnCharge().getPlafond() == 0) {
-
-			// pourcentage defini
-			if (pourcentage > 0) {
-				formulaire.setCoteAssureur(String.valueOf(Double
-						.parseDouble(formulaire.getCoteAssureur())
-						+ prixActe
-						* nbreActe * pourcentage / 100));
-
-			}
-
-		}
-
-		// palfond defini
-		else {
-			double plafondRestant = formulaire.getPriseEnCharge().getPlafond()
-					- (formulaire.getPriseEnCharge().getMontantFact() + Double
-							.parseDouble(formulaire.getTotalApayer()));
-			if (plafondRestant >= 0) {
-
-				// pourcentage non defini
-				if (pourcentage == 0) {
-					if (prixActe * nbreActe > plafondRestant) {
-						formulaire.setCoteAssureur(String.valueOf(Double
-								.parseDouble(formulaire.getCoteAssureur())
-								+ plafondRestant));
-					} else {
-						formulaire.setCoteAssureur(String.valueOf(Double
-								.parseDouble(formulaire.getCoteAssureur())
-								+ prixActe * nbreActe));
-					}
-
-				}
-				// pourcentage defini
-				else {
-					if (prixActe * nbreActe > plafondRestant) {
-						formulaire.setCoteAssureur(String.valueOf(Double
-								.parseDouble(formulaire.getCoteAssureur())
-								+ plafondRestant * pourcentage / 100));
-					} else {
-						formulaire.setCoteAssureur(String.valueOf(Double
-								.parseDouble(formulaire.getCoteAssureur())
-								+ prixActe * nbreActe * pourcentage / 100));
-					}
-
-				}
-
-			}
-		}
-
-	}
-
-	public void addActePCWithoutPrestationCouvFromDetailFacture(
-			GestionCommercialeForm formulaire, double prixActe, DetailFacture df) {
-
-		// int nbreActeRestant=0;
-		int pourcentage = formulaire.getPriseEnCharge().getPourcentage();
-		int nbreActe = df.getNbrActes();
-		@SuppressWarnings("unused")
-		double montantFacture = Double.parseDouble(formulaire.getTotalApayer())
-				+ formulaire.getPriseEnCharge().getMontantFact();
-		// plafond non defini
-		if (formulaire.getPriseEnCharge().getPlafond() == 0) {
-
-			// pourcentage defini
-			if (pourcentage > 0) {
-				formulaire.setCoteAssureur(String.valueOf(Double
-						.parseDouble(formulaire.getCoteAssureur())
-						+ prixActe
-						* nbreActe * pourcentage / 100));
-
-			}
-
-		}
-
-		// palfond defini
-		else {
-			double plafondRestant = formulaire.getPriseEnCharge().getPlafond()
-					- (formulaire.getPriseEnCharge().getMontantFact() + Double
-							.parseDouble(formulaire.getTotalApayer()));
-			if (plafondRestant >= 0) {
-
-				// pourcentage non defini
-				if (pourcentage == 0) {
-					if (prixActe * nbreActe > plafondRestant) {
-						formulaire.setCoteAssureur(String.valueOf(Double
-								.parseDouble(formulaire.getCoteAssureur())
-								+ plafondRestant));
-					} else {
-						formulaire.setCoteAssureur(String.valueOf(Double
-								.parseDouble(formulaire.getCoteAssureur())
-								+ prixActe * nbreActe));
-					}
-
-				}
-				// pourcentage defini
-				else {
-					if (prixActe * nbreActe > plafondRestant) {
-						formulaire.setCoteAssureur(String.valueOf(Double
-								.parseDouble(formulaire.getCoteAssureur())
-								+ plafondRestant * pourcentage / 100));
-					} else {
-						formulaire.setCoteAssureur(String.valueOf(Double
-								.parseDouble(formulaire.getCoteAssureur())
-								+ prixActe * nbreActe * pourcentage / 100));
-					}
-
-				}
-
-			}
-		}
-
-	}
-
-	@SuppressWarnings("unchecked")
-	public PrestationCouvertesPc getPrestationCouverte(
-			GestionCommercialeForm formulaire) {
-		PrestationCouvertesPc pc = new PrestationCouvertesPc();
-		if (formulaire.getPrestationCouvertesPcs().size() > 0) {
-
-			for (Iterator iter = formulaire.getPrestationCouvertesPcs()
-					.iterator(); iter.hasNext();) {
-				PrestationCouvertesPc element = (PrestationCouvertesPc) iter
-						.next();
-				if (element.getActe().getActeId() == Integer
-						.parseInt(formulaire.getActeId())) {
-					pc = element;
-
-				}
-			}
-
-		}
-		return pc;
-	}
-
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see clinique.metier.gestion.commerciale.IGestionCommercialeBO#
+	 * checkNbreActesRestant
+	 * (clinique.model.gestion.commerciale.GestionCommercialeForm)
+	 */
+	@Override
 	@SuppressWarnings("unchecked")
 	public boolean checkNbreActesRestant(GestionCommercialeForm formulaire) {
 		if (formulaire.getPrestationCouvertesPcs().size() > 0) {
@@ -4362,358 +3913,276 @@ public class GestionCommercialeBO implements ConstantesMetier {
 		}
 	}
 
-	public int calculQPActeur(GestionCommercialeForm formulaire) {
-		// calcul qp praticien
-		int qpActeur = 0;
-		if (formulaire.getMedecinChoix().equals("oui")
-				&& !UtilDate.getInstance().isVide(formulaire.getActeurActeId())) {
-			ActeurActe praticien = ActeurActeDAO.getInstance().getActeurActe(
-					Integer.parseInt(formulaire.getActeurActeId()));
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * clinique.metier.gestion.commerciale.IGestionCommercialeBO#checkPC(clinique
+	 * .mapping.PriseEnCharge)
+	 */
+	@Override
+	public boolean checkPC(PriseEnCharge pc) {
+		boolean result = false;
+		if (pc.getStatut().equals("1")
+				&& !UtilDate.getInstance().beforeDateJour(pc.getFinValidite())) {
+			// if plafond
+			if (pc.getPlafond() > 0) {
+				if (pc.getPlafond() > pc.getMontantFact()) {
 
-			if (praticien != null) {
-				if (formulaire.getTypeActe().equals("normal")) {
-					if (praticien.getPourcentage() != 0) {
-						qpActeur = praticien.getPourcentage();
+					if (pc.getPrestationCouvertesPcs().size() > 0) {
+						result = checkPrestationCouvertesPC(pc);
+
 					} else {
-						Acte acte = ActeDAO.getInstance().getActe(
-								Integer.parseInt(formulaire.getActeId()));
-						qpActeur = acte.getTauxPraticien();
+						result = true;
 					}
-				} else {
-					if (praticien.getPourcentageUrg() != 0) {
-						qpActeur = praticien.getPourcentageUrg();
-					} else {
-						Acte acte = ActeDAO.getInstance().getActe(
-								Integer.parseInt(formulaire.getActeId()));
-						qpActeur = acte.getTauxPraticienUrg();
-					}
+
 				}
 			} else {
-				Acte acte = ActeDAO.getInstance().getActe(
-						Integer.parseInt(formulaire.getActeId()));
-				if (formulaire.getTypeActe().equals("normal")) {
-					qpActeur = acte.getTauxPraticien();
-				} else {
-					qpActeur = acte.getTauxPraticienUrg();
-					// else qpActeur=acte.getTauxDepPraticien();
-				}
+				result = true;
 			}
 		}
 
-		return qpActeur;
+		return result;
 	}
 
-	public int calculQPActeur(DetailFacture df) {
-		// calcul qp praticien
-		int qpActeur = 0;
-		if (df.getMedecinExiste().equals("1")) {
-			ActeurActe praticien = ActeurActeDAO.getInstance().getActeurActe(
-					df.getMedecin(), df.getActe());
-
-			if (praticien != null) {
-				if (df.getType().equals("normal")) {
-					if (praticien.getPourcentage() != 0) {
-						qpActeur = praticien.getPourcentage();
-					} else {
-						qpActeur = df.getActe().getTauxPraticien();
-					}
-				} else {
-					if (praticien.getPourcentageUrg() != 0) {
-						qpActeur = praticien.getPourcentageUrg();
-					} else {
-						qpActeur = df.getActe().getTauxPraticienUrg();
-					}
-				}
-			} else {
-				if (df.getType().equals("normal")) {
-					qpActeur = df.getActe().getTauxPraticien();
-				} else {
-					qpActeur = df.getActe().getTauxPraticienUrg();
-					// else qpActeur=acte.getTauxDepPraticien();
-				}
-			}
-		}
-
-		return qpActeur;
-	}
-
-	public int calculQPAssistant(DetailFacture df) {
-		// calcul qp praticien
-		int qpAssistant = 0;
-		if (df.getInfirmierExiste().equals("1")) {
-			Acte acte = df.getActe();
-			if (df.getType().equals("normal")) {
-				qpAssistant = acte.getTauxAssistant();
-			} else if (df.getType().equals("urgence")) {
-				qpAssistant = acte.getTauxAssistantUrg();
-			} else {
-				qpAssistant = acte.getTauxDepAssistant();
-			}
-		}
-		return qpAssistant;
-	}
-
-	public int calculQPAssistant(GestionCommercialeForm formulaire) {
-		// calcul qp praticien
-		int qpAssistant = 0;
-		if (formulaire.getInfirmierChoix().equals("oui")
-				&& !UtilDate.getInstance().isVide(
-						formulaire.getActeurActeIdInf())) {
-			Acte acte = ActeDAO.getInstance().getActe(
-					Integer.parseInt(formulaire.getActeId()));
-			if (formulaire.getTypeActe().equals("normal")) {
-				qpAssistant = acte.getTauxAssistant();
-			} else if (formulaire.getTypeActe().equals("urgence")) {
-				qpAssistant = acte.getTauxAssistantUrg();
-			} else {
-				qpAssistant = acte.getTauxDepAssistant();
-			}
-		}
-		return qpAssistant;
-	}
-
-	public void addActeNombreActeLimiteSansPlafond(
-			GestionCommercialeForm formulaire, int pourcentage, int nbreActe,
-			PrestationCouvertesPc pcCouv, double prixActe, int nbreActeRestant) {
-		nbreActeRestant = pcCouv.getNbreActesRestant();
-		// nbre acte restant < nbre acte saisi
-		if (nbreActe > nbreActeRestant) {
-			// pourcentage non defini
-			if (pourcentage == 0) {
-				formulaire.setCoteAssureur(String.valueOf(Double
-						.parseDouble(formulaire.getCoteAssureur())
-						+ prixActe
-						* nbreActeRestant));
-				pcCouv.setNbreActesRestant(0);
-				setPrestCouvAtList(pcCouv, formulaire);
-			}
-			// pourcentage defini
-			else {
-				formulaire.setCoteAssureur(String.valueOf(Double
-						.parseDouble(formulaire.getCoteAssureur())
-						+ prixActe
-						* nbreActeRestant * pourcentage / 100));
-				pcCouv.setNbreActesRestant(0);
-				setPrestCouvAtList(pcCouv, formulaire);
-			}
-		}
-
-		// nbre acte restant >= nbre acte saisi
-		else {
-			// pourcentage non defini
-			if (pourcentage == 0) {
-				formulaire.setCoteAssureur(String.valueOf(Double
-						.parseDouble(formulaire.getCoteAssureur())
-						+ prixActe
-						* nbreActe));
-				pcCouv.setNbreActesRestant(nbreActeRestant - nbreActe);
-				setPrestCouvAtList(pcCouv, formulaire);
-
-			}
-			// pourcentage defini
-			else {
-				formulaire.setCoteAssureur(String.valueOf(Double
-						.parseDouble(formulaire.getCoteAssureur())
-						+ prixActe
-						* nbreActe * pourcentage / 100));
-				pcCouv.setNbreActesRestant(nbreActeRestant - nbreActe);
-				setPrestCouvAtList(pcCouv, formulaire);
-			}
-		}
-
-	}
-
-	public void addActeNombreActeLimiteAvecPlafond(
-			GestionCommercialeForm formulaire, int pourcentage, int nbreActe,
-			PrestationCouvertesPc pcCouv, double prixActe, int nbreActeRestant,
-			double plafondRestant) {
-		nbreActeRestant = pcCouv.getNbreActesRestant();
-		double prixActes = prixActe * nbreActe;
-		// nbre acte restant < nbre acte saisi
-		if (nbreActe > nbreActeRestant) {
-			prixActes = prixActe * nbreActeRestant;
-			// pourcentage non defini
-			if (pourcentage == 0) {
-
-				if (prixActes > plafondRestant) {
-					formulaire.setCoteAssureur(String.valueOf(Double
-							.parseDouble(formulaire.getCoteAssureur())
-							+ plafondRestant));
-				} else {
-					formulaire.setCoteAssureur(String.valueOf(Double
-							.parseDouble(formulaire.getCoteAssureur())
-							+ prixActes));
-				}
-
-				pcCouv.setNbreActesRestant(0);
-				setPrestCouvAtList(pcCouv, formulaire);
-			}
-
-			// pourcentage defini
-			else {
-				if (prixActes > plafondRestant) {
-					formulaire.setCoteAssureur(String.valueOf(Double
-							.parseDouble(formulaire.getCoteAssureur())
-							+ plafondRestant * pourcentage / 100));
-				} else {
-					formulaire.setCoteAssureur(String.valueOf(Double
-							.parseDouble(formulaire.getCoteAssureur())
-							+ prixActes * pourcentage / 100));
-				}
-				pcCouv.setNbreActesRestant(0);
-				setPrestCouvAtList(pcCouv, formulaire);
-			}
-		}
-
-		// nbre acte restant >= nbre acte saisi
-		else {
-
-			// pourcentage non defini
-			if (pourcentage == 0) {
-				if (prixActes > plafondRestant) {
-					formulaire.setCoteAssureur(String.valueOf(Double
-							.parseDouble(formulaire.getCoteAssureur())
-							+ plafondRestant));
-				} else {
-					formulaire.setCoteAssureur(String.valueOf(Double
-							.parseDouble(formulaire.getCoteAssureur())
-							+ prixActes));
-				}
-				pcCouv.setNbreActesRestant(nbreActeRestant - nbreActe);
-				setPrestCouvAtList(pcCouv, formulaire);
-
-			}
-			// pourcentage defini
-			else {
-				if (prixActes > plafondRestant) {
-					formulaire.setCoteAssureur(String.valueOf(Double
-							.parseDouble(formulaire.getCoteAssureur())
-							+ plafondRestant * pourcentage / 100));
-				} else {
-					formulaire.setCoteAssureur(String.valueOf(Double
-							.parseDouble(formulaire.getCoteAssureur())
-							+ prixActes * pourcentage / 100));
-				}
-				pcCouv.setNbreActesRestant(nbreActeRestant - nbreActe);
-				setPrestCouvAtList(pcCouv, formulaire);
-			}
-		}
-
-	}
-
-	@SuppressWarnings("unchecked")
-	public void setPrestCouvAtList(PrestationCouvertesPc pcCouv,
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * clinique.metier.gestion.commerciale.IGestionCommercialeBO#checkPcValide
+	 * (clinique.mapping.PriseEnCharge,
+	 * clinique.model.gestion.commerciale.GestionCommercialeForm)
+	 */
+	@Override
+	public boolean checkPcValide(PriseEnCharge pc,
 			GestionCommercialeForm formulaire) {
-		int i = 0;
-		List list = formulaire.getPrestationCouvertesPcs();
-		for (Iterator iter = list.iterator(); iter.hasNext();) {
-			PrestationCouvertesPc element = (PrestationCouvertesPc) iter.next();
-			if (element.getPresCouvId().equals(pcCouv.getPresCouvId())) {
-				formulaire.getPrestationCouvertesPcs().set(i, pcCouv);
-				i++;
-				break;
-			}
+		boolean result = false;
+		if (pc.getStatut().equals(STATUT_VALIDE)) {
+			if (!UtilDate.getInstance().beforeDateJour(pc.getFinValidite())) {
+				if (pc.getPlafond() == 0) {
 
+					result = checkNbreActesRestant(formulaire);
+				} else {
+					if (pc.getMontantFact()
+							+ Double.parseDouble(formulaire.getTotalApayer()) < pc
+								.getPlafond()) {
+						result = checkNbreActesRestant(formulaire);
+					}
+				}
+			}
 		}
 
-		PriseEnCharge pc = formulaire.getPriseEnCharge();
-
-		pc.getPrestationCouvertesPcs().set(i - 1, pcCouv);
-		formulaire.setPriseEnCharge(pc);
+		return result;
 
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see clinique.metier.gestion.commerciale.IGestionCommercialeBO#
+	 * checkPrestationCouvertesPC(clinique.mapping.PriseEnCharge)
+	 */
+	@Override
 	@SuppressWarnings("unchecked")
-	public void RechargerCombosEntreprisesAndCategories(
-			GestionCommercialeForm formulaire) throws Exception {
-		log.debug("********** Debut chargerCombosEntreprises GestionCommercialeBO **********");
-		Session session = SessionFactoryUtil.getInstance().openSession();
+	public boolean checkPrestationCouvertesPC(PriseEnCharge pc) {
+		boolean result = false;
+		for (Object element2 : pc.getPrestationCouvertesPcs()) {
+			PrestationCouvertesPc element = (PrestationCouvertesPc) element2;
+			if (element.getStatut().equals("1")) {
+				if (element.getLimite().equals("1")) {
+					if (element.getNbreActesRestant() > 0) {
+						result = true;
+					}
+
+				} else {
+					result = true;
+				}
+			}
+		}
+
+		return result;
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * clinique.metier.gestion.commerciale.IGestionCommercialeBO#checkPrestCouvAdd
+	 * (clinique.model.gestion.commerciale.GestionCommercialeForm)
+	 */
+	@Override
+	public ActionMessages checkPrestCouvAdd(GestionCommercialeForm formulaire) {
+		ActionMessages errors1 = new ActionMessages();
+
+		errors1 = checkAddActePc(formulaire);
+		return errors1;
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see clinique.metier.gestion.commerciale.IGestionCommercialeBO#
+	 * checkReglementPCByAssureur
+	 * (clinique.model.gestion.commerciale.GestionCommercialeForm)
+	 */
+	@Override
+	@SuppressWarnings({ "unchecked", "finally" })
+	public boolean checkReglementPCByAssureur(GestionCommercialeForm formulaire)
+			throws Exception {
+
+		boolean result = false;
+		log.debug("********** Debut ajouterRegelement GestionCommercialeBO **********");
+		// Session session=SessionFactoryUtil.getInstance().openSession();
+
 		try {
+			List reglementsList = formulaire.getReglementsList();
+			double payerParAssureur = Double.parseDouble(formulaire
+					.getCoteAssureur());
+			if (payerParAssureur > 0) {
+				Reglement reglement = new Reglement();
+				reglement.setReglementId(ConstantesMetier.ID_REGLEMENT
+						+ UtilDate.getInstance().getDateForId()
+						+ ""
+						+ getUserDao()
+								.getUserByLogin(formulaire.getOperateur())
+								.getUserId());
 
-			ArrayList entrepriseList = new ArrayList();
-			ArrayList categorieListe = new ArrayList();
+				// payerParAssureur=payerParAssureur+payerParAssureur*30/100;
+				reglement.setMontant(payerParAssureur);
+				reglement.setDateReglement(UtilDate.getInstance()
+						.getDateToday());
+				reglement.setDescription(getCategorieDAO().getCategorie(
+						Integer.parseInt(formulaire.getCategorieId()))
+						.getNomCategorie());
 
-			AssureurDAO assureurDAO = AssureurDAO.getInstance();
-			Entreprise FirstSelectedEntreprise = new Entreprise();
+				reglement.setCategorie(getCategorieDAO().getCategorie(
+						Integer.parseInt(formulaire.getCategorieId())));
 
-			// charger combo entreprise
-			for (Object element2 : assureurDAO.getAssureur(
-					Integer.parseInt(formulaire.getAssureurId()))
-					.getEntreprises()) {
-				Entreprise element = (Entreprise) element2;
-				if (checkEntreprise(element)) {
-					if (element.getEntrepriseId() == Integer
-							.parseInt(formulaire.getEntrepriseId())) {
-						FirstSelectedEntreprise = element;
-					}
-					entrepriseList.add(new LabelValueBean(element
-							.getNomEntreprise(), String.valueOf(element
-							.getEntrepriseId())));
+				if (formulaire.getPriseEnChargeFlag().equals("priseEnCharge")) {
+					PriseEnCharge pc = formulaire.getPriseEnCharge();
+					reglement.setTypePC("priseEnCharge");
+					reglement.setPriseEnCharge(pc);
+				} else if (formulaire.getPriseEnChargeFlag().equals("badge")) {
+					Badge badge = formulaire.getBadge();
+					reglement.setTypePC("badge");
+					reglement.setBadge(badge);
 				}
+
+				reglement.setTypePayement(getTypePayementDAO().getTypePayement(
+						4));
+				reglement.setStatut("1");
+				reglementsList.add(reglement);
+				formulaire.setReglementsList(reglementsList);
 			}
-
-			// charger combo categorie
-			if (FirstSelectedEntreprise != null) {
-				for (Object element2 : FirstSelectedEntreprise.getCategories()) {
-					Categorie element = (Categorie) element2;
-					if (checkCategorie(element)) {
-
-						categorieListe.add(new LabelValueBean(element
-								.getNomCategorie(), String.valueOf(element
-								.getCategorieId())));
-
-					}
-				}
-			}
-
-			formulaire.setEntrepriseList(entrepriseList);
-			formulaire.setCategorieList(categorieListe);
+			result = true;
 
 		} catch (Exception e) {
-			e.getStackTrace();
+
+			e.printStackTrace();
 			log.fatal(e.getMessage());
+
 		}
 
 		finally {
 			// session.close();
-			log.debug("********** Fin chargerCombosEntreprises GestionCommercialeBO **********");
-		}
-
-	}
-
-	@SuppressWarnings({ "finally", "unchecked" })
-	public boolean checkActePC(GestionCommercialeForm formulaire) {
-		boolean result = false;
-		try {
-			@SuppressWarnings("unused")
-			PrestationCouvertesPc pc = new PrestationCouvertesPc();
-			if (formulaire.getPrestationCouvertesPcs().size() > 0) {
-
-				for (Iterator iter = formulaire.getPrestationCouvertesPcs()
-						.iterator(); iter.hasNext();) {
-					PrestationCouvertesPc element = (PrestationCouvertesPc) iter
-							.next();
-					if (element.getActe().getActeId() == Integer
-							.parseInt(formulaire.getActeId())) {
-						result = true;
-
-					}
-				}
-
-			}
-		} catch (Exception e) {
-			result = false;
-		} finally {
+			log.debug("********** Fin ajouterRegelement GestionCommercialeBO **********");
 			return result;
 		}
 	}
 
-	public void initialiserChampsAjouterPrestations(
-			GestionCommercialeForm formulaire) {
-		formulaire.setInfirmierChoix("non");
-		formulaire.setMedecinChoix("non");
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see clinique.metier.gestion.commerciale.IGestionCommercialeBO#
+	 * checkReglementPCByAssureurCNAM
+	 * (clinique.model.gestion.commerciale.GestionCommercialeForm)
+	 */
+	@Override
+	@SuppressWarnings({ "unchecked", "finally" })
+	public boolean checkReglementPCByAssureurCNAM(
+			GestionCommercialeForm formulaire) throws Exception {
+
+		boolean result = false;
+		log.debug("********** Debut checkReglementPCByAssureurCNAM GestionCommercialeBO **********");
+		// Session session=SessionFactoryUtil.getInstance().openSession();
+
+		try {
+			List reglementsList = formulaire.getReglementsList();
+			double payerParAssureur = Double.parseDouble(formulaire
+					.getCoteAssureur());
+			Categorie categorie = getCategorieDAO().getCategorie(
+					Integer.parseInt(formulaire.getCategorieId()));
+			int pourcentage = categorie.getPourcentage();
+
+			if (payerParAssureur > 0) {
+				for (Iterator iter = formulaire.getDetailDrgCnamListFacture()
+						.iterator(); iter.hasNext();) {
+					DetailDgrCnamFacture element = (DetailDgrCnamFacture) iter
+							.next();
+
+					Reglement reglement = new Reglement();
+					reglement.setReglementId(ConstantesMetier.ID_REGLEMENT
+							+ UtilDate.getInstance().getDateForId()
+							+ ""
+							+ getUserDao().getUserByLogin(
+									formulaire.getOperateur()).getUserId());
+
+					DrgCnam drg = element.getDrgCnam();
+					// payerParAssureur=payerParAssureur+payerParAssureur*30/100;
+					reglement.setPetitMonnaie(element.getPetitMonnaie());
+					reglement.setMontant(drg.getMontant() * pourcentage / 100);
+					reglement.setDateReglement(UtilDate.getInstance()
+							.getDateToday());
+					reglement.setDescription("DRG " + drg.getNumDrg());
+					reglement.setDrgCnam(drg);
+
+					reglement.setCategorie(categorie);
+
+					if (formulaire.getPriseEnChargeFlag().equals(
+							"priseEnCharge")) {
+						PriseEnCharge pc = formulaire.getPriseEnCharge();
+						reglement.setTypePC("priseEnCharge");
+						reglement.setPriseEnCharge(pc);
+					} else if (formulaire.getPriseEnChargeFlag()
+							.equals("badge")) {
+						Badge badge = formulaire.getBadge();
+						reglement.setTypePC("badge");
+						reglement.setBadge(badge);
+					}
+
+					reglement.setTypePayement(getTypePayementDAO()
+							.getTypePayement(4));
+					reglement.setStatut("1");
+					reglementsList.add(reglement);
+					formulaire.setReglementsList(reglementsList);
+
+				}
+
+			}
+			result = true;
+
+		} catch (Exception e) {
+
+			e.printStackTrace();
+			log.fatal(e.getMessage());
+
+		}
+
+		finally {
+			// session.close();
+			log.debug("********** Fin checkReglementPCByAssureurCNAM GestionCommercialeBO **********");
+			return result;
+		}
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * clinique.metier.gestion.commerciale.IGestionCommercialeBO#checkRemise
+	 * (clinique.model.gestion.commerciale.GestionCommercialeForm)
+	 */
+	@Override
 	public void checkRemise(GestionCommercialeForm formulaire) {
 		if (formulaire.getRemiseFlag().equals("oui")) {
 			double resteApayer = Double
@@ -4735,134 +4204,323 @@ public class GestionCommercialeBO implements ConstantesMetier {
 
 	}
 
-	@SuppressWarnings("unchecked")
-	public void setValeursResteApyer(GestionCommercialeForm formulaire) {
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see clinique.metier.gestion.commerciale.IGestionCommercialeBO#
+	 * construireListePrestCouvertes
+	 * (clinique.model.gestion.commerciale.GestionCommercialeForm)
+	 */
+	@Override
+	@SuppressWarnings({ "unchecked", "finally" })
+	public boolean construireListePrestCouvertes(
+			GestionCommercialeForm formulaire) throws Exception {
 
-		double resteApayer = Double.parseDouble(formulaire.getTotalApayer())
-				- Double.parseDouble(formulaire.getCoteAssureur())
-				- Double.parseDouble(formulaire.getRemiseMontant());
-
-		if (!formulaire.getPriseEnChargeFlag().equals("aucune")) {
-			if (formulaire.getLibeleAssureur().equals("CNAM")) {
-				double petitMonnaieDrg = 0;
-
-				for (Iterator iter = formulaire.getDetailDrgCnamListFacture()
-						.iterator(); iter.hasNext();) {
-					DetailDgrCnamFacture element = (DetailDgrCnamFacture) iter
-							.next();
-
-					petitMonnaieDrg = petitMonnaieDrg
-							+ element.getPetitMonnaie();
-				}
-
-				resteApayer = resteApayer + petitMonnaieDrg;
-			}
-		}
-
-		double resteApayerSansMajoration = 0;
-		resteApayerSansMajoration = 100 * resteApayer
-				/ (100 + calculMajoration(formulaire));
-
-		formulaire.setResteApayer(String.valueOf(resteApayerSansMajoration));
-		formulaire.setResteApayerMajoration(String.valueOf(resteApayer));
-
-		if (resteApayer == 0) {
-			formulaire.setRecuRegle("1");
-		} else {
-			formulaire.setRecuRegle("0");
-		}
-
-	}
-
-	public void setValeursResteApyer2(GestionCommercialeForm formulaire) {
-		double resteApayer = Double.parseDouble(formulaire.getTotalApayer())
-				- Double.parseDouble(formulaire.getCoteAssureur())
-				- Double.parseDouble(formulaire.getRemiseMontant());
-
-		double resteApayerSansMajoration = 0;
-		resteApayerSansMajoration = resteApayer - resteApayer
-				* calculMajoration(formulaire) / 100;
-
-		formulaire.setResteApayer(String.valueOf(resteApayerSansMajoration));
-		formulaire.setResteApayerMajoration(String.valueOf(resteApayer));
-
-		if (resteApayer == 0) {
-			formulaire.setRecuRegle("1");
-		} else {
-			formulaire.setRecuRegle("0");
-		}
-
-	}
-
-	@SuppressWarnings("unchecked")
-	public void setValeursResteApyerHosp(GestionCommercialeForm formulaire)
-			throws Exception {
+		boolean result = false;
+		log.debug("********** Debut ajouterActe GestionCommercialeBO **********");
 
 		try {
-			double resteApayer = Double
-					.parseDouble(formulaire.getTotalApayer())
-					- Double.parseDouble(formulaire.getCoteAssureur())
-					- Double.parseDouble(formulaire.getRemiseMontant());
+			List prestCouvList = formulaire.getPrestationCouvertesPcs();
 
-			if (!formulaire.getPriseEnChargeFlag().equals("aucune")) {
-				if (formulaire.getLibeleAssureur().equals("CNAM")) {
-					double petitMonnaieDrg = 0;
+			// ajouter classe ou famille ou acte
 
-					for (Iterator iter = formulaire
-							.getDetailDrgCnamListFacture().iterator(); iter
-							.hasNext();) {
-						DetailDgrCnamFacture element = (DetailDgrCnamFacture) iter
-								.next();
+			// debut id prestation couverte 15
+			PrestationCouvertesPc pc = new PrestationCouvertesPc();
+			pc.setPresCouvId(ConstantesMetier.ID_PRESTATIONCOUVERTEPC
+					+ UtilDate.getInstance().getDateForId()
+					+ ""
+					+ getUserDao().getUserByLogin(formulaire.getOperateur())
+							.getUserId());
 
-						petitMonnaieDrg = petitMonnaieDrg
-								+ element.getPetitMonnaie();
-					}
+			Acte a = getActeDAO().getActe(
+					Integer.parseInt(formulaire.getActeId()));
+			pc.setType("acte");
+			pc.setLibelle(a.getNomActe());
+			pc.setActe(a);
+			// }
 
-					resteApayer = resteApayer + petitMonnaieDrg;
-				}
-			}
-
-			double resteApayerSansMajoration = 0;
-			int majoration = calculMajoration(formulaire);
-			resteApayerSansMajoration = 100 * resteApayer / (100 + majoration);
-
-			double avance = Double.parseDouble(formulaire.getAvance());
-			if (resteApayerSansMajoration > avance) {
-				resteApayerSansMajoration = resteApayerSansMajoration - avance;
-				formulaire.setaRendre("0");
+			if (formulaire.getActesLimite().equals("non")) {
+				pc.setLimite("0");
 			} else {
-				if (avance - resteApayerSansMajoration == 0) {
-					formulaire.setaRendre("0");
-				} else {
-					formulaire.setaRendre(String.valueOf(avance
-							- resteApayerSansMajoration));
-
-				}
-				resteApayerSansMajoration = 0;
-
+				pc.setNbreActes(Integer.parseInt(formulaire.getNombreActesPC()));
+				pc.setNbreActesRestant(Integer.parseInt(formulaire
+						.getNombreActesPC()));
+				pc.setLimite("1");
 			}
+			pc.setStatut("1");
+			prestCouvList.add(pc);
+			formulaire.setPrestationCouvertesPcs(prestCouvList);
+			// formulaire.setTypePcCouverte("famille");
+			result = true;
 
-			resteApayer = resteApayerSansMajoration + resteApayerSansMajoration
-					* majoration / 100;
+		} catch (Exception e) {
 
-			formulaire
-					.setResteApayer(String.valueOf(resteApayerSansMajoration));
-			formulaire.setResteApayerMajoration(String.valueOf(resteApayer));
-
-			if (resteApayer == 0) {
-				formulaire.setRecuRegle("1");
-			} else {
-				formulaire.setRecuRegle("0");
-			}
-
-		}
-
-		catch (Exception e) {
 			e.printStackTrace();
+			log.fatal(e.getMessage());
+
 		}
 
+		finally {
+			log.debug("********** Fin ajouterActe GestionCommercialeBO **********");
+			return result;
+		}
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * clinique.metier.gestion.commerciale.IGestionCommercialeBO#creerDevis(
+	 * clinique.model.gestion.commerciale.GestionCommercialeForm)
+	 */
+	@Override
+	@SuppressWarnings({ "finally", "unchecked" })
+	public boolean creerDevis(GestionCommercialeForm formulaire)
+			throws Exception {
+
+		boolean result = false;
+		log.debug("********** Debut creerDevis GestionCommercialeBO **********");
+		try {
+
+			Patient patient = formulaire.getPatient();
+			DevisAssureur devisAssureur = new DevisAssureur();
+			devisAssureur.setDevisAssureurId(ConstantesMetier.ID_DEVISASSUREUR
+					+ UtilDate.getInstance().getDateForId()
+					+ ""
+					+ getUserDao().getUserByLogin(formulaire.getOperateur())
+							.getUserId());
+			devisAssureur.setCategorie(getCategorieDAO().getCategorie(
+					Integer.valueOf(formulaire.getCategorieId().trim())));
+
+			devisAssureur.setDateDevis(UtilDate.getInstance().getDateToday());
+			devisAssureur.setTotal(Double.valueOf(formulaire.getTotalDevis()));
+
+			if (formulaire.getOperation().equals("ancienWithPC")
+					|| formulaire.getOperation().equals("ancienWithoutPC")) {
+				getPatientDAO().update(patient);
+
+			} else {
+				patient.setStatut("1");
+				getPatientDAO().save(patient);
+
+				PatientPcActuel patientPcActuel = new PatientPcActuel();
+				patientPcActuel
+						.setPatientPcActuelId(ConstantesMetier.ID_PATIENTPCACTUEL
+								+ UtilDate.getInstance().getDateForId()
+								+ ""
+								+ getUserDao().getUserByLogin(
+										formulaire.getOperateur()).getUserId());
+
+				patientPcActuel.setType("aucune");
+				patientPcActuel.setPatient(patient);
+				patientPcActuel.setStatut("1");
+				getPatientPcActuelDAO().save(patientPcActuel);
+
+			}
+
+			devisAssureur.setPatient(patient);
+			devisAssureur.setStatut("1");
+			devisAssureur.setOperateur(formulaire.getOperateur().trim());
+			devisAssureurDAO.save(devisAssureur);
+
+			for (Iterator iter = formulaire.getDevisActesList().iterator(); iter
+					.hasNext();) {
+				DevisActes element = (DevisActes) iter.next();
+				element.setDevisAssureur(devisAssureur);
+				element.setStatut("1");
+				element.setOperateur(formulaire.getOperateur().trim());
+				devisAssureur.getDevisActes().add(element);
+			}
+
+			result = true;
+
+		} catch (Exception e) {
+			log.fatal(e.getMessage());
+
+		}
+
+		finally {
+			log.debug("********** Fin creerDevis GestionCommercialeBO **********");
+			return result;
+		}
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * clinique.metier.gestion.commerciale.IGestionCommercialeBO#creerRecuHosp
+	 * (clinique.model.gestion.commerciale.GestionCommercialeForm)
+	 */
+	@Override
+	@SuppressWarnings({ "finally", "unchecked" })
+	public boolean creerRecuHosp(GestionCommercialeForm formulaire)
+			throws Exception {
+
+		boolean result = false;
+		log.debug("********** Debut AjouterRecuFacture GestionCommercialeBO **********");
+		try {
+
+			double total_HT = 0;
+
+			for (Iterator iter = formulaire.getDetailsFactureList().iterator(); iter
+					.hasNext();) {
+				DetailFacture element = (DetailFacture) iter.next();
+				total_HT = total_HT + element.getMontantTotal();
+				element.setStatut("1");
+				element.setFacture(formulaire.getFacture());
+				element.setRecu(formulaire.getRecu());
+				element.setHospitalisation(formulaire.getHospitalisation());
+				formulaire.getRecu().getDetailFactures().add(element);
+			}
+
+			// System.out.println("voila "+UserDAO.getInstance().getUserByLogin(formulaire.getOperateur()).getUserId());
+			Reglement reglement = new Reglement();
+			reglement.setReglementId(ConstantesMetier.ID_REGLEMENT
+					+ UtilDate.getInstance().getDateForId()
+					+ ""
+					+ getUserDao().getUserByLogin(formulaire.getOperateur())
+							.getUserId());
+			reglement.setTypePayement(getTypePayementDAO().getTypePayement(4));
+			reglement.setDateReglement(UtilDate.getInstance().getDateToday());
+			reglement.setDescription(formulaire.getHospitalisation()
+					.getChambre().getChambreLibelle());
+			reglement.setMontant(total_HT);
+
+			formulaire.getRecu().setReglement(reglement);
+			formulaire.getRecu().setTotal(total_HT);
+			formulaire.getRecu().setStatut("1");
+			reglementDAO.save(reglement);
+
+			Recu recu = formulaire.getRecu();
+			recuDAO.save(recu);
+
+			result = true;
+
+		} catch (Exception e) {
+			e.printStackTrace();
+			log.fatal(e.getMessage());
+
+		}
+
+		finally {
+			log.debug("********** Fin AjouterRecuFacture GestionCommercialeBO **********");
+			return result;
+		}
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * clinique.metier.gestion.commerciale.IGestionCommercialeBO#genererFacture
+	 * (clinique.model.gestion.commerciale.GestionCommercialeForm)
+	 */
+	@Override
+	@SuppressWarnings({ "finally", "unchecked" })
+	public boolean genererFacture(GestionCommercialeForm formulaire)
+			throws Exception {
+
+		boolean result = false;
+		log.debug("********** Debut genererFacture GestionCommercialeBO **********");
+		try {
+
+			Facture facture = getFactureDAO().getFacture(
+					formulaire.getFactureId().trim());
+			FactureModifiees factureM = new FactureModifiees();
+			factureM.setFactureModifieeId(ConstantesMetier.ID_FACTUREMODIFIE
+					+ UtilDate.getInstance().getDateForId()
+					+ ""
+					+ getUserDao().getUserByLogin(formulaire.getOperateur())
+							.getUserId());
+			factureM.setPatient(facture.getPatient());
+			factureM.setDateFact(facture.getDateFact());
+			factureM.setDateModification(UtilDate.getInstance().getDateToday());
+			factureM.setRemise(facture.getRemise());
+			factureM.setMajoration(facture.getMajoration());
+			factureM.setAvance(facture.getAvance());
+			factureM.setTauxRemise(facture.getTauxRemise());
+			factureM.setTypePc(facture.getTypePc());
+			factureM.setFacture(facture);
+			factureM.setBadge(facture.getBadge());
+			factureM.setPriseEnCharge(facture.getPriseEnCharge());
+			if (facture.getTypePc().equals("priseEnCharge")) {
+				PriseEnChargeModifiee pcM = new PriseEnChargeModifiee();
+				pcM.setPcId(ConstantesMetier.ID_PRISEENCHARGE
+						+ UtilDate.getInstance().getDateForId()
+						+ ""
+						+ getUserDao()
+								.getUserByLogin(formulaire.getOperateur())
+								.getUserId());
+
+			}
+			factureM.setIsHospitalisation(facture.getIsHospitalisation());
+			factureModifieesDAO.save(factureM);
+
+			for (Object element2 : facture.getDetailFactures()) {
+				DetailFacture element = (DetailFacture) element2;
+				DetailFactureModifiees dfM = new DetailFactureModifiees();
+
+				dfM.setDetailFactId(element.getDetailFactId());
+				dfM.setActe(element.getActe());
+				dfM.setNomActe(element.getNomActe());
+				dfM.setNbrActes(element.getNbrActes());
+				dfM.setUrgenceActe(element.getUrgenceActe());
+				dfM.setDepl(element.getDepl());
+
+				if (factureM.getIsHospitalisation().equals("1")) {
+					dfM.setHospitalisation(element.getHospitalisation());
+				}
+
+				dfM.setPrix(element.getPrix());
+				dfM.setPrixUrg(element.getPrixUrg());
+				dfM.setPrixDepl(element.getPrixDepl());
+				dfM.setStatut("1");
+				dfM.setFacture(factureM);
+				dfM.setType(element.getType());
+				dfM.setMedecinExiste(element.getMedecinExiste());
+				dfM.setInfirmierExiste(element.getInfirmierExiste());
+				dfM.setMedecin(element.getMedecin());
+				dfM.setInfirmier(element.getInfirmier());
+				// session.save(dfM);
+
+				// *********** calculer montant total *****************
+				setInfosDfm(dfM);
+				if (dfM.getType().equals("normal")) {
+					dfM.setMontantTotal(element.getNbrActes() * dfM.getPrix());
+				} else if (dfM.getType().equals("urgence")) {
+					dfM.setMontantTotal(element.getNbrActes()
+							* dfM.getPrixUrg());
+				} else {
+					dfM.setMontantTotal(element.getNbrActes()
+							* dfM.getPrixDepl());
+					// *******************************
+				}
+
+				factureM.getDetailFactures().add(dfM);
+			}
+
+			result = true;
+
+		} catch (Exception e) {
+			log.fatal(e.getMessage());
+
+		}
+
+		finally {
+			log.debug("********** Fin genererFacture GestionCommercialeBO **********");
+			return result;
+		}
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see clinique.metier.gestion.commerciale.IGestionCommercialeBO#
+	 * getAncienPatientInfosAssureur(clinique.mapping.Patient,
+	 * clinique.model.gestion.commerciale.GestionCommercialeForm)
+	 */
+	@Override
 	@SuppressWarnings("unchecked")
 	public void getAncienPatientInfosAssureur(Patient patient,
 			GestionCommercialeForm formulaire) {
@@ -4889,8 +4547,8 @@ public class GestionCommercialeBO implements ConstantesMetier {
 				formulaire.setPrestationCouvertesPcs(new ArrayList());
 			} else if (patient.getPriseEnChargeFlag().equals("badge")) {
 				if (checkBadge(formulaire, patient).isEmpty()) {
-					PatientPcActuel patientPcActuel = PatientPcActuelDAO
-							.getInstance().getPatientPcByPatient(patient);
+					PatientPcActuel patientPcActuel = getPatientPcActuelDAO()
+							.getPatientPcByPatient(patient);
 					if (patientPcActuel.getType().equals("badge")
 							&& patientPcActuel.getBadge() != null) {
 						formulaire.setPriseEnChargeFlag("badge");
@@ -4949,214 +4607,14 @@ public class GestionCommercialeBO implements ConstantesMetier {
 
 	}
 
-	public boolean checkPC(PriseEnCharge pc) {
-		boolean result = false;
-		if (pc.getStatut().equals("1")
-				&& !UtilDate.getInstance().beforeDateJour(pc.getFinValidite())) {
-			// if plafond
-			if (pc.getPlafond() > 0) {
-				if (pc.getPlafond() > pc.getMontantFact()) {
-
-					if (pc.getPrestationCouvertesPcs().size() > 0) {
-						result = checkPrestationCouvertesPC(pc);
-
-					} else {
-						result = true;
-					}
-
-				}
-			} else {
-				result = true;
-			}
-		}
-
-		return result;
-	}
-
-	@SuppressWarnings("unchecked")
-	public boolean checkPrestationCouvertesPC(PriseEnCharge pc) {
-		boolean result = false;
-		for (Object element2 : pc.getPrestationCouvertesPcs()) {
-			PrestationCouvertesPc element = (PrestationCouvertesPc) element2;
-			if (element.getStatut().equals("1")) {
-				if (element.getLimite().equals("1")) {
-					if (element.getNbreActesRestant() > 0) {
-						result = true;
-					}
-
-				} else {
-					result = true;
-				}
-			}
-		}
-
-		return result;
-	}
-
-	@SuppressWarnings({ "unchecked", "finally" })
-	public List getListHopitalisesPatients(GestionCommercialeForm formulaire)
-			throws Exception {
-		List patients = new ArrayList();
-
-		log.debug("********** Debut getListHopitalises GestionCommercialeBO **********");
-
-		try {
-			Collection<Hospitalisation> list = HospitalisationDAO.getInstance()
-					.listHospitalisationsEncours();
-
-			if (list != null) {
-
-				for (Object element2 : list) {
-					Hospitalisation element = (Hospitalisation) element2;
-					patients.add(element.getPatient());
-				}
-
-			}
-
-		} catch (Exception e) {
-			log.fatal(e.getMessage());
-		}
-
-		finally {
-			log.debug("********** Debut getListHopitalises GestionCommercialeBO **********");
-			return patients;
-		}
-	}
-
-	@SuppressWarnings({ "unchecked", "finally" })
-	public boolean getListHopitalises(GestionCommercialeForm formulaire)
-			throws Exception {
-
-		log.debug("********** Debut getListHopitalises GestionCommercialeBO **********");
-		// Session session=SessionFactoryUtil.getInstance().openSession();
-		boolean result = false;
-		try {
-			Collection<Hospitalisation> list = HospitalisationDAO.getInstance()
-					.listHospitalisationsEncours();
-
-			if (list != null) {
-				initialiserForm(formulaire);
-				formulaire.setHopitalises((List) list);
-				result = true;
-			}
-
-		} catch (Exception e) {
-
-			log.fatal(e.getMessage());
-		}
-
-		finally {
-			// session.close();
-			log.debug("********** Debut getListHopitalises GestionCommercialeBO **********");
-			return result;
-		}
-	}
-
-	@SuppressWarnings({ "finally", "unchecked" })
-	public boolean getListFacturesAgenerer(GestionCommercialeForm formulaire)
-			throws Exception {
-
-		log.debug("********** Debut getListFacturesAgenerer GestionCommercialeBO **********");
-		// Session session=SessionFactoryUtil.getInstance().openSession();
-		boolean result = false;
-		try {
-			Collection<Facture> list = FactureDAO.getInstance()
-					.listFacturesNoException(formulaire.getDateDebutRechFact(),
-							formulaire.getDateFinRechFact());
-
-			if (list != null) {
-				initialiserForm(formulaire);
-
-				formulaire.setFacturesAgenererList((List) list);
-				result = true;
-			}
-
-		} catch (Exception e) {
-
-			log.fatal(e.getMessage());
-		}
-
-		finally {
-			// session.close();
-			log.debug("********** Debut getListFacturesAgenerer GestionCommercialeBO **********");
-			return result;
-		}
-	}
-
-	@SuppressWarnings({ "finally", "unchecked" })
-	public boolean getListFacturesGenerees(GestionCommercialeForm formulaire)
-			throws Exception {
-
-		log.debug("********** Debut getListFacturesGenerees GestionCommercialeBO **********");
-		// Session session=SessionFactoryUtil.getInstance().openSession();
-		boolean result = false;
-		try {
-			Collection<FactureModifiees> list = FactureModifieesDAO
-					.getInstance().listFactureModifieesEncours();
-
-			if (list != null) {
-				initialiserForm(formulaire);
-
-				formulaire.setFacturesAmodifierList((List) list);
-				result = true;
-			}
-
-		} catch (Exception e) {
-
-			log.fatal(e.getMessage());
-		}
-
-		finally {
-			// session.close();
-			log.debug("********** Debut getListFacturesGenerees GestionCommercialeBO **********");
-			return result;
-		}
-	}
-
-	@SuppressWarnings("unchecked")
-	public void getInfosPC(GestionCommercialeForm formulaire) {
-		formulaire.setPriseEnChargeFlag("aucune");
-
-		if (formulaire.getPatient().getPriseEnChargeFlag().equals("aucune")) {
-			formulaire.setPriseEnChargeFlag("aucune");
-		} else if (formulaire.getPatient().getPriseEnChargeFlag()
-				.equals("badge")) {
-			PatientPcActuel patientPcActuel = PatientPcActuelDAO.getInstance()
-					.getPatientPcByPatient(formulaire.getPatient());
-			if (patientPcActuel.getType().equals("badge")
-					&& patientPcActuel.getBadge() != null) {
-				formulaire.setPriseEnChargeFlag("badge");
-				formulaire.setBadge(patientPcActuel.getBadge());
-			}
-		} else {
-			PatientPcActuel patientPcActuel = PatientPcActuelDAO.getInstance()
-					.getPatientPcByPatient(formulaire.getPatient());
-			if (patientPcActuel.getType().equals("priseEnCharge")
-					&& patientPcActuel.getPriseEnCharge() != null) {
-				PriseEnCharge element = patientPcActuel.getPriseEnCharge();
-				if (checkPC(element)) {
-					formulaire.setPriseEnChargeFlag("priseEnCharge");
-					formulaire.setPriseEnCharge(element);
-					formulaire.setPrestationCouvertesPcs(element
-							.getPrestationCouvertesPcs());
-				}
-			}
-		}
-	}
-
-	public double getPrixActeFromDetailFacture(DetailFacture df) {
-		double prix = 0;
-		if (df.getType().equals("normal")) {
-			prix = df.getPrix();
-		} else if (df.getType().equals("urgence")) {
-			prix = df.getPrixUrg();
-		} else {
-			prix = df.getPrixDepl();
-		}
-
-		return prix;
-	}
-
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * clinique.metier.gestion.commerciale.IGestionCommercialeBO#getChambreFrais
+	 * (clinique.mapping.ChambresHospitalisation)
+	 */
+	@Override
 	public double getChambreFrais(ChambresHospitalisation chambreHospitalisation) {
 		double frais = 0;
 
@@ -5198,154 +4656,749 @@ public class GestionCommercialeBO implements ConstantesMetier {
 		return frais;
 	}
 
-	public void addFraisChambre(GestionCommercialeForm formulaire, double frais) {
-		double totalApayer = Double.parseDouble(formulaire.getTotalApayer())
-				+ frais;
-		formulaire.setTotalApayer(String.valueOf(totalApayer));
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * clinique.metier.gestion.commerciale.IGestionCommercialeBO#getInfosPC(
+	 * clinique.model.gestion.commerciale.GestionCommercialeForm)
+	 */
+	@Override
+	@SuppressWarnings("unchecked")
+	public void getInfosPC(GestionCommercialeForm formulaire) {
+		formulaire.setPriseEnChargeFlag("aucune");
 
-		double coteClinique = Double.parseDouble(formulaire.getCoteClinique())
-				+ frais;
-		formulaire.setCoteClinique(String.valueOf(coteClinique));
-
-		double coteCliniqueReductible = Double.parseDouble(formulaire
-				.getCoteCliniqueReductible()) + frais;
-		formulaire.setCoteCliniqueReductible(String
-				.valueOf(coteCliniqueReductible));
-
-		formulaire.setResteApayer(String.valueOf(totalApayer
-				- Double.parseDouble(formulaire.getCoteAssureur())));
-
+		if (formulaire.getPatient().getPriseEnChargeFlag().equals("aucune")) {
+			formulaire.setPriseEnChargeFlag("aucune");
+		} else if (formulaire.getPatient().getPriseEnChargeFlag()
+				.equals("badge")) {
+			PatientPcActuel patientPcActuel = getPatientPcActuelDAO()
+					.getPatientPcByPatient(formulaire.getPatient());
+			if (patientPcActuel.getType().equals("badge")
+					&& patientPcActuel.getBadge() != null) {
+				formulaire.setPriseEnChargeFlag("badge");
+				formulaire.setBadge(patientPcActuel.getBadge());
+			}
+		} else {
+			PatientPcActuel patientPcActuel = getPatientPcActuelDAO()
+					.getPatientPcByPatient(formulaire.getPatient());
+			if (patientPcActuel.getType().equals("priseEnCharge")
+					&& patientPcActuel.getPriseEnCharge() != null) {
+				PriseEnCharge element = patientPcActuel.getPriseEnCharge();
+				if (checkPC(element)) {
+					formulaire.setPriseEnChargeFlag("priseEnCharge");
+					formulaire.setPriseEnCharge(element);
+					formulaire.setPrestationCouvertesPcs(element
+							.getPrestationCouvertesPcs());
+				}
+			}
+		}
 	}
 
-	@SuppressWarnings({ "unchecked", "finally" })
-	public boolean checkReglementPCByAssureur(GestionCommercialeForm formulaire)
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see clinique.metier.gestion.commerciale.IGestionCommercialeBO#
+	 * getListDevisAimprimer
+	 * (clinique.model.gestion.commerciale.GestionCommercialeForm)
+	 */
+	@Override
+	@SuppressWarnings({ "finally", "unchecked" })
+	public boolean getListDevisAimprimer(GestionCommercialeForm formulaire)
 			throws Exception {
 
-		boolean result = false;
-		log.debug("********** Debut ajouterRegelement GestionCommercialeBO **********");
+		log.debug("********** Debut getListDevisAimprimer GestionCommercialeBO **********");
 		// Session session=SessionFactoryUtil.getInstance().openSession();
-
+		boolean result = false;
 		try {
-			List reglementsList = formulaire.getReglementsList();
-			double payerParAssureur = Double.parseDouble(formulaire
-					.getCoteAssureur());
-			if (payerParAssureur > 0) {
-				Reglement reglement = new Reglement();
-				reglement.setReglementId(ConstantesMetier.ID_REGLEMENT
-						+ UtilDate.getInstance().getDateForId()
-						+ ""
-						+ getUserDao()
-								.getUserByLogin(formulaire.getOperateur())
-								.getUserId());
-
-				// payerParAssureur=payerParAssureur+payerParAssureur*30/100;
-				reglement.setMontant(payerParAssureur);
-				reglement.setDateReglement(UtilDate.getInstance()
-						.getDateToday());
-				reglement.setDescription(CategorieDAO
-						.getInstance()
-						.getCategorie(
-								Integer.parseInt(formulaire.getCategorieId()))
-						.getNomCategorie());
-
-				reglement.setCategorie(CategorieDAO.getInstance().getCategorie(
-						Integer.parseInt(formulaire.getCategorieId())));
-
-				if (formulaire.getPriseEnChargeFlag().equals("priseEnCharge")) {
-					PriseEnCharge pc = formulaire.getPriseEnCharge();
-					reglement.setTypePC("priseEnCharge");
-					reglement.setPriseEnCharge(pc);
-				} else if (formulaire.getPriseEnChargeFlag().equals("badge")) {
-					Badge badge = formulaire.getBadge();
-					reglement.setTypePC("badge");
-					reglement.setBadge(badge);
-				}
-
-				reglement.setTypePayement(TypePayementDAO.getInstance()
-						.getTypePayement(4));
-				reglement.setStatut("1");
-				reglementsList.add(reglement);
-				formulaire.setReglementsList(reglementsList);
+			if (formulaire.getIsFirst().equals("true")) {
+				String dateR = UtilDate.getInstance().dateToString(
+						UtilDate.getInstance().getDateToday());
+				formulaire.setDateDebutRechFact(dateR);
+				formulaire.setDateFinRechFact(dateR);
+				System.out.println("datttttttttttttttte :" + dateR);
 			}
-			result = true;
+
+			Collection<DevisAssureur> list = getDevisAssureurDAO()
+					.listDevisAimprimer(formulaire.getDateDebutRechFact(),
+							formulaire.getDateFinRechFact());
+
+			if (list != null) {
+				initialiserForm(formulaire);
+				formulaire.setDateDebutRechFact("");
+				formulaire.setDateFinRechFact("");
+
+				formulaire.setDevisAimprimerList((List) list);
+				result = true;
+			}
 
 		} catch (Exception e) {
 
-			e.printStackTrace();
 			log.fatal(e.getMessage());
-
 		}
 
 		finally {
-			// session.close();
-			log.debug("********** Fin ajouterRegelement GestionCommercialeBO **********");
+			log.debug("********** Debut getListDevisAimprimer GestionCommercialeBO **********");
 			return result;
 		}
 	}
 
-	@SuppressWarnings({ "unchecked", "finally" })
-	public boolean checkReglementPCByAssureurCNAM(
-			GestionCommercialeForm formulaire) throws Exception {
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see clinique.metier.gestion.commerciale.IGestionCommercialeBO#
+	 * getListFacturesAgenerer
+	 * (clinique.model.gestion.commerciale.GestionCommercialeForm)
+	 */
+	@Override
+	@SuppressWarnings({ "finally", "unchecked" })
+	public boolean getListFacturesAgenerer(GestionCommercialeForm formulaire)
+			throws Exception {
 
-		boolean result = false;
-		log.debug("********** Debut checkReglementPCByAssureurCNAM GestionCommercialeBO **********");
+		log.debug("********** Debut getListFacturesAgenerer GestionCommercialeBO **********");
 		// Session session=SessionFactoryUtil.getInstance().openSession();
+		boolean result = false;
+		try {
+			Collection<Facture> list = getFactureDAO().listFacturesNoException(
+					formulaire.getDateDebutRechFact(),
+					formulaire.getDateFinRechFact());
+
+			if (list != null) {
+				initialiserForm(formulaire);
+
+				formulaire.setFacturesAgenererList((List) list);
+				result = true;
+			}
+
+		} catch (Exception e) {
+
+			log.fatal(e.getMessage());
+		}
+
+		finally {
+			// session.close();
+			log.debug("********** Debut getListFacturesAgenerer GestionCommercialeBO **********");
+			return result;
+		}
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see clinique.metier.gestion.commerciale.IGestionCommercialeBO#
+	 * getListFacturesAimprimer
+	 * (clinique.model.gestion.commerciale.GestionCommercialeForm)
+	 */
+	@Override
+	@SuppressWarnings({ "unchecked", "finally" })
+	public boolean getListFacturesAimprimer(GestionCommercialeForm formulaire)
+			throws Exception {
+
+		log.debug("********** Debut getListFacturesAimprimer GestionCommercialeBO **********");
+		// Session session=SessionFactoryUtil.getInstance().openSession();
+		boolean result = false;
+		try {
+			if (formulaire.getIsFirst().equals("true")) {
+				String dateR = UtilDate.getInstance().dateToString(
+						UtilDate.getInstance().getDateToday());
+				formulaire.setDateDebutRechFact(dateR);
+				formulaire.setDateFinRechFact(dateR);
+			}
+
+			Collection<Facture> list = getFactureDAO().listFacturesAimprimer(
+					formulaire.getDateDebutRechFact(),
+					formulaire.getDateFinRechFact());
+
+			if (list != null) {
+				initialiserForm(formulaire);
+				formulaire.setDateDebutRechFact("");
+				formulaire.setDateFinRechFact("");
+
+				formulaire.setFacturesAimprimerList((List) list);
+				result = true;
+			}
+
+		} catch (Exception e) {
+
+			log.fatal(e.getMessage());
+		}
+
+		finally {
+			// session.close();
+			log.debug("********** Debut getListFacturesAimprimer GestionCommercialeBO **********");
+			return result;
+		}
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see clinique.metier.gestion.commerciale.IGestionCommercialeBO#
+	 * getListFacturesGenerees
+	 * (clinique.model.gestion.commerciale.GestionCommercialeForm)
+	 */
+	@Override
+	@SuppressWarnings({ "finally", "unchecked" })
+	public boolean getListFacturesGenerees(GestionCommercialeForm formulaire)
+			throws Exception {
+
+		log.debug("********** Debut getListFacturesGenerees GestionCommercialeBO **********");
+		// Session session=SessionFactoryUtil.getInstance().openSession();
+		boolean result = false;
+		try {
+			Collection<FactureModifiees> list = factureModifieesDAO
+					.listFactureModifieesEncours();
+
+			if (list != null) {
+				initialiserForm(formulaire);
+
+				formulaire.setFacturesAmodifierList((List) list);
+				result = true;
+			}
+
+		} catch (Exception e) {
+
+			log.fatal(e.getMessage());
+		}
+
+		finally {
+			// session.close();
+			log.debug("********** Debut getListFacturesGenerees GestionCommercialeBO **********");
+			return result;
+		}
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * clinique.metier.gestion.commerciale.IGestionCommercialeBO#getListHopitalises
+	 * (clinique.model.gestion.commerciale.GestionCommercialeForm)
+	 */
+	@Override
+	@SuppressWarnings({ "unchecked", "finally" })
+	public boolean getListHopitalises(GestionCommercialeForm formulaire)
+			throws Exception {
+
+		log.debug("********** Debut getListHopitalises GestionCommercialeBO **********");
+		// Session session=SessionFactoryUtil.getInstance().openSession();
+		boolean result = false;
+		try {
+			Collection<Hospitalisation> list = getHospitalisationDAO()
+					.listHospitalisationsEncours();
+
+			if (list != null) {
+				initialiserForm(formulaire);
+				formulaire.setHopitalises((List) list);
+				result = true;
+			}
+
+		} catch (Exception e) {
+
+			log.fatal(e.getMessage());
+		}
+
+		finally {
+			// session.close();
+			log.debug("********** Debut getListHopitalises GestionCommercialeBO **********");
+			return result;
+		}
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see clinique.metier.gestion.commerciale.IGestionCommercialeBO#
+	 * getListHopitalisesPatients
+	 * (clinique.model.gestion.commerciale.GestionCommercialeForm)
+	 */
+	@Override
+	@SuppressWarnings({ "unchecked", "finally" })
+	public List getListHopitalisesPatients(GestionCommercialeForm formulaire)
+			throws Exception {
+		List patients = new ArrayList();
+
+		log.debug("********** Debut getListHopitalises GestionCommercialeBO **********");
 
 		try {
-			List reglementsList = formulaire.getReglementsList();
-			double payerParAssureur = Double.parseDouble(formulaire
-					.getCoteAssureur());
-			Categorie categorie = CategorieDAO.getInstance().getCategorie(
-					Integer.parseInt(formulaire.getCategorieId()));
-			int pourcentage = categorie.getPourcentage();
+			Collection<Hospitalisation> list = getHospitalisationDAO()
+					.listHospitalisationsEncours();
 
-			if (payerParAssureur > 0) {
-				for (Iterator iter = formulaire.getDetailDrgCnamListFacture()
-						.iterator(); iter.hasNext();) {
-					DetailDgrCnamFacture element = (DetailDgrCnamFacture) iter
-							.next();
+			if (list != null) {
 
-					Reglement reglement = new Reglement();
-					reglement.setReglementId(ConstantesMetier.ID_REGLEMENT
-							+ UtilDate.getInstance().getDateForId()
-							+ ""
-							+ getUserDao().getUserByLogin(
-									formulaire.getOperateur()).getUserId());
+				for (Object element2 : list) {
+					Hospitalisation element = (Hospitalisation) element2;
+					patients.add(element.getPatient());
+				}
 
-					DrgCnam drg = element.getDrgCnam();
-					// payerParAssureur=payerParAssureur+payerParAssureur*30/100;
-					reglement.setPetitMonnaie(element.getPetitMonnaie());
-					reglement.setMontant(drg.getMontant() * pourcentage / 100);
-					reglement.setDateReglement(UtilDate.getInstance()
-							.getDateToday());
-					reglement.setDescription("DRG " + drg.getNumDrg());
-					reglement.setDrgCnam(drg);
+			}
 
-					reglement.setCategorie(categorie);
+		} catch (Exception e) {
+			log.fatal(e.getMessage());
+		}
 
-					if (formulaire.getPriseEnChargeFlag().equals(
-							"priseEnCharge")) {
-						PriseEnCharge pc = formulaire.getPriseEnCharge();
-						reglement.setTypePC("priseEnCharge");
-						reglement.setPriseEnCharge(pc);
-					} else if (formulaire.getPriseEnChargeFlag()
-							.equals("badge")) {
-						Badge badge = formulaire.getBadge();
-						reglement.setTypePC("badge");
-						reglement.setBadge(badge);
+		finally {
+			log.debug("********** Debut getListHopitalises GestionCommercialeBO **********");
+			return patients;
+		}
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see clinique.metier.gestion.commerciale.IGestionCommercialeBO#
+	 * getListPatientsMulti
+	 * (clinique.model.gestion.commerciale.GestionCommercialeForm)
+	 */
+	@Override
+	@SuppressWarnings({ "unchecked", "finally" })
+	public boolean getListPatientsMulti(GestionCommercialeForm formulaire)
+			throws Exception {
+
+		log.debug("********** Debut getListPatientsMulti GestionCommercialeBO **********");
+		boolean result = false;
+
+		try {
+			Collection<Patient> list = getPatientDAO().listPatientsRecherches(
+					formulaire.getPatientIdR(), formulaire.getNomR(),
+					formulaire.getPrenomR(), formulaire.getDateNaissanceR(),
+					formulaire.getDateDerniereVisiteR(),
+					formulaire.getTelephoneR(), formulaire.getCniR(),
+					formulaire.getNniR(), formulaire.getNumeroBadgeR());
+
+			if (list != null) {
+				formulaire.setPatients((List) list);
+				result = true;
+			}
+
+		} catch (Exception e) {
+			log.fatal(e.getMessage());
+		}
+
+		finally {
+			// session.close();
+			log.debug("********** Fin getListPatientsMulti GestionCommercialeBO **********");
+			return result;
+		}
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see clinique.metier.gestion.commerciale.IGestionCommercialeBO#
+	 * getListPatientsMultiForHosp
+	 * (clinique.model.gestion.commerciale.GestionCommercialeForm)
+	 */
+	@Override
+	@SuppressWarnings({ "finally", "unchecked" })
+	public boolean getListPatientsMultiForHosp(GestionCommercialeForm formulaire)
+			throws Exception {
+
+		log.debug("********** Debut getListPatientsMulti GestionCommercialeBO **********");
+		boolean result = false;
+
+		// Session session=SessionFactoryUtil.getInstance().openSession();
+		try {
+			Collection<Patient> list = getPatientDAO().listPatientsRecherches(
+					formulaire.getPatientIdR(), formulaire.getNomR(),
+					formulaire.getPrenomR(), formulaire.getDateNaissanceR(),
+					formulaire.getDateDerniereVisiteR(),
+					formulaire.getTelephoneR(), formulaire.getCniR(),
+					formulaire.getNniR(), formulaire.getNumeroBadgeR());
+
+			formulaire.setPatients(new ArrayList());
+			if (list != null) {
+				int i = 0;
+				for (Object element : list) {
+					i = 0;
+					Patient patient = (Patient) element;
+					for (Iterator iter1 = getListHopitalisesPatients(formulaire)
+							.iterator(); iter1.hasNext();) {
+						Patient patient1 = (Patient) iter1.next();
+						if (patient1.getPatientId().equals(
+								patient.getPatientId())) {
+							i++;
+						}
 					}
 
-					reglement.setTypePayement(TypePayementDAO.getInstance()
-							.getTypePayement(4));
-					reglement.setStatut("1");
-					reglementsList.add(reglement);
-					formulaire.setReglementsList(reglementsList);
+					if (i == 0) {
+						formulaire.getPatients().add(patient);
+					}
 
 				}
+				result = true;
+			}
+
+		} catch (Exception e) {
+			log.fatal(e.getMessage());
+		}
+
+		finally {
+			// session.close();
+			log.debug("********** Fin getListPatientsMulti GestionCommercialeBO **********");
+			return result;
+		}
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see clinique.metier.gestion.commerciale.IGestionCommercialeBO#
+	 * getPrestationCouverte
+	 * (clinique.model.gestion.commerciale.GestionCommercialeForm)
+	 */
+	@Override
+	@SuppressWarnings("unchecked")
+	public PrestationCouvertesPc getPrestationCouverte(
+			GestionCommercialeForm formulaire) {
+		PrestationCouvertesPc pc = new PrestationCouvertesPc();
+		if (formulaire.getPrestationCouvertesPcs().size() > 0) {
+
+			for (Iterator iter = formulaire.getPrestationCouvertesPcs()
+					.iterator(); iter.hasNext();) {
+				PrestationCouvertesPc element = (PrestationCouvertesPc) iter
+						.next();
+				if (element.getActe().getActeId() == Integer
+						.parseInt(formulaire.getActeId())) {
+					pc = element;
+
+				}
+			}
+
+		}
+		return pc;
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see clinique.metier.gestion.commerciale.IGestionCommercialeBO#
+	 * getPrixActeFromDetailFacture(clinique.mapping.DetailFacture)
+	 */
+	@Override
+	public double getPrixActeFromDetailFacture(DetailFacture df) {
+		double prix = 0;
+		if (df.getType().equals("normal")) {
+			prix = df.getPrix();
+		} else if (df.getType().equals("urgence")) {
+			prix = df.getPrixUrg();
+		} else {
+			prix = df.getPrixDepl();
+		}
+
+		return prix;
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * clinique.metier.gestion.commerciale.IGestionCommercialeBO#getUser(clinique
+	 * .model.gestion.commerciale.GestionCommercialeForm)
+	 */
+	@Override
+	public ActionMessages getUser(GestionCommercialeForm formulaire)
+			throws Exception {
+		log.debug("********** Debut getUser GestionCommercialeBO **********");
+		ActionMessages errors1 = new ActionMessages();
+		try {
+			System.out.println("voila  " + formulaire.getLogin());
+			User user = getUserDao().getUserByLogin(formulaire.getLogin());
+
+			if (user == null) {
+				ActionError error = new ActionError("formulaire.login.error");
+				errors1.add("errorMsg", error);
+			} else {
+				formulaire.setLogin(user.getLogin());
+				formulaire.setProfil(user.getProfil().getNomProfil());
+			}
+
+			return errors1;
+		} catch (Exception e) {
+			e.printStackTrace();
+			log.fatal(e.getMessage());
+			return errors1;
+		} finally {
+			// SessionFactoryUtil.getInstance().close();
+			log.debug("********** Fin getUser GestionCommercialeBO **********");
+		}
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see clinique.metier.gestion.commerciale.IGestionCommercialeBO#
+	 * infosForModificationFacture
+	 * (clinique.model.gestion.commerciale.GestionCommercialeForm)
+	 */
+	@Override
+	@SuppressWarnings("finally")
+	public boolean infosForModificationFacture(GestionCommercialeForm formulaire)
+			throws Exception {
+
+		log.debug("********** Debut infosForModifiationFacture GestionCommercialeBO **********");
+
+		boolean result = false;
+		try {
+			FactureModifiees factureM = factureModifieesDAO
+					.getFactureModifiees(formulaire.getFactureModifieeId()
+							.trim());
+			Patient patient = factureM.getPatient();
+			if (patient != null) {
+				formulaire.setPatientId(String.valueOf(patient.getPatientId()));
+				formulaire.setNom(patient.getNom());
+				formulaire.setPrenom(patient.getPrenom());
+				formulaire.setAdresse(patient.getAdresse());
+				formulaire.setCni(patient.getCni());
+				formulaire.setDateNaissance(UtilDate.getInstance()
+						.dateToString(patient.getDateNaissance()));
+
+				formulaire.setDateDerniereVisite(UtilDate.getInstance()
+						.dateToString(patient.getDateDerniereVisite()));
+				formulaire.setDatePremiereVisite(UtilDate.getInstance()
+						.dateToString(patient.getDatePremiereViste()));
+				formulaire.setLieuNaissance(patient.getLieuNaissance());
+				formulaire.setNni(patient.getNni());
+				if (factureM.getTypePc().equals("badge")) {
+					formulaire.setNumeroBadge(factureM.getBadge()
+							.getNumeroBadge());
+				} else {
+					formulaire.setNumeroBadge("");
+				}
+
+				if (factureM.getTypePc() != "aucune") {
+					formulaire.setLibeleAssureur(patient.getCategorie()
+							.getNomCategorie());
+				}
+
+				formulaire.setTelephone(patient.getTelephone());
+
+				formulaire.setDetailsFactureModifieesList(factureM
+						.getDetailFactures());
+
+				if (factureM.getIsHospitalisation().equals("1")) {
+					formulaire.setIsHospitalisation("1");
+				} else {
+					formulaire.setIsHospitalisation("0");
+				}
+
+				result = true;
 
 			}
-			result = true;
 
+		} catch (Exception e) {
+			e.getStackTrace();
+			log.fatal(e.getMessage());
+		}
+
+		finally {
+			log.debug("********** Debut infosForModifiationFacture GestionCommercialeBO **********");
+			return result;
+		}
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see clinique.metier.gestion.commerciale.IGestionCommercialeBO#
+	 * initialiserChampsAjouterPrestations
+	 * (clinique.model.gestion.commerciale.GestionCommercialeForm)
+	 */
+	@Override
+	public void initialiserChampsAjouterPrestations(
+			GestionCommercialeForm formulaire) {
+		formulaire.setInfirmierChoix("non");
+		formulaire.setMedecinChoix("non");
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see clinique.metier.gestion.commerciale.IGestionCommercialeBO#
+	 * initialiserCombosAssureur
+	 * (clinique.model.gestion.commerciale.GestionCommercialeForm)
+	 */
+	@Override
+	@SuppressWarnings("unchecked")
+	public void initialiserCombosAssureur(GestionCommercialeForm formulaire)
+			throws Exception {
+		log.debug("********** Debut initialiserCombosAssureur GestionCommercialeBO **********");
+		try {
+			ArrayList assureurList = new ArrayList();
+			ArrayList entrepriseList = new ArrayList();
+			ArrayList categorieListe = new ArrayList();
+
+			AssureurDAO assureurDAO = getAssureurDAO();
+
+			Assureur FirstSelectedAssureur = null;
+			Entreprise FirstSelectedEntreprise = null;
+
+			int i = 0;
+
+			// charger combo assureur
+			for (Object element2 : assureurDAO.listAssureurs()) {
+				Assureur element = (Assureur) element2;
+				if (checkAssureur(element)) {
+					if (i == 0) {
+						FirstSelectedAssureur = element;
+						i++;
+					}
+					assureurList.add(new LabelValueBean(element
+							.getNomAssureur(), String.valueOf(element
+							.getAssureurId())));
+				}
+			}
+
+			i = 0;
+			// charger combo entreprise
+			for (Object element2 : assureurDAO.getAssureur(
+					FirstSelectedAssureur.getAssureurId()).getEntreprises()) {
+				Entreprise element = (Entreprise) element2;
+				if (checkEntreprise(element)) {
+					if (i == 0) {
+						FirstSelectedEntreprise = element;
+						i++;
+
+					}
+					entrepriseList.add(new LabelValueBean(element
+							.getNomEntreprise(), String.valueOf(element
+							.getEntrepriseId())));
+				}
+			}
+
+			// charger combo categorie
+			for (Object element2 : FirstSelectedEntreprise.getCategories()) {
+				Categorie element = (Categorie) element2;
+				if (checkCategorie(element)) {
+
+					categorieListe.add(new LabelValueBean(element
+							.getNomCategorie(), String.valueOf(element
+							.getCategorieId())));
+
+				}
+			}
+
+			formulaire.setAssureurListe(assureurList);
+			formulaire.setEntrepriseList(entrepriseList);
+			formulaire.setCategorieList(categorieListe);
+
+		} catch (Exception e) {
+			e.getStackTrace();
+			log.fatal(e.getMessage());
+		}
+
+		finally {
+			// session.close();
+			log.debug("********** Fin initialiserCombosAssureur GestionCommercialeBO **********");
+		}
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see clinique.metier.gestion.commerciale.IGestionCommercialeBO#
+	 * initialiserCombosChambres
+	 * (clinique.model.gestion.commerciale.GestionCommercialeForm)
+	 */
+	@Override
+	@SuppressWarnings("unchecked")
+	public void initialiserCombosChambres(GestionCommercialeForm formulaire)
+			throws Exception {
+		log.debug("********** Debut initialiserCombosPrestations GestionCommercialeBO **********");
+		// Session session=SessionFactoryUtil.getInstance().openSession();
+		try {
+			formulaire.getChambreList().clear();
+			ArrayList chambresList = new ArrayList();
+
+			// charger combo chambre
+			for (Object element2 : getChambreDAO().listChambresLibres()) {
+				Chambre element = (Chambre) element2;
+
+				chambresList.add(new LabelValueBean(
+						element.getChambreLibelle(), String.valueOf(element
+								.getChambreId())));
+			}
+
+			formulaire.setChambreList(chambresList);
+		} catch (Exception e) {
+			e.printStackTrace();
+			log.fatal(e.getMessage());
+		}
+
+		finally {
+			// session.close();
+			log.debug("********** Fin initialiserCombosPrestations GestionCommercialeBO **********");
+		}
+
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see clinique.metier.gestion.commerciale.IGestionCommercialeBO#
+	 * initialiserCombosDrgCnam
+	 * (clinique.model.gestion.commerciale.GestionCommercialeForm)
+	 */
+	@Override
+	@SuppressWarnings("unchecked")
+	public void initialiserCombosDrgCnam(GestionCommercialeForm formulaire)
+			throws Exception {
+		log.debug("********** Debut initialiserCombosDrgCnam GestionCommercialeBO **********");
+		// Session session=SessionFactoryUtil.getInstance().openSession();
+		try {
+
+			ArrayList drgCnamListe = new ArrayList();
+
+			DrgCnamDAO drgCnamDAO = getDrgCnamDAO();
+
+			// charger combo drgCnam
+			for (Object element2 : drgCnamDAO.listDrgCnams()) {
+				DrgCnam element = (DrgCnam) element2;
+
+				drgCnamListe.add(new LabelValueBean(String.valueOf(element
+						.getNumDrg()), element.getDrgCnamId()));
+
+			}
+
+			formulaire.setDrgCnamListe(drgCnamListe);
+
+		} catch (Exception e) {
+			e.getStackTrace();
+			log.fatal(e.getMessage());
+		}
+
+		finally {
+			// session.close();
+			log.debug("********** Fin initialiserCombosDrgCnam GestionCommercialeBO **********");
+		}
+
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see clinique.metier.gestion.commerciale.IGestionCommercialeBO#
+	 * initialiserCombosPcPersonnel
+	 * (clinique.model.gestion.commerciale.GestionCommercialeForm)
+	 */
+	@Override
+	@SuppressWarnings("unchecked")
+	public void initialiserCombosPcPersonnel(GestionCommercialeForm formulaire) {
+		log.debug("********** Debut initialiserCombosPcPersonnel GestionCommercialeAction **********");
+		// Session session=SessionFactoryUtil.getInstance().openSession();
+
+		try {
+
+			ArrayList pcPersonnelList = new ArrayList();
+			for (Object element2 : getPcPersonnelDAO().listPcPersonnels()) {
+
+				PcPersonnel element = (PcPersonnel) element2;
+
+				pcPersonnelList.add(new LabelValueBean(element.getPcNom(),
+						String.valueOf(element.getPcPersonnelId())));
+
+			}
+			formulaire.setPcPersonnelList(pcPersonnelList);
 		} catch (Exception e) {
 
 			e.printStackTrace();
@@ -5355,20 +5408,220 @@ public class GestionCommercialeBO implements ConstantesMetier {
 
 		finally {
 			// session.close();
-			log.debug("********** Fin checkReglementPCByAssureurCNAM GestionCommercialeBO **********");
-			return result;
+			log.debug("********** Fin initialiserCombosPcPersonnel GestionCommercialeBO **********");
 		}
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see clinique.metier.gestion.commerciale.IGestionCommercialeBO#
+	 * initialiserCombosPrestations
+	 * (clinique.model.gestion.commerciale.GestionCommercialeForm)
+	 */
+	@Override
 	@SuppressWarnings("unchecked")
-	public void initialiserInfosChambre(GestionCommercialeForm formulaire) {
-		formulaire.setChambreList(new ArrayList());
-		formulaire.setDateEntree("");
-		formulaire.setDateEntreeChambre("");
-		formulaire.setDateSortie("");
-		formulaire.setHeureHosp("");
+	public void initialiserCombosPrestations(GestionCommercialeForm formulaire)
+			throws Exception {
+		log.debug("********** Debut initialiserCombosPrestations GestionCommercialeBO **********");
+		try {
+
+			Date date = new Date();
+			int heure = date.getHours();
+
+			if (heure > 20 && heure < 8) {
+				formulaire.setTypeActe("urgence");
+			} else {
+				formulaire.setTypeActe("normal");
+			}
+
+			ArrayList famillePrestList = new ArrayList();
+			ArrayList classeList = new ArrayList();
+			ArrayList actesListe = new ArrayList();
+
+			ArrayList acteursListe = new ArrayList();
+			ArrayList acteursInfListe = new ArrayList();
+
+			FamillePrestationDAO famillePrestDAO = getFamillePrestationDAO();
+			ClasseDAO classeDAO = getClasseDAO();
+			ActeDAO acteDAO = getActeDAO();
+
+			FamillePrestation FirstSelectedFamillePrest = null;
+			Classe FirstSelectedClasse = null;
+
+			Acte FirstSelectedActe = null;
+
+			int i = 0;
+
+			// charger combo FamillePrest
+			for (Object element2 : famillePrestDAO.listFamillePrestations()) {
+				FamillePrestation element = (FamillePrestation) element2;
+				if (checkFamillePres(element)) {
+					if (i == 0) {
+						FirstSelectedFamillePrest = element;
+						i++;
+					}
+					famillePrestList.add(new LabelValueBean(element
+							.getLibelle(), String.valueOf(element
+							.getFamillePrestationId())));
+				}
+			}
+
+			i = 0;
+			// charger combo Classes
+			for (Object element2 : classeDAO.listClasses()) {
+				Classe element = (Classe) element2;
+				if (checkClasse(element)) {
+					if (i == 0) {
+						FirstSelectedClasse = element;
+						i++;
+
+					}
+					classeList.add(new LabelValueBean(element.getNomClasse(),
+							String.valueOf(element.getClasseId())));
+				}
+			}
+
+			i = 0;
+			// charger combo Actes
+			List actes = null;
+			if (formulaire.getChoixActePar().equals("famille")) {
+				actes = FirstSelectedFamillePrest.getActes();
+			} else if (formulaire.getChoixActePar().equals("classe")) {
+				actes = FirstSelectedClasse.getActes();
+			}
+			for (Iterator iter = actes.iterator(); iter.hasNext();) {
+				Acte element = (Acte) iter.next();
+				if (checkActe(element)) {
+					if (i == 0) {
+						FirstSelectedActe = element;
+						i++;
+
+					}
+					actesListe.add(new LabelValueBean(element.getNomActe(),
+							String.valueOf(element.getActeId())));
+				}
+			}
+
+			// charger combo ActeurActes
+			for (Object element2 : FirstSelectedActe.getActeurActes()) {
+				ActeurActe element = (ActeurActe) element2;
+				if (checkActeur(element)) {
+					if (element.getActeur().getAssistant().equals("0")) {
+						acteursListe.add(new LabelValueBean(element.getActeur()
+								.getNom(), String.valueOf(element
+								.getActeurActeId())));
+					} else {
+						acteursInfListe.add(new LabelValueBean(element
+								.getActeur().getNom(), String.valueOf(element
+								.getActeurActeId())));
+					}
+
+				}
+			}
+
+			formulaire
+					.setFamillePrestationId(String
+							.valueOf(FirstSelectedFamillePrest
+									.getFamillePrestationId()));
+			formulaire.setFamillesPrestList(famillePrestList);
+			formulaire.setClassesListe(classeList);
+			formulaire.setActesListe(actesListe);
+			formulaire.setActeurActeList(acteursListe);
+			formulaire.setActeurActeInfList(acteursInfListe);
+		} catch (Exception e) {
+			e.printStackTrace();
+			log.fatal(e.getMessage());
+		}
+
+		finally {
+			// session.close();
+			log.debug("********** Fin initialiserCombosPrestations GestionCommercialeBO **********");
+		}
+
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see clinique.metier.gestion.commerciale.IGestionCommercialeBO#
+	 * initialiserCombosTypePyement
+	 * (clinique.model.gestion.commerciale.GestionCommercialeForm)
+	 */
+	@Override
+	@SuppressWarnings("unchecked")
+	public void initialiserCombosTypePyement(GestionCommercialeForm formulaire) {
+		log.debug("********** Debut initialiserCombosTypePyement GestionCommercialeAction **********");
+		// Session session=SessionFactoryUtil.getInstance().openSession();
+
+		try {
+			ArrayList typePayementList = new ArrayList();
+			for (Object element2 : getTypePayementDAO().listTypePayements()) {
+
+				TypePayement element = (TypePayement) element2;
+
+				/*
+				 * if (formulaire.getReglementsList().size()==0) {
+				 * typePayementList.add(new
+				 * LabelValueBean(element.getTypePayement
+				 * (),String.valueOf(element.getTypePayementId())));
+				 * formulaire.setCashDejaSaisi("0"); } else if
+				 * (element.getTypePayementId()!=1)
+				 */
+				if (formulaire.getModeReglement().equals("differe")) {
+					if (element.getTypePayementId() != 1) {
+						typePayementList.add(new LabelValueBean(element
+								.getTypePayement(), String.valueOf(element
+								.getTypePayementId())));
+					}
+				} else {
+					typePayementList.add(new LabelValueBean(element
+							.getTypePayement(), String.valueOf(element
+							.getTypePayementId())));
+				}
+
+			}
+			formulaire.setTypePayementList(typePayementList);
+		} catch (Exception e) {
+
+			e.printStackTrace();
+			log.fatal(e.getMessage());
+
+		} finally {
+			// session.close();
+			log.debug("********** Fin initialiserCombosTypePyement GestionCommercialeBO **********");
+		}
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see clinique.metier.gestion.commerciale.IGestionCommercialeBO#
+	 * initialiserElementsPaymentHospFacture
+	 * (clinique.model.gestion.commerciale.GestionCommercialeForm)
+	 */
+	@Override
+	public void initialiserElementsPaymentHospFacture(
+			GestionCommercialeForm formulaire) {
+
+		formulaire.setTotalApayer("0");
+
+		formulaire.setCoteClinique("0");
+
+		formulaire.setCoteAssureur("0");
+
+		formulaire.setCoteCliniqueReductible("0");
+
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * clinique.metier.gestion.commerciale.IGestionCommercialeBO#initialiserForm
+	 * (clinique.model.gestion.commerciale.GestionCommercialeForm)
+	 */
+	@Override
 	@SuppressWarnings("unchecked")
 	public void initialiserForm(GestionCommercialeForm formulaire) {
 		formulaire.setTypePatient("nouveau");
@@ -5513,147 +5766,671 @@ public class GestionCommercialeBO implements ConstantesMetier {
 		formulaire.setIsFirst("true");
 	}
 
-	public ActionMessages getUser(GestionCommercialeForm formulaire)
-			throws Exception {
-		log.debug("********** Debut getUser GestionCommercialeBO **********");
-		ActionMessages errors1 = new ActionMessages();
-		try {
-			System.out.println("voila  " + formulaire.getLogin());
-			User user = getUserDao().getUserByLogin(formulaire.getLogin());
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see clinique.metier.gestion.commerciale.IGestionCommercialeBO#
+	 * initialiserInfosChambre
+	 * (clinique.model.gestion.commerciale.GestionCommercialeForm)
+	 */
+	@Override
+	@SuppressWarnings("unchecked")
+	public void initialiserInfosChambre(GestionCommercialeForm formulaire) {
+		formulaire.setChambreList(new ArrayList());
+		formulaire.setDateEntree("");
+		formulaire.setDateEntreeChambre("");
+		formulaire.setDateSortie("");
+		formulaire.setHeureHosp("");
+	}
 
-			if (user == null) {
-				ActionError error = new ActionError("formulaire.login.error");
-				errors1.add("errorMsg", error);
-			} else {
-				formulaire.setLogin(user.getLogin());
-				formulaire.setProfil(user.getProfil().getNomProfil());
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * clinique.metier.gestion.commerciale.IGestionCommercialeBO#listDevisAimprimer
+	 * (java.lang.String, java.lang.String)
+	 */
+	@Override
+	public List<DevisAssureur> listDevisAimprimer(String date1, String date2) {
+		return devisAssureurDAO.listDevisAimprimerFromBO(date1, date2);
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see clinique.metier.gestion.commerciale.IGestionCommercialeBO#
+	 * makeCopieOfPriseEnCharge(clinique.mapping.PriseEnCharge,
+	 * clinique.mapping.PriseEnChargeModifiee, double, java.lang.String)
+	 */
+	@Override
+	@SuppressWarnings("unchecked")
+	public void makeCopieOfPriseEnCharge(PriseEnCharge pc,
+			PriseEnChargeModifiee pcM, double montantPc, String userId) {
+		pcM.setPcNum(pc.getPcNum());
+		pcM.setPatient(pc.getPatient());
+		pcM.setPlafond(pc.getPlafond());
+		pcM.setPourcentage(pc.getPourcentage());
+		pcM.setFinValidite(pc.getFinValidite());
+		pcM.setDateCreation(pc.getDateCreation());
+		pcM.setNombreActes(pc.getNombreActes());
+		pcM.setMontantFact(pc.getMontantFact() - montantPc);
+		pcM.setCategorie(pc.getCategorie());
+		pcM.setStatut("1");
+		List list = pc.getPrestationCouvertesPcs();
+		if (list.size() != 0) {
+			for (Iterator iter = list.iterator(); iter.hasNext();) {
+				PrestationCouvertesPcModifiee pccouvM = new PrestationCouvertesPcModifiee();
+				pccouvM.setPresCouvId(ConstantesMetier.ID_PRESTATIONCOUVERTEPC
+						+ UtilDate.getInstance().getDateForId() + "" + userId);
+				PrestationCouvertesPc element = (PrestationCouvertesPc) iter
+						.next();
+				makeCopieOfPrtationCouv(element, pccouvM);
+
 			}
 
-			return errors1;
-		} catch (Exception e) {
-			e.printStackTrace();
-			log.fatal(e.getMessage());
-			return errors1;
-		} finally {
-			// SessionFactoryUtil.getInstance().close();
-			log.debug("********** Fin getUser GestionCommercialeBO **********");
+		}
+
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see clinique.metier.gestion.commerciale.IGestionCommercialeBO#
+	 * makeCopieOfPrtationCouv(clinique.mapping.PrestationCouvertesPc,
+	 * clinique.mapping.PrestationCouvertesPcModifiee)
+	 */
+	@Override
+	public void makeCopieOfPrtationCouv(PrestationCouvertesPc pccouv,
+			PrestationCouvertesPcModifiee pccouvM) {
+		pccouvM.setActe(pccouv.getActe());
+		pccouvM.setStatut("1");
+		pccouvM.setType(pccouv.getType());
+		pccouvM.setLibelle(pccouv.getLibelle());
+		pccouvM.setLimite(pccouv.getLimite());
+		pccouvM.setNbreActes(pccouv.getNbreActes());
+		pccouvM.setNbreActesRestant(pccouv.getNbreActesRestant());
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see clinique.metier.gestion.commerciale.IGestionCommercialeBO#
+	 * makeTransactionActeurs(java.util.List,
+	 * clinique.model.gestion.commerciale.GestionCommercialeForm, int)
+	 */
+	@Override
+	@SuppressWarnings("unchecked")
+	public void makeTransactionActeurs(List transactionComptes,
+			GestionCommercialeForm formulaire, int idkey) {
+		Acteur acteur;
+		Acteur acteur1;
+		Compte compte;
+		Compte compte1;
+		double montant = 0;
+		String chaineKey;
+
+		for (Iterator iter = formulaire.getDetailsFactureList().iterator(); iter
+				.hasNext();) {
+
+			DetailFacture element = (DetailFacture) iter.next();
+
+			TransactionCompte transactionCompte = new TransactionCompte();
+			TransactionCompte transactionCompte1 = new TransactionCompte();
+
+			if (element.getMedecinExiste().equals("1")) {
+
+				acteur = element.getMedecin();
+				if (acteur != null) {
+					idkey = idkey + 1;
+					chaineKey = ConstantesMetier.ID_TRANSACTIONCOMPTE
+							+ UtilDate.getInstance().getDateForId2()
+							+ UtilDate.getInstance().getChaineKey(idkey)
+							+ getUserDao().getUserByLogin(
+									formulaire.getOperateur()).getUserId();
+
+					compte = getCompteDAO().getCompteFromActeur(acteur);
+					if (compte != null) {
+
+						montant = element.getPrixReel() * element.getQpActeur()
+								/ 100;
+
+						compte.setSoldeAvant(compte.getSolde());
+						compte.setSolde(compte.getSolde() + montant);
+
+						transactionCompte.setTransactionId(chaineKey);
+						transactionCompte.setDateTransaction(UtilDate
+								.getInstance().getDateToday());
+						transactionCompte.setCompte(compte);
+						transactionCompte.setMontant(montant);
+						transactionCompte.setOperation("credit");
+						transactionCompte.setOperateur(formulaire
+								.getOperateur());
+						transactionCompte.setStatut("1");
+
+						transactionComptes.add(transactionCompte);
+
+						// compte.getTransactionsCompte().add(transactionCompte);
+
+					}
+				}
+			}
+
+			if (element.getInfirmierExiste().equals("1")) {
+				acteur1 = element.getInfirmier();
+				if (acteur1 != null) {
+					idkey = idkey + 1;
+					chaineKey = ConstantesMetier.ID_TRANSACTIONCOMPTE
+							+ UtilDate.getInstance().getDateForId2()
+							+ UtilDate.getInstance().getChaineKey(idkey)
+							+ getUserDao().getUserByLogin(
+									formulaire.getOperateur()).getUserId();
+
+					compte1 = getCompteDAO().getCompteFromActeur(acteur1);
+					if (compte1 != null) {
+
+						montant = element.getPrixReel()
+								* element.getQpAssistant() / 100;
+
+						compte1.setSoldeAvant(compte1.getSolde());
+						compte1.setSolde(compte1.getSolde() + montant);
+
+						transactionCompte1.setTransactionId(chaineKey);
+						transactionCompte1.setDateTransaction(UtilDate
+								.getInstance().getDateToday());
+						transactionCompte1.setCompte(compte1);
+						transactionCompte1.setMontant(montant);
+						transactionCompte1.setOperation("credit");
+						transactionCompte1.setOperateur(formulaire
+								.getOperateur());
+						transactionCompte1.setStatut("1");
+
+						transactionComptes.add(transactionCompte1);
+
+						// compte1.getTransactionsCompte().add(transactionCompte1);
+
+					}
+
+				}
+			}
+		}
+
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see clinique.metier.gestion.commerciale.IGestionCommercialeBO#
+	 * makeTransactionCliniqueAndAssureur(java.util.List, java.util.List,
+	 * clinique.model.gestion.commerciale.GestionCommercialeForm, int)
+	 */
+	@Override
+	@SuppressWarnings("unchecked")
+	public void makeTransactionCliniqueAndAssureur(List transactionComptes,
+			List transactionCompteCategories,
+			GestionCommercialeForm formulaire, int idkey) {
+
+		// Compte compte;
+		double montant = 0;
+		String chaineKey;
+
+		Compte compteClinique = getCompteDAO().getCompte(
+				ConstantesMetier.COMPTECLINIQUE_ID);
+
+		for (Iterator iter = formulaire.getReglementsList().iterator(); iter
+				.hasNext();) {
+
+			Reglement element = (Reglement) iter.next();
+			idkey = idkey + 1;
+			chaineKey = ConstantesMetier.ID_TRANSACTIONCOMPTE
+					+ UtilDate.getInstance().getDateForId2()
+					+ UtilDate.getInstance().getChaineKey(idkey)
+					+ getUserDao().getUserByLogin(formulaire.getOperateur())
+							.getUserId();
+
+			TransactionCompte transactionCompte = new TransactionCompte();
+
+			montant = element.getMontant() + element.getPetitMonnaie();
+
+			compteClinique.setSoldeAvant(compteClinique.getSolde());
+			compteClinique.setSolde(compteClinique.getSolde() + montant);
+
+			transactionCompte.setTransactionId(chaineKey);
+			transactionCompte.setDateTransaction(UtilDate.getInstance()
+					.getDateToday());
+			transactionCompte.setCompte(compteClinique);
+			transactionCompte.setMontant(montant);
+			transactionCompte.setOperation("credit");
+			transactionCompte.setOperateur(formulaire.getOperateur());
+			transactionCompte.setStatut("1");
+
+			transactionComptes.add(transactionCompte);
+
+			if (element.getTypePayement().getTypePayementId() == 4) {
+
+				if (element.getTypePC().equals("badge")
+						|| element.getTypePC().equals("priseEnCharge")) {
+					idkey = idkey + 1;
+					chaineKey = ConstantesMetier.ID_TRANSACTIONCOMPTECATEGORIE
+							+ UtilDate.getInstance().getDateForId2()
+							+ UtilDate.getInstance().getChaineKey(idkey)
+							+ getUserDao().getUserByLogin(
+									formulaire.getOperateur()).getUserId();
+
+					TransactionCompteCategorie transactionCompteCategorie = new TransactionCompteCategorie();
+
+					CompteCategorie compteCategorie = compteCategorieDAO
+							.getCompteCategorieFromCategorie(element
+									.getCategorie());
+
+					compteCategorie.setSoldeAvant(compteCategorie.getSolde());
+					compteCategorie.setSolde(compteCategorie.getSolde()
+							- montant);
+
+					transactionCompteCategorie.setTransactionId(chaineKey);
+					transactionCompteCategorie.setDateTransaction(UtilDate
+							.getInstance().getDateToday());
+					transactionCompteCategorie.setCompte(compteCategorie);
+					transactionCompteCategorie.setMontant(montant);
+					transactionCompteCategorie.setOperation("debit");
+					transactionCompteCategorie.setOperateur(formulaire
+							.getOperateur());
+					transactionCompteCategorie.setStatut("1");
+
+					transactionCompteCategories.add(transactionCompteCategorie);
+
+				} else {
+					Compte compte;
+					PcPersonnel pc = element.getPcPersonnel();
+					if (pc != null) {
+						idkey = idkey + 1;
+						chaineKey = ConstantesMetier.ID_TRANSACTIONCOMPTE
+								+ UtilDate.getInstance().getDateForId2()
+								+ UtilDate.getInstance().getChaineKey(idkey)
+								+ getUserDao().getUserByLogin(
+										formulaire.getOperateur()).getUserId();
+
+						transactionCompte.setDateTransaction(UtilDate
+								.getInstance().getDateToday());
+						compte = getCompteDAO().getCompte(
+								pc.getCompte().getCompteId());
+						if (compte != null) {
+
+							double solde = compte.getSolde();
+
+							compte.setSoldeAvant(solde);
+							compte.setSolde(solde - montant);
+
+							transactionCompte.setTransactionId(chaineKey);
+							transactionCompte.setCompte(compte);
+							transactionCompte.setMontant(montant);
+							transactionCompte.setOperation("debit");
+							transactionCompte.setOperateur(formulaire
+									.getOperateur());
+							transactionCompte.setStatut("1");
+
+							transactionComptes.add(transactionCompte);
+						}
+
+					}
+				}
+			}
+
 		}
 	}
 
-	public void fermerSession() {
-		Session session = SessionFactoryUtil.getInstance().getCurrentSession();
-		// session.clear();
-		session.close();
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see clinique.metier.gestion.commerciale.IGestionCommercialeBO#
+	 * patientPrestationsFormulaire
+	 * (clinique.model.gestion.commerciale.GestionCommercialeForm)
+	 */
+	@Override
+	@SuppressWarnings("finally")
+	public boolean patientPrestationsFormulaire(
+			GestionCommercialeForm formulaire) throws Exception {
+
+		log.debug("********** Debut patientPrestationsFormulaire GestionCommercialeBO **********");
+
+		boolean result = false;
+		try {
+			Patient patient = formulaire.getPatient();
+			if (patient != null) {
+				formulaire.setPatientId(String.valueOf(patient.getPatientId()));
+				formulaire.setNom(patient.getNom());
+				formulaire.setPrenom(patient.getPrenom());
+				formulaire.setAdresse(patient.getAdresse());
+				formulaire.setCni(patient.getCni());
+				formulaire.setDateNaissance(UtilDate.getInstance()
+						.dateToString(patient.getDateNaissance()));
+
+				formulaire.setDateDerniereVisite(UtilDate.getInstance()
+						.dateToString(patient.getDateDerniereVisite()));
+				formulaire.setDatePremiereVisite(UtilDate.getInstance()
+						.dateToString(patient.getDatePremiereViste()));
+				formulaire.setLieuNaissance(patient.getLieuNaissance());
+				formulaire.setNni(patient.getNni());
+				PatientPcActuel patientPcActuel = getPatientPcActuelDAO()
+						.getPatientPcByPatient(patient);
+				if (patientPcActuel != null) {
+					if (patientPcActuel.getType().equals("badge")
+							&& patientPcActuel.getBadge() != null) {
+						formulaire.setNumeroBadge(patientPcActuel.getBadge()
+								.getNumeroBadge());
+					} else {
+						formulaire.setNumeroBadge("");
+					}
+				}
+				formulaire.setTelephone(patient.getTelephone());
+
+				formulaire.setFactureId("");
+				formulaire.setRecuId("");
+
+				result = true;
+
+			}
+
+		} catch (Exception e) {
+
+			e.printStackTrace();
+			log.fatal(e.getMessage());
+		}
+
+		finally {
+			log.debug("********** Debut patientPrestationsFormulaire GestionCommercialeBO **********");
+			return result;
+		}
 	}
 
-	public void ouvrirSession() {
-		SessionFactoryUtil.getInstance().getCurrentSession();
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see clinique.metier.gestion.commerciale.IGestionCommercialeBO#
+	 * patientPrestationsFormulaireAncien
+	 * (clinique.model.gestion.commerciale.GestionCommercialeForm)
+	 */
+	@Override
+	@SuppressWarnings("finally")
+	public boolean patientPrestationsFormulaireAncien(
+			GestionCommercialeForm formulaire) throws Exception {
+
+		log.debug("********** Debut patientPrestationsFormulaire GestionCommercialeBO **********");
+		boolean result = false;
+
+		try {
+			Patient patient;
+			if (formulaire.getPatientId().equals("")
+					|| formulaire.getPatientId().isEmpty()) {
+				patient = null;
+
+			} else {
+				patient = getPatientDAO().getPatient(
+						formulaire.getPatientId().trim());
+				formulaire.setPatient(patient);
+				formulaire.setTypePatient("ancien");
+			}
+
+			if (patient != null) {
+				formulaire.setPatientId(String.valueOf(patient.getPatientId()));
+				formulaire.setNom(patient.getNom());
+				formulaire.setPrenom(patient.getPrenom());
+				formulaire.setAdresse(patient.getAdresse());
+				formulaire.setCni(patient.getCni());
+				formulaire.setDateNaissance(UtilDate.getInstance()
+						.dateToString(patient.getDateNaissance()));
+
+				formulaire.setDateDerniereVisite(UtilDate.getInstance()
+						.dateToString(patient.getDateDerniereVisite()));
+				formulaire.setDatePremiereVisite(UtilDate.getInstance()
+						.dateToString(patient.getDatePremiereViste()));
+				formulaire.setLieuNaissance(patient.getLieuNaissance());
+				formulaire.setNni(patient.getNni());
+
+				formulaire.setTelephone(patient.getTelephone());
+				getAncienPatientInfosAssureur(patient, formulaire);
+
+				formulaire.setDevisList(getDevisAssureurDAO()
+						.listDevisAssureurs(patient.getPatientId()));
+
+				// formulaire.setDetailsFactureList(null);
+				formulaire.setFactureId("");
+				formulaire.setRecuId("");
+
+				result = true;
+
+			}
+
+		} catch (Exception e) {
+			e.printStackTrace();
+			log.fatal(e.getMessage());
+		}
+
+		finally {
+			log.debug("********** Debut patientPrestationsFormulaire GestionCommercialeBO **********");
+			return result;
+		}
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see clinique.metier.gestion.commerciale.IGestionCommercialeBO#
+	 * RechargerCombosEntreprisesAndCategories
+	 * (clinique.model.gestion.commerciale.GestionCommercialeForm)
+	 */
+	@Override
+	@SuppressWarnings("unchecked")
+	public void RechargerCombosEntreprisesAndCategories(
+			GestionCommercialeForm formulaire) throws Exception {
+		log.debug("********** Debut chargerCombosEntreprises GestionCommercialeBO **********");
+		try {
+
+			ArrayList entrepriseList = new ArrayList();
+			ArrayList categorieListe = new ArrayList();
+
+			AssureurDAO assureurDAO = getAssureurDAO();
+			Entreprise FirstSelectedEntreprise = new Entreprise();
+
+			// charger combo entreprise
+			for (Object element2 : assureurDAO.getAssureur(
+					Integer.parseInt(formulaire.getAssureurId()))
+					.getEntreprises()) {
+				Entreprise element = (Entreprise) element2;
+				if (checkEntreprise(element)) {
+					if (element.getEntrepriseId() == Integer
+							.parseInt(formulaire.getEntrepriseId())) {
+						FirstSelectedEntreprise = element;
+					}
+					entrepriseList.add(new LabelValueBean(element
+							.getNomEntreprise(), String.valueOf(element
+							.getEntrepriseId())));
+				}
+			}
+
+			// charger combo categorie
+			if (FirstSelectedEntreprise != null) {
+				for (Object element2 : FirstSelectedEntreprise.getCategories()) {
+					Categorie element = (Categorie) element2;
+					if (checkCategorie(element)) {
+
+						categorieListe.add(new LabelValueBean(element
+								.getNomCategorie(), String.valueOf(element
+								.getCategorieId())));
+
+					}
+				}
+			}
+
+			formulaire.setEntrepriseList(entrepriseList);
+			formulaire.setCategorieList(categorieListe);
+
+		} catch (Exception e) {
+			e.getStackTrace();
+			log.fatal(e.getMessage());
+		}
+
+		finally {
+			// session.close();
+			log.debug("********** Fin chargerCombosEntreprises GestionCommercialeBO **********");
+		}
 
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * clinique.metier.gestion.commerciale.IGestionCommercialeBO#reserverChambre
+	 * (clinique.model.gestion.commerciale.GestionCommercialeForm)
+	 */
+	@Override
 	@SuppressWarnings({ "finally", "unchecked" })
-	public boolean genererFacture(GestionCommercialeForm formulaire)
+	public boolean reserverChambre(GestionCommercialeForm formulaire)
 			throws Exception {
 
 		boolean result = false;
-		log.debug("********** Debut genererFacture GestionCommercialeBO **********");
-		Session session = SessionFactoryUtil.getInstance().openSession();
-		Transaction trx = null;
+		log.debug("********** Debut reserverChambre GestionCommercialeBO **********");
 		try {
 
-			trx = session.beginTransaction();
-			Facture facture = FactureDAO.getInstance().getFacture(
-					formulaire.getFactureId().trim());
-			FactureModifiees factureM = new FactureModifiees();
-			factureM.setFactureModifieeId(ConstantesMetier.ID_FACTUREMODIFIE
-					+ UtilDate.getInstance().getDateForId()
-					+ ""
-					+ getUserDao().getUserByLogin(formulaire.getOperateur())
-							.getUserId());
-			factureM.setPatient(facture.getPatient());
-			factureM.setDateFact(facture.getDateFact());
-			factureM.setDateModification(UtilDate.getInstance().getDateToday());
-			factureM.setRemise(facture.getRemise());
-			factureM.setMajoration(facture.getMajoration());
-			factureM.setAvance(facture.getAvance());
-			factureM.setTauxRemise(facture.getTauxRemise());
-			factureM.setTypePc(facture.getTypePc());
-			factureM.setFacture(facture);
-			factureM.setBadge(facture.getBadge());
-			factureM.setPriseEnCharge(facture.getPriseEnCharge());
-			if (facture.getTypePc().equals("priseEnCharge")) {
-				PriseEnChargeModifiee pcM = new PriseEnChargeModifiee();
-				pcM.setPcId(ConstantesMetier.ID_PRISEENCHARGE
+			Chambre chambre = getChambreDAO().getChambre(
+					Integer.parseInt(formulaire.getChambreId().trim()));
+
+			// enregistrer facture
+			if (formulaire.getFactureId().equals("")) {
+				formulaire.setFactureId(ConstantesMetier.ID_FACTURE
 						+ UtilDate.getInstance().getDateForId()
 						+ ""
 						+ getUserDao()
 								.getUserByLogin(formulaire.getOperateur())
 								.getUserId());
+			}
+			Patient patient = formulaire.getPatient();
+			Facture facture = new Facture();
+
+			facture.setFactureId(formulaire.getFactureId());
+			facture.setPatient(patient);
+
+			if (formulaire.getOperation().equals("ancienWithPC")
+					|| formulaire.getOperation().equals("ancienWithoutPC")) {
+				getPatientDAO().update(patient);
+
+			} else {
+				getPatientDAO().save(patient);
 
 			}
-			factureM.setIsHospitalisation(facture.getIsHospitalisation());
-			session.save(factureM);
 
-			for (Object element2 : facture.getDetailFactures()) {
-				DetailFacture element = (DetailFacture) element2;
-				DetailFactureModifiees dfM = new DetailFactureModifiees();
+			if (chambre != null) {
+				chambre.setEtat("0");
+				getChambreDAO().update(chambre);
 
-				dfM.setDetailFactId(element.getDetailFactId());
-				dfM.setActe(element.getActe());
-				dfM.setNomActe(element.getNomActe());
-				dfM.setNbrActes(element.getNbrActes());
-				dfM.setUrgenceActe(element.getUrgenceActe());
-				dfM.setDepl(element.getDepl());
-
-				if (factureM.getIsHospitalisation().equals("1")) {
-					dfM.setHospitalisation(element.getHospitalisation());
-				}
-
-				dfM.setPrix(element.getPrix());
-				dfM.setPrixUrg(element.getPrixUrg());
-				dfM.setPrixDepl(element.getPrixDepl());
-				dfM.setStatut("1");
-				dfM.setFacture(factureM);
-				dfM.setType(element.getType());
-				dfM.setMedecinExiste(element.getMedecinExiste());
-				dfM.setInfirmierExiste(element.getInfirmierExiste());
-				dfM.setMedecin(element.getMedecin());
-				dfM.setInfirmier(element.getInfirmier());
-				// session.save(dfM);
-
-				// *********** calculer montant total *****************
-				setInfosDfm(dfM);
-				if (dfM.getType().equals("normal")) {
-					dfM.setMontantTotal(element.getNbrActes() * dfM.getPrix());
-				} else if (dfM.getType().equals("urgence")) {
-					dfM.setMontantTotal(element.getNbrActes()
-							* dfM.getPrixUrg());
-				} else {
-					dfM.setMontantTotal(element.getNbrActes()
-							* dfM.getPrixDepl());
-					// *******************************
-				}
-
-				factureM.getDetailFactures().add(dfM);
 			}
 
-			trx.commit();
+			Hospitalisation hospitalisation = new Hospitalisation();
+			// debut id hospitalisation 17
+			hospitalisation
+					.setHospitalisationId(ConstantesMetier.ID_HOSPITALISATION
+							+ UtilDate.getInstance().getDateForId()
+							+ ""
+							+ getUserDao().getUserByLogin(
+									formulaire.getOperateur()).getUserId());
+			hospitalisation.setPatient(patient);
+			hospitalisation.setChambre(chambre);
+			if (!UtilDate.getInstance().isVide(formulaire.getDateEntree())) {
+				hospitalisation.setDateEntree(UtilDate.getInstance()
+						.stringToDate(formulaire.getDateEntree()));
+			}
+
+			hospitalisation.setStatut("1");
+			hospitalisation.setEncours("1");
+			hospitalisation.setFacture(facture);
+
+			if (formulaire.getAvanceChoix().equals("oui")) {
+				facture.setAvance(Double.parseDouble(formulaire.getAvance()));
+			} else {
+				facture.setAvance(0);
+			}
+
+			PatientPcActuel patientPcActuel = new PatientPcActuel();
+			patientPcActuel
+					.setPatientPcActuelId(ConstantesMetier.ID_PATIENTPCACTUEL
+							+ UtilDate.getInstance().getDateForId()
+							+ ""
+							+ getUserDao().getUserByLogin(
+									formulaire.getOperateur()).getUserId());
+
+			patientPcActuel.setType("aucune");
+			patientPcActuel.setPatient(patient);
+
+			if (formulaire.getPriseEnChargeFlag().equals("priseEnCharge")) {
+				if (!formulaire.getOperation().equals("ancienWithPC")) {
+					PriseEnCharge pc = formulaire.getPriseEnCharge();
+					priseEnChargeDAO.save(pc);
+
+				}
+				patientPcActuel.setType("priseEnCharge");
+				patientPcActuel.setPriseEnCharge(formulaire.getPriseEnCharge());
+			} else if (formulaire.getPriseEnChargeFlag().equals("badge")) {
+
+				Badge badge = formulaire.getBadge();
+				badgeDAO.save(badge);
+
+				patientPcActuel.setBadge(badge);
+				patientPcActuel.setType("badge");
+			}
+
+			facture.setStatut("1");
+			getFactureDAO().save(facture);
+
+			getPatientPcActuelDAO().deletePatientPcByPatient(patient);
+			patientPcActuel.setStatut("1");
+			getPatientPcActuelDAO().save(patientPcActuel);
+
+			ChambresHospitalisation chaHospitalisation = new ChambresHospitalisation();
+			// debut id chambreHospitalisation 18
+			chaHospitalisation
+					.setChambreHospitalisationId(ConstantesMetier.ID_HOSPITALISATIONCHAMBRE
+							+ UtilDate.getInstance().getDateForId()
+							+ ""
+							+ getUserDao().getUserByLogin(
+									formulaire.getOperateur()).getUserId());
+			if (!UtilDate.getInstance().isVide(formulaire.getDateEntree())) {
+				chaHospitalisation.setDateEntree(UtilDate.getInstance()
+						.stringToDate(formulaire.getDateEntree()));
+			}
+			chaHospitalisation.setStatut("0");
+			chaHospitalisation.setHeureEntree(Integer.parseInt(formulaire
+					.getHeureHosp()));
+			chaHospitalisation.setChambre(chambre);
+			chaHospitalisation.setHospitalisation(hospitalisation);
+			hospitalisation.getChambresHospitalisation()
+					.add(chaHospitalisation);
+
+			getHospitalisationDAO().save(hospitalisation);
+
+			// session.flush();
+			initialiserInfosChambre(formulaire);
 			result = true;
 
 		} catch (Exception e) {
-			trx.rollback();
 			e.printStackTrace();
 			log.fatal(e.getMessage());
 
 		}
 
 		finally {
-			session.close();
-			log.debug("********** Fin genererFacture GestionCommercialeBO **********");
+			log.debug("********** Fin reserverChambre GestionCommercialeBO **********");
 			return result;
 		}
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * clinique.metier.gestion.commerciale.IGestionCommercialeBO#setInfosDfm
+	 * (clinique.mapping.DetailFactureModifiees)
+	 */
+	@Override
 	public void setInfosDfm(DetailFactureModifiees dfM) {
 		Date dateF = dfM.getFacture().getDateFact();
 		Acte acte = dfM.getActe();
@@ -5692,34 +6469,131 @@ public class GestionCommercialeBO implements ConstantesMetier {
 
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see clinique.metier.gestion.commerciale.IGestionCommercialeBO#
+	 * setInfosDfmActeurWithoutPc(clinique.mapping.DetailFactureModifiees,
+	 * java.util.Date, clinique.mapping.Acteur, clinique.mapping.Acte)
+	 */
+	@Override
+	public void setInfosDfmActeurWithoutPc(DetailFactureModifiees dfM,
+			Date dateF, Acteur acteur, Acte acte) {
+
+		boolean trouve = false;
+
+		ActeurActe acteurActe = getActeurActeDAO().getActeurActeByDate(acteur,
+				dateF, acte);
+
+		ActeurActeH acteurActeH = getActeurActeHDAO().getActeurActeHByDate(
+				acteur, dateF, acte);
+
+		Acte acteByDate = getActeDAO().getActeByDate(dateF, acte);
+
+		ActeH acteH = getActeHDAO().getActeHByDate(dateF, acte);
+
+		if (acteurActe != null) {
+			trouve = true;
+			dfM.setPrix(acteurActe.getPrix());
+			dfM.setPrixUrg(acteurActe.getPrixUrg());
+			dfM.setPrixDepl(acteurActe.getPrixUrg());
+
+			if (dfM.getType().equals("normal")) {
+				dfM.setQpActeur(acteurActe.getPourcentage());
+			} else {
+				dfM.setQpActeur(acteurActe.getPourcentageUrg());
+			}
+
+		}
+
+		else if (acteurActeH != null && !trouve) {
+			trouve = true;
+			dfM.setPrix(acteurActeH.getPrix());
+			dfM.setPrixUrg(acteurActeH.getPrixUrg());
+			dfM.setPrixDepl(acteurActeH.getPrixUrg());
+
+			if (dfM.getType().equals("normal")) {
+				dfM.setQpActeur(acteurActeH.getPourcentage());
+			} else {
+				dfM.setQpActeur(acteurActeH.getPourcentageUrg());
+			}
+		}
+
+		else if (acteByDate != null && !trouve) {
+			trouve = true;
+			dfM.setPrix(acteByDate.getPrix());
+			dfM.setPrixUrg(acteByDate.getPrixUrg());
+			dfM.setPrixDepl(acteByDate.getPrixUrg());
+
+			if (dfM.getType().equals("normal")) {
+				dfM.setQpActeur(acteByDate.getTauxPraticien());
+			} else {
+				dfM.setQpActeur(acteByDate.getTauxPraticienUrg());
+			}
+		}
+
+		else if (acteH != null && !trouve) {
+			trouve = true;
+			dfM.setPrix(acteH.getPrix());
+			dfM.setPrixUrg(acteH.getPrixUrg());
+			dfM.setPrixDepl(acteH.getPrixUrg());
+
+			if (dfM.getType().equals("normal")) {
+				dfM.setQpActeur(acteH.getTauxPraticien());
+			} else {
+				dfM.setQpActeur(acteH.getTauxPraticienUrg());
+			}
+		}
+
+		if (!trouve) {
+			dfM.setPrix(acte.getPrix());
+			dfM.setPrixUrg(acte.getPrixUrg());
+			dfM.setPrixDepl(acte.getPrixUrg());
+
+			if (dfM.getType().equals("normal")) {
+				dfM.setQpActeur(acte.getTauxPraticien());
+			} else {
+				dfM.setQpActeur(acte.getTauxPraticienUrg());
+			}
+		}
+
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see clinique.metier.gestion.commerciale.IGestionCommercialeBO#
+	 * setInfosDfmActeurWithPc(clinique.mapping.DetailFactureModifiees,
+	 * java.util.Date, clinique.mapping.Acteur, clinique.mapping.Acte,
+	 * clinique.mapping.Categorie)
+	 */
+	@Override
 	public void setInfosDfmActeurWithPc(DetailFactureModifiees dfM, Date dateF,
 			Acteur acteur, Acte acte, Categorie categorie) {
 
 		boolean trouve = false;
 
-		ActeurActeAssureur acteurActeAssureur = ActeurActeAssureurDAO
-				.getInstance().getActeurActeAssureurByDate(acteur, dateF, acte,
-						categorie);
+		ActeurActeAssureur acteurActeAssureur = getActeurActeAssureurDAO()
+				.getActeurActeAssureurByDate(acteur, dateF, acte, categorie);
 
-		ActeurActeAssureurH acteurActeAssureurH = ActeurActeAssureurHDAO
-				.getInstance().getActeurActeAssureurHByDate(acteur, dateF,
-						acte, categorie);
+		ActeurActeAssureurH acteurActeAssureurH = acteurActeAssureurHDAO
+				.getActeurActeAssureurHByDate(acteur, dateF, acte, categorie);
 
-		ActeurActe acteurActe = ActeurActeDAO.getInstance()
-				.getActeurActeByDate(acteur, dateF, acte);
+		ActeurActe acteurActe = getActeurActeDAO().getActeurActeByDate(acteur,
+				dateF, acte);
 
-		ActeurActeH acteurActeH = ActeurActeHDAO.getInstance()
-				.getActeurActeHByDate(acteur, dateF, acte);
+		ActeurActeH acteurActeH = getActeurActeHDAO().getActeurActeHByDate(
+				acteur, dateF, acte);
 
-		ActeAssureur acteAssureur = ActeAssureurDAO.getInstance()
-				.getActeAssureurByDate(dateF, acte, categorie);
+		ActeAssureur acteAssureur = getActeAssureurDAO().getActeAssureurByDate(
+				dateF, acte, categorie);
 
-		ActeAssureurH acteAssureurH = ActeAssureurHDAO.getInstance()
+		ActeAssureurH acteAssureurH = getActeAssureurHDAO()
 				.getActeAssureurHByDate(dateF, acte, categorie);
 
-		Acte acteByDate = ActeDAO.getInstance().getActeByDate(dateF, acte);
+		Acte acteByDate = getActeDAO().getActeByDate(dateF, acte);
 
-		ActeH acteH = ActeHDAO.getInstance().getActeHByDate(dateF, acte);
+		ActeH acteH = getActeHDAO().getActeHByDate(dateF, acte);
 
 		if (acteurActeAssureur != null) {
 			trouve = true;
@@ -5840,102 +6714,28 @@ public class GestionCommercialeBO implements ConstantesMetier {
 
 	}
 
-	public void setInfosDfmActeurWithoutPc(DetailFactureModifiees dfM,
-			Date dateF, Acteur acteur, Acte acte) {
-
-		boolean trouve = false;
-
-		ActeurActe acteurActe = ActeurActeDAO.getInstance()
-				.getActeurActeByDate(acteur, dateF, acte);
-
-		ActeurActeH acteurActeH = ActeurActeHDAO.getInstance()
-				.getActeurActeHByDate(acteur, dateF, acte);
-
-		Acte acteByDate = ActeDAO.getInstance().getActeByDate(dateF, acte);
-
-		ActeH acteH = ActeHDAO.getInstance().getActeHByDate(dateF, acte);
-
-		if (acteurActe != null) {
-			trouve = true;
-			dfM.setPrix(acteurActe.getPrix());
-			dfM.setPrixUrg(acteurActe.getPrixUrg());
-			dfM.setPrixDepl(acteurActe.getPrixUrg());
-
-			if (dfM.getType().equals("normal")) {
-				dfM.setQpActeur(acteurActe.getPourcentage());
-			} else {
-				dfM.setQpActeur(acteurActe.getPourcentageUrg());
-			}
-
-		}
-
-		else if (acteurActeH != null && !trouve) {
-			trouve = true;
-			dfM.setPrix(acteurActeH.getPrix());
-			dfM.setPrixUrg(acteurActeH.getPrixUrg());
-			dfM.setPrixDepl(acteurActeH.getPrixUrg());
-
-			if (dfM.getType().equals("normal")) {
-				dfM.setQpActeur(acteurActeH.getPourcentage());
-			} else {
-				dfM.setQpActeur(acteurActeH.getPourcentageUrg());
-			}
-		}
-
-		else if (acteByDate != null && !trouve) {
-			trouve = true;
-			dfM.setPrix(acteByDate.getPrix());
-			dfM.setPrixUrg(acteByDate.getPrixUrg());
-			dfM.setPrixDepl(acteByDate.getPrixUrg());
-
-			if (dfM.getType().equals("normal")) {
-				dfM.setQpActeur(acteByDate.getTauxPraticien());
-			} else {
-				dfM.setQpActeur(acteByDate.getTauxPraticienUrg());
-			}
-		}
-
-		else if (acteH != null && !trouve) {
-			trouve = true;
-			dfM.setPrix(acteH.getPrix());
-			dfM.setPrixUrg(acteH.getPrixUrg());
-			dfM.setPrixDepl(acteH.getPrixUrg());
-
-			if (dfM.getType().equals("normal")) {
-				dfM.setQpActeur(acteH.getTauxPraticien());
-			} else {
-				dfM.setQpActeur(acteH.getTauxPraticienUrg());
-			}
-		}
-
-		if (!trouve) {
-			dfM.setPrix(acte.getPrix());
-			dfM.setPrixUrg(acte.getPrixUrg());
-			dfM.setPrixDepl(acte.getPrixUrg());
-
-			if (dfM.getType().equals("normal")) {
-				dfM.setQpActeur(acte.getTauxPraticien());
-			} else {
-				dfM.setQpActeur(acte.getTauxPraticienUrg());
-			}
-		}
-
-	}
-
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see clinique.metier.gestion.commerciale.IGestionCommercialeBO#
+	 * setInfosDfmPcWithoutActeur(clinique.mapping.DetailFactureModifiees,
+	 * java.util.Date, clinique.mapping.Acte, clinique.mapping.Categorie)
+	 */
+	@Override
 	public void setInfosDfmPcWithoutActeur(DetailFactureModifiees dfM,
 			Date dateF, Acte acte, Categorie categorie) {
 
 		boolean trouve = false;
 
-		ActeAssureur acteAssureur = ActeAssureurDAO.getInstance()
-				.getActeAssureurByDate(dateF, acte, categorie);
+		ActeAssureur acteAssureur = getActeAssureurDAO().getActeAssureurByDate(
+				dateF, acte, categorie);
 
-		ActeAssureurH acteAssureurH = ActeAssureurHDAO.getInstance()
+		ActeAssureurH acteAssureurH = getActeAssureurHDAO()
 				.getActeAssureurHByDate(dateF, acte, categorie);
 
-		Acte acteByDate = ActeDAO.getInstance().getActeByDate(dateF, acte);
+		Acte acteByDate = getActeDAO().getActeByDate(dateF, acte);
 
-		ActeH acteH = ActeHDAO.getInstance().getActeHByDate(dateF, acte);
+		ActeH acteH = getActeHDAO().getActeHByDate(dateF, acte);
 
 		if (acteAssureur != null) {
 			trouve = true;
@@ -6003,14 +6803,23 @@ public class GestionCommercialeBO implements ConstantesMetier {
 
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see clinique.metier.gestion.commerciale.IGestionCommercialeBO#
+	 * setInfosDfmWithoutPcWithoutActeur
+	 * (clinique.mapping.DetailFactureModifiees, java.util.Date,
+	 * clinique.mapping.Acte)
+	 */
+	@Override
 	public void setInfosDfmWithoutPcWithoutActeur(DetailFactureModifiees dfM,
 			Date dateF, Acte acte) {
 
 		boolean trouve = false;
 
-		Acte acteByDate = ActeDAO.getInstance().getActeByDate(dateF, acte);
+		Acte acteByDate = getActeDAO().getActeByDate(dateF, acte);
 
-		ActeH acteH = ActeHDAO.getInstance().getActeHByDate(dateF, acte);
+		ActeH acteH = getActeHDAO().getActeHByDate(dateF, acte);
 
 		if (acteByDate != null) {
 			trouve = true;
@@ -6052,85 +6861,337 @@ public class GestionCommercialeBO implements ConstantesMetier {
 
 	}
 
-	@SuppressWarnings("finally")
-	public boolean infosForModificationFacture(GestionCommercialeForm formulaire)
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * clinique.metier.gestion.commerciale.IGestionCommercialeBO#setLibererChambre
+	 * (clinique.model.gestion.commerciale.GestionCommercialeForm)
+	 */
+	@Override
+	@SuppressWarnings({ "finally", "unchecked" })
+	public boolean setLibererChambre(GestionCommercialeForm formulaire)
 			throws Exception {
 
-		log.debug("********** Debut infosForModifiationFacture GestionCommercialeBO **********");
-
 		boolean result = false;
+		log.debug("********** Debut setLibererChambre GestionCommercialeBO **********");
+
 		try {
-			FactureModifiees factureM = FactureModifieesDAO.getInstance()
-					.getFactureModifiees(
-							formulaire.getFactureModifieeId().trim());
-			Patient patient = factureM.getPatient();
-			if (patient != null) {
-				formulaire.setPatientId(String.valueOf(patient.getPatientId()));
-				formulaire.setNom(patient.getNom());
-				formulaire.setPrenom(patient.getPrenom());
-				formulaire.setAdresse(patient.getAdresse());
-				formulaire.setCni(patient.getCni());
-				formulaire.setDateNaissance(UtilDate.getInstance()
-						.dateToString(patient.getDateNaissance()));
+			Hospitalisation hospitalisation = formulaire.getHospitalisation();
+			formulaire.setChambresHospList(hospitalisation
+					.getChambresHospitalisation());
 
-				formulaire.setDateDerniereVisite(UtilDate.getInstance()
-						.dateToString(patient.getDateDerniereVisite()));
-				formulaire.setDatePremiereVisite(UtilDate.getInstance()
-						.dateToString(patient.getDatePremiereViste()));
-				formulaire.setLieuNaissance(patient.getLieuNaissance());
-				formulaire.setNni(patient.getNni());
-				if (factureM.getTypePc().equals("badge")) {
-					formulaire.setNumeroBadge(factureM.getBadge()
-							.getNumeroBadge());
-				} else {
-					formulaire.setNumeroBadge("");
+			int i = 0;
+			for (Iterator iter = formulaire.getChambresHospList().iterator(); iter
+					.hasNext();) {
+				ChambresHospitalisation element = (ChambresHospitalisation) iter
+						.next();
+				if (element.getStatut().equals("0")) {
+					element.setStatut("1");
+					element.setDateSortie(UtilDate.getInstance().stringToDate(
+							formulaire.getDateSortie()));
+					element.setHeureSortie(Integer.parseInt(formulaire
+							.getHeureHosp()));
+					formulaire.getChambresHospList().set(i, element);
+
 				}
-
-				if (factureM.getTypePc() != "aucune") {
-					formulaire.setLibeleAssureur(patient.getCategorie()
-							.getNomCategorie());
-				}
-
-				formulaire.setTelephone(patient.getTelephone());
-
-				formulaire.setDetailsFactureModifieesList(factureM
-						.getDetailFactures());
-
-				if (factureM.getIsHospitalisation().equals("1")) {
-					formulaire.setIsHospitalisation("1");
-				} else {
-					formulaire.setIsHospitalisation("0");
-				}
-
-				result = true;
-
+				i++;
 			}
 
+			int nbreChambresHosp = i;
+			int majoration = calculMajoration(formulaire);
+			i = 0;
+			double frais = 0;
+			for (Iterator iter = formulaire.getChambresHospList().iterator(); iter
+					.hasNext();) {
+				ChambresHospitalisation element = (ChambresHospitalisation) iter
+						.next();
+				frais = getChambreFrais(element);
+				element.setTotalReel(frais);
+				frais = frais + majoration * frais / 100;
+				element.setTotal(frais);
+				formulaire.getChambresHospList().set(i, element);
+
+				i++;
+			}
+
+			for (i = 0; i < nbreChambresHosp; i++) {
+				ChambresHospitalisation element = (ChambresHospitalisation) formulaire
+						.getChambresHospList().get(i);
+				formulaire.getHospitalisation().getChambresHospitalisation()
+						.set(i, element);
+			}
+
+			formulaire.getHospitalisation().setEncours("2");
+
+			result = true;
+
 		} catch (Exception e) {
-			e.getStackTrace();
+
+			e.printStackTrace();
 			log.fatal(e.getMessage());
+
 		}
 
 		finally {
-			log.debug("********** Debut infosForModifiationFacture GestionCommercialeBO **********");
+			log.debug("********** Fin setLibererChambre GestionCommercialeBO **********");
 			return result;
 		}
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * clinique.metier.gestion.commerciale.IGestionCommercialeBO#setPrestCouvAtList
+	 * (clinique.mapping.PrestationCouvertesPc,
+	 * clinique.model.gestion.commerciale.GestionCommercialeForm)
+	 */
+	@Override
+	@SuppressWarnings("unchecked")
+	public void setPrestCouvAtList(PrestationCouvertesPc pcCouv,
+			GestionCommercialeForm formulaire) {
+		int i = 0;
+		List list = formulaire.getPrestationCouvertesPcs();
+		for (Iterator iter = list.iterator(); iter.hasNext();) {
+			PrestationCouvertesPc element = (PrestationCouvertesPc) iter.next();
+			if (element.getPresCouvId().equals(pcCouv.getPresCouvId())) {
+				formulaire.getPrestationCouvertesPcs().set(i, pcCouv);
+				i++;
+				break;
+			}
+
+		}
+
+		PriseEnCharge pc = formulaire.getPriseEnCharge();
+
+		pc.getPrestationCouvertesPcs().set(i - 1, pcCouv);
+		formulaire.setPriseEnCharge(pc);
+
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * clinique.metier.gestion.commerciale.IGestionCommercialeBO#setSortie(clinique
+	 * .model.gestion.commerciale.GestionCommercialeForm)
+	 */
+	@Override
+	@SuppressWarnings({ "finally", "unchecked" })
+	public boolean setSortie(GestionCommercialeForm formulaire)
+			throws Exception {
+
+		boolean result = false;
+		log.debug("********** Debut setSortie GestionCommercialeBO **********");
+
+		try {
+			Hospitalisation hospitalisation = formulaire.getHospitalisation();
+			formulaire.setChambresHospList(hospitalisation
+					.getChambresHospitalisation());
+
+			int i = 0;
+			for (Iterator iter = formulaire.getChambresHospList().iterator(); iter
+					.hasNext();) {
+				ChambresHospitalisation element = (ChambresHospitalisation) iter
+						.next();
+				if (element.getStatut().equals("0")) {
+					element.setStatut("1");
+					element.setDateSortie(UtilDate.getInstance().stringToDate(
+							formulaire.getDateSortie()));
+					element.setHeureSortie(Integer.parseInt(formulaire
+							.getHeureHosp()));
+					formulaire.getChambresHospList().set(i, element);
+
+				}
+				i++;
+			}
+
+			int nbreChambresHosp = i;
+			int majoration = calculMajoration(formulaire);
+			i = 0;
+			double frais = 0;
+			for (Iterator iter = formulaire.getChambresHospList().iterator(); iter
+					.hasNext();) {
+				ChambresHospitalisation element = (ChambresHospitalisation) iter
+						.next();
+				frais = getChambreFrais(element);
+				element.setTotalReel(frais);
+				frais = frais + majoration * frais / 100;
+				element.setTotal(frais);
+				formulaire.getChambresHospList().set(i, element);
+				addFraisChambre(formulaire, frais);
+				i++;
+			}
+
+			for (i = 0; i < nbreChambresHosp; i++) {
+				ChambresHospitalisation element = (ChambresHospitalisation) formulaire
+						.getChambresHospList().get(i);
+				formulaire.getHospitalisation().getChambresHospitalisation()
+						.set(i, element);
+			}
+
+			formulaire.getHospitalisation().setEncours("0");
+
+			result = true;
+
+		} catch (Exception e) {
+
+			e.printStackTrace();
+			log.fatal(e.getMessage());
+
+		}
+
+		finally {
+			log.debug("********** Fin setSortie GestionCommercialeBO **********");
+			return result;
+		}
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see clinique.metier.gestion.commerciale.IGestionCommercialeBO#
+	 * setSortieSansReglement
+	 * (clinique.model.gestion.commerciale.GestionCommercialeForm)
+	 */
+	@Override
+	@SuppressWarnings({ "finally", "unchecked" })
+	public boolean setSortieSansReglement(GestionCommercialeForm formulaire)
+			throws Exception {
+
+		boolean result = false;
+		log.debug("********** Debut setSortieSansReglement GestionCommercialeBO **********");
+		try {
+
+			// enregistrer facture
+
+			Hospitalisation hospitalisation = getHospitalisationDAO()
+					.getHospitalisation(
+							formulaire.getHospitalisation()
+									.getHospitalisationId());
+
+			Chambre chambre = hospitalisation.getChambre();
+
+			chambre.setEtat("1");
+			getChambreDAO().update(chambre);
+
+			for (Object element2 : hospitalisation.getChambresHospitalisation()) {
+				ChambresHospitalisation element = (ChambresHospitalisation) element2;
+				chambresHospitalisationDAO.evict(element);
+			}
+
+			int nbreChambresHosp = formulaire.getChambresHospList().size();
+
+			for (int i = 0; i < nbreChambresHosp; i++) {
+				ChambresHospitalisation element = (ChambresHospitalisation) formulaire
+						.getChambresHospList().get(i);
+				hospitalisation.getChambresHospitalisation().set(i, element);
+			}
+
+			hospitalisation.setDateSortie(UtilDate.getInstance().stringToDate(
+					formulaire.getDateSortie()));
+			hospitalisation.setEncours("2");
+			getHospitalisationDAO().update(hospitalisation);
+
+			result = true;
+
+		} catch (Exception e) {
+			log.fatal(e.getMessage());
+
+		}
+
+		finally {
+			log.debug("********** Fin setSortieSansReglement GestionCommercialeBO **********");
+			return result;
+		}
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see clinique.metier.gestion.commerciale.IGestionCommercialeBO#
+	 * setTauxAssistantWithoutPc(clinique.mapping.DetailFactureModifiees,
+	 * java.util.Date, clinique.mapping.Acte)
+	 */
+	@Override
+	public void setTauxAssistantWithoutPc(DetailFactureModifiees dfM,
+			Date dateF, Acte acte) {
+
+		boolean trouve = false;
+
+		Acte acteByDate = getActeDAO().getActeByDate(dateF, acte);
+
+		ActeH acteH = getActeHDAO().getActeHByDate(dateF, acte);
+
+		if (acteByDate != null) {
+			trouve = true;
+			dfM.setPrix(acteByDate.getPrix());
+			dfM.setPrixUrg(acteByDate.getPrixUrg());
+			dfM.setPrixDepl(acteByDate.getPrixUrg());
+
+			if (dfM.getType().equals("normal")) {
+				dfM.setQpAssistant(acteByDate.getTauxAssistant());
+			} else if (dfM.getType().equals("urgence")) {
+				dfM.setQpAssistant(acteByDate.getTauxAssistantUrg());
+			} else {
+				dfM.setQpAssistant(acteByDate.getTauxDepAssistant());
+			}
+		}
+
+		else if (acteH != null && !trouve) {
+			trouve = true;
+			dfM.setPrix(acteH.getPrix());
+			dfM.setPrixUrg(acteH.getPrixUrg());
+			dfM.setPrixDepl(acteH.getPrixUrg());
+
+			if (dfM.getType().equals("normal")) {
+				dfM.setQpAssistant(acteH.getTauxAssistant());
+			} else if (dfM.getType().equals("urgence")) {
+				dfM.setQpAssistant(acteH.getTauxAssistantUrg());
+			} else {
+				dfM.setQpAssistant(acteH.getTauxDepAssistant());
+			}
+		}
+
+		if (!trouve) {
+			dfM.setPrix(acte.getPrix());
+			dfM.setPrixUrg(acte.getPrixUrg());
+			dfM.setPrixDepl(acte.getPrixUrg());
+
+			if (dfM.getType().equals("normal")) {
+				dfM.setQpAssistant(acte.getTauxAssistant());
+			} else if (dfM.getType().equals("urgence")) {
+				dfM.setQpAssistant(acte.getTauxAssistantUrg());
+			} else {
+				dfM.setQpAssistant(acte.getTauxDepAssistant());
+			}
+		}
+
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see clinique.metier.gestion.commerciale.IGestionCommercialeBO#
+	 * setTauxAssistantWithPc(clinique.mapping.DetailFactureModifiees,
+	 * java.util.Date, clinique.mapping.Acte, clinique.mapping.Categorie)
+	 */
+	@Override
 	public void setTauxAssistantWithPc(DetailFactureModifiees dfM, Date dateF,
 			Acte acte, Categorie categorie) {
 
 		boolean trouve = false;
 
-		ActeAssureur acteAssureur = ActeAssureurDAO.getInstance()
-				.getActeAssureurByDate(dateF, acte, categorie);
+		ActeAssureur acteAssureur = getActeAssureurDAO().getActeAssureurByDate(
+				dateF, acte, categorie);
 
-		ActeAssureurH acteAssureurH = ActeAssureurHDAO.getInstance()
+		ActeAssureurH acteAssureurH = getActeAssureurHDAO()
 				.getActeAssureurHByDate(dateF, acte, categorie);
 
-		Acte acteByDate = ActeDAO.getInstance().getActeByDate(dateF, acte);
+		Acte acteByDate = getActeDAO().getActeByDate(dateF, acte);
 
-		ActeH acteH = ActeHDAO.getInstance().getActeHByDate(dateF, acte);
+		ActeH acteH = getActeHDAO().getActeHByDate(dateF, acte);
 
 		if (acteAssureur != null) {
 			trouve = true;
@@ -6210,697 +7271,598 @@ public class GestionCommercialeBO implements ConstantesMetier {
 
 	}
 
-	public void setTauxAssistantWithoutPc(DetailFactureModifiees dfM,
-			Date dateF, Acte acte) {
-
-		boolean trouve = false;
-
-		Acte acteByDate = ActeDAO.getInstance().getActeByDate(dateF, acte);
-
-		ActeH acteH = ActeHDAO.getInstance().getActeHByDate(dateF, acte);
-
-		if (acteByDate != null) {
-			trouve = true;
-			dfM.setPrix(acteByDate.getPrix());
-			dfM.setPrixUrg(acteByDate.getPrixUrg());
-			dfM.setPrixDepl(acteByDate.getPrixUrg());
-
-			if (dfM.getType().equals("normal")) {
-				dfM.setQpAssistant(acteByDate.getTauxAssistant());
-			} else if (dfM.getType().equals("urgence")) {
-				dfM.setQpAssistant(acteByDate.getTauxAssistantUrg());
-			} else {
-				dfM.setQpAssistant(acteByDate.getTauxDepAssistant());
-			}
-		}
-
-		else if (acteH != null && !trouve) {
-			trouve = true;
-			dfM.setPrix(acteH.getPrix());
-			dfM.setPrixUrg(acteH.getPrixUrg());
-			dfM.setPrixDepl(acteH.getPrixUrg());
-
-			if (dfM.getType().equals("normal")) {
-				dfM.setQpAssistant(acteH.getTauxAssistant());
-			} else if (dfM.getType().equals("urgence")) {
-				dfM.setQpAssistant(acteH.getTauxAssistantUrg());
-			} else {
-				dfM.setQpAssistant(acteH.getTauxDepAssistant());
-			}
-		}
-
-		if (!trouve) {
-			dfM.setPrix(acte.getPrix());
-			dfM.setPrixUrg(acte.getPrixUrg());
-			dfM.setPrixDepl(acte.getPrixUrg());
-
-			if (dfM.getType().equals("normal")) {
-				dfM.setQpAssistant(acte.getTauxAssistant());
-			} else if (dfM.getType().equals("urgence")) {
-				dfM.setQpAssistant(acte.getTauxAssistantUrg());
-			} else {
-				dfM.setQpAssistant(acte.getTauxDepAssistant());
-			}
-		}
-
-	}
-
-	@SuppressWarnings({ "finally", "unchecked" })
-	public boolean ajouterActe(GestionCommercialeForm formulaire)
-			throws Exception {
-
-		boolean result = false;
-		log.debug("********** Debut ajouterActe GestionCommercialeBO **********");
-		// Session session=SessionFactoryUtil.getInstance().openSession();
-		try {
-			List detailsFactureList = formulaire.getDetailsFactureList();
-			if (formulaire.getFactureId().equals("")) {
-				// debut id facture 11
-				formulaire.setFactureId(ConstantesMetier.ID_FACTURE
-						+ UtilDate.getInstance().getDateForId()
-						+ ""
-						+ getUserDao()
-								.getUserByLogin(formulaire.getOperateur())
-								.getUserId());
-			}
-
-			int majoration = calculMajoration(formulaire);
-
-			// ajouter une prestation dans détails facture
-
-			DetailFacture df = new DetailFacture();
-
-			// debut id detail facture 13
-			df.setDetailFactId(ConstantesMetier.ID_DETAILFACTURE
-					+ UtilDate.getInstance().getDateForId()
-					+ ""
-					+ getUserDao().getUserByLogin(formulaire.getOperateur())
-							.getUserId());
-			df.setActe(ActeDAO.getInstance().getActe(
-					Integer.parseInt(formulaire.getActeId())));
-			df.setNomActe(ActeDAO.getInstance()
-					.getActe(Integer.parseInt(formulaire.getActeId()))
-					.getNomActe());
-			df.setNbrActes(Integer.parseInt(formulaire.getNombreActe()));
-
-			// calcul QPC
-			df.setQpActeur(calculQPActeur(formulaire));
-			df.setQpAssistant(calculQPAssistant(formulaire));
-			// int qpc=100-(df.getQpActeur()+df.getQpAssistant());
-			double montantQPC = 0;
-
-			if (formulaire.getInfirmierChoix().equals("oui")
-					&& !UtilDate.getInstance().isVide(
-							formulaire.getActeurActeIdInf())) {
-				df.setInfirmier(ActeurDAO.getInstance().getActeur(
-						Integer.parseInt(formulaire.getActeurActeIdInf())));
-				df.setInfirmierExiste("1");
-			} else {
-				df.setInfirmierExiste("0");
-			}
-
-			double montantTotal;
-			double prixActe;
-			if (formulaire.getTypeActe().equals("normal")) {
-				if (formulaire.getMedecinChoix().equals("oui")
-						&& !UtilDate.getInstance().isVide(
-								formulaire.getActeurActeId())) {
-					ActeurActe medecin = ActeurActeDAO.getInstance()
-							.getActeurActe(
-									Integer.parseInt(formulaire
-											.getActeurActeId()));
-					if (medecin.getIsException().equals("1")) {
-						prixActe = medecin.getPrix();
-					} else {
-						prixActe = ActeDAO
-								.getInstance()
-								.getActe(
-										Integer.parseInt(formulaire.getActeId()))
-								.getPrix();
-					}
-
-					df.setMedecin(medecin.getActeur());
-					df.setMedecinExiste("1");
-				} else {
-					prixActe = ActeDAO.getInstance()
-							.getActe(Integer.parseInt(formulaire.getActeId()))
-							.getPrix();
-					df.setMedecinExiste("0");
-				}
-				df.setUrgenceActe(0);
-				df.setDepl(0);
-
-				df.setPrixReel(prixActe);
-
-				prixActe = prixActe + majoration * prixActe / 100;
-				df.setPrix(prixActe);
-
-				montantTotal = prixActe
-						* Integer.parseInt(formulaire.getNombreActe());
-				df.setMontantTotal(montantTotal);
-
-				df.setType("normal");
-			} else if (formulaire.getTypeActe().equals("urgence")) {
-				if (formulaire.getMedecinChoix().equals("oui")
-						&& !UtilDate.getInstance().isVide(
-								formulaire.getActeurActeId())) {
-					ActeurActe medecin = ActeurActeDAO.getInstance()
-							.getActeurActe(
-									Integer.parseInt(formulaire
-											.getActeurActeId()));
-					if (medecin.getIsException().equals("1")) {
-						prixActe = medecin.getPrixUrg();
-					} else {
-						prixActe = ActeDAO
-								.getInstance()
-								.getActe(
-										Integer.parseInt(formulaire.getActeId()))
-								.getPrixUrg();
-					}
-
-					df.setMedecin(medecin.getActeur());
-					df.setMedecinExiste("1");
-				} else {
-					prixActe = ActeDAO.getInstance()
-							.getActe(Integer.parseInt(formulaire.getActeId()))
-							.getPrixUrg();
-					df.setMedecinExiste("0");
-				}
-				df.setUrgenceActe(1);
-				df.setDepl(0);
-
-				df.setPrixReel(prixActe);
-
-				prixActe = prixActe + majoration * prixActe / 100;
-				df.setPrixUrg(prixActe);
-
-				montantTotal = prixActe
-						* Integer.parseInt(formulaire.getNombreActe());
-				df.setMontantTotal(montantTotal);
-
-				df.setType("urgence");
-
-			} else {
-				if (formulaire.getMedecinChoix().equals("oui")
-						&& !UtilDate.getInstance().isVide(
-								formulaire.getActeurActeId())) {
-					ActeurActe medecin = ActeurActeDAO.getInstance()
-							.getActeurActe(
-									Integer.parseInt(formulaire
-											.getActeurActeId()));
-					if (medecin.getIsException().equals("1")) {
-						prixActe = medecin.getPrixUrg();
-					} else {
-						prixActe = ActeDAO
-								.getInstance()
-								.getActe(
-										Integer.parseInt(formulaire.getActeId()))
-								.getPrixUrg();
-					}
-
-					df.setMedecin(medecin.getActeur());
-					df.setMedecinExiste("1");
-				} else {
-					prixActe = ActeDAO.getInstance()
-							.getActe(Integer.parseInt(formulaire.getActeId()))
-							.getPrixUrg();
-					df.setMedecinExiste("0");
-				}
-				df.setUrgenceActe(0);
-				df.setDepl(1);
-
-				df.setPrixReel(prixActe);
-
-				prixActe = prixActe + majoration * prixActe / 100;
-				df.setPrixDepl(prixActe);
-
-				montantTotal = prixActe
-						* Integer.parseInt(formulaire.getNombreActe());
-				df.setMontantTotal(montantTotal);
-				df.setType("deplacement");
-
-			}
-
-			montantQPC = montantTotal
-					- (df.getQpActeur() + df.getQpAssistant())
-					* df.getPrixReel() * df.getNbrActes() / 100;
-			double montantQpcNonMajore = df.getPrixReel() * df.getNbrActes()
-					- (df.getQpActeur() + df.getQpAssistant())
-					* df.getPrixReel() * df.getNbrActes() / 100;
-
-			df.setCoteClinique(montantQpcNonMajore);
-			df.setCoteCliniqueMajore(montantQPC);
-
-			if (UtilDate.getInstance().isVide(formulaire.getTotalApayer())) {
-				formulaire.setTotalApayer("0");
-			}
-
-			if (UtilDate.getInstance().isVide(formulaire.getCoteClinique())) {
-				formulaire.setCoteClinique("0");
-			}
-
-			if (UtilDate.getInstance().isVide(formulaire.getCoteAssureur())) {
-				formulaire.setCoteAssureur("0");
-			}
-
-			if (formulaire.getPriseEnChargeFlag().equals("priseEnCharge")
-					&& !formulaire.getLibeleAssureur().equals("CNAM")) {
-				if (checkPcValide(formulaire.getPriseEnCharge(), formulaire)) {
-					if (checkActePC(formulaire)) {
-						addActePC(formulaire, prixActe);
-					} else if (formulaire.getPriseEnCharge()
-							.getPrestationCouvertesPcs().size() == 0) {
-						addActePCWithoutPrestationCouv(formulaire, prixActe);
-					}
-
-				}
-			}
-
-			System.out.println(" libele CNAM" + formulaire.getLibeleAssureur());
-
-			if (formulaire.getPriseEnChargeFlag().equals("badge")
-					&& !formulaire.getLibeleAssureur().equals("CNAM")) {
-				if (ExclusionActeAssureurDAO.getInstance()
-						.getExclusionActeAssureurByActe(
-								ActeDAO.getInstance()
-										.getActe(
-												Integer.parseInt(formulaire
-														.getActeId()))) == null) {
-					addActeBadge(formulaire, prixActe);
-				}
-			}
-
-			double totalApayer = Double
-					.parseDouble(formulaire.getTotalApayer()) + montantTotal;
-			formulaire.setTotalApayer(String.valueOf(totalApayer));
-
-			double coteClinique = Double.parseDouble(formulaire
-					.getCoteClinique()) + montantQPC;
-			formulaire.setCoteClinique(String.valueOf(coteClinique));
-
-			if (ActeDAO.getInstance()
-					.getActe(Integer.parseInt(formulaire.getActeId()))
-					.getReductible().equals("1")) {
-				double coteCliniqueReductible = Double.parseDouble(formulaire
-						.getCoteCliniqueReductible()) + montantQPC;
-				formulaire.setCoteCliniqueReductible(String
-						.valueOf(coteCliniqueReductible));
-			}
-
-			formulaire.setResteApayer(String.valueOf(totalApayer
-					- Double.parseDouble(formulaire.getCoteAssureur())));
-			formulaire.setTotalApayer(String.valueOf(totalApayer));
-
-			df.setDateDetail(UtilDate.getInstance().getDateToday());
-			df.setOperateur(formulaire.getOperateur());
-			detailsFactureList.add(df);
-			formulaire.setDetailsFactureList(detailsFactureList);
-			result = true;
-
-		} catch (Exception e) {
-
-			e.printStackTrace();
-			log.fatal(e.getMessage());
-
-		}
-
-		finally {
-			// session.close();
-			log.debug("********** Fin ajouterActe GestionCommercialeBO **********");
-			// SessionFactoryUtil.getInstance().close();
-			return result;
-		}
-	}
-
-	@SuppressWarnings({ "finally", "unchecked" })
-	public boolean ajouterActeDevis(GestionCommercialeForm formulaire)
-			throws Exception {
-
-		boolean result = false;
-		log.debug("********** Debut ajouterActeDevis GestionCommercialeBO **********");
-		// Session session=SessionFactoryUtil.getInstance().openSession();
-		try {
-			List devisActesList = formulaire.getDevisActesList();
-
-			// int
-			// pourcentageAssureur=CategorieDAO.getInstance().getCategorie(Integer.parseInt(formulaire.getCategorieId())).getPourcentage();
-
-			// ajouter une prestation dans détails facture
-			// debut id detail facture 13
-			DevisActes da = new DevisActes();
-			da.setDevisActesId(ConstantesMetier.ID_DEVISACTE
-					+ UtilDate.getInstance().getDateForId()
-					+ ""
-					+ getUserDao().getUserByLogin(formulaire.getOperateur())
-							.getUserId());
-			da.setActe(ActeDAO.getInstance().getActe(
-					Integer.parseInt(formulaire.getActeId())));
-
-			da.setNbre(Integer.parseInt(formulaire.getNombreActe()));
-
-			double montantTotal;
-			double prixActe;
-			if (formulaire.getTypeActe().equals("normal")) {
-				if (formulaire.getMedecinChoix().equals("oui")
-						&& !UtilDate.getInstance().isVide(
-								formulaire.getActeurActeId())) {
-					ActeurActe medecin = ActeurActeDAO.getInstance()
-							.getActeurActe(
-									Integer.parseInt(formulaire
-											.getActeurActeId()));
-					if (medecin.getIsException().equals("1")) {
-						prixActe = medecin.getPrix();
-					} else {
-						prixActe = ActeDAO
-								.getInstance()
-								.getActe(
-										Integer.parseInt(formulaire.getActeId()))
-								.getPrix();
-					}
-
-				} else {
-					prixActe = ActeDAO.getInstance()
-							.getActe(Integer.parseInt(formulaire.getActeId()))
-							.getPrix();
-
-				}
-
-				da.setPrix(prixActe);
-
-				montantTotal = prixActe
-						* Integer.parseInt(formulaire.getNombreActe());
-				da.setTotal(montantTotal);
-
-			} else if (formulaire.getTypeActe().equals("urgence")) {
-				if (formulaire.getMedecinChoix().equals("oui")
-						&& !UtilDate.getInstance().isVide(
-								formulaire.getActeurActeId())) {
-					ActeurActe medecin = ActeurActeDAO.getInstance()
-							.getActeurActe(
-									Integer.parseInt(formulaire
-											.getActeurActeId()));
-					if (medecin.getIsException().equals("1")) {
-						prixActe = medecin.getPrixUrg();
-					} else {
-						prixActe = ActeDAO
-								.getInstance()
-								.getActe(
-										Integer.parseInt(formulaire.getActeId()))
-								.getPrixUrg();
-					}
-
-				} else {
-					prixActe = ActeDAO.getInstance()
-							.getActe(Integer.parseInt(formulaire.getActeId()))
-							.getPrixUrg();
-
-				}
-
-				da.setPrix(prixActe);
-
-				montantTotal = prixActe
-						* Integer.parseInt(formulaire.getNombreActe());
-				da.setTotal(montantTotal);
-
-			} else {
-				if (formulaire.getMedecinChoix().equals("oui")
-						&& !UtilDate.getInstance().isVide(
-								formulaire.getActeurActeId())) {
-					ActeurActe medecin = ActeurActeDAO.getInstance()
-							.getActeurActe(
-									Integer.parseInt(formulaire
-											.getActeurActeId()));
-					if (medecin.getIsException().equals("1")) {
-						prixActe = medecin.getPrixUrg();
-					} else {
-						prixActe = ActeDAO
-								.getInstance()
-								.getActe(
-										Integer.parseInt(formulaire.getActeId()))
-								.getPrixUrg();
-					}
-
-				} else {
-					prixActe = ActeDAO.getInstance()
-							.getActe(Integer.parseInt(formulaire.getActeId()))
-							.getPrixUrg();
-
-				}
-
-				da.setPrix(prixActe);
-
-				montantTotal = prixActe
-						* Integer.parseInt(formulaire.getNombreActe());
-				da.setTotal(montantTotal);
-
-			}
-
-			devisActesList.add(da);
-			double totalDevis = Double.valueOf(formulaire.getTotalDevis());
-			totalDevis = totalDevis + da.getTotal();
-			formulaire.setTotalDevis(String.valueOf(totalDevis));
-			formulaire.setDevisActesList(devisActesList);
-			result = true;
-
-		} catch (Exception e) {
-
-			e.printStackTrace();
-			log.fatal(e.getMessage());
-
-		}
-
-		finally {
-			// session.close();
-			log.debug("********** Fin ajouterActeDevis GestionCommercialeBO **********");
-			// SessionFactoryUtil.getInstance().close();
-			return result;
-		}
-	}
-
-	@SuppressWarnings({ "finally" })
-	public boolean ajouterActeForFactureModifiee(
-			GestionCommercialeForm formulaire, DetailFacture df)
-			throws Exception {
-
-		boolean result = false;
-		log.debug("********** Debut ajouterActeForFactureModifiee GestionCommercialeBO **********");
-
-		try {
-			// calcul QPC
-			int qpc = 100 - (calculQPActeur(df) + calculQPAssistant(df));
-
-			double montantTotal = df.getMontantTotal();
-			double prixActe;
-
-			prixActe = getPrixActeFromDetailFacture(df);
-
-			if (formulaire.getPriseEnChargeFlag().equals("priseEnCharge")) {
-				if (checkPcValide(formulaire.getPriseEnCharge(), formulaire)) {
-					if (checkActePC(formulaire)) {
-						addActePCFromDetailFacture(formulaire, prixActe, df);
-					} else if (formulaire.getPriseEnCharge()
-							.getPrestationCouvertesPcs().size() == 0) {
-						addActePCWithoutPrestationCouvFromDetailFacture(
-								formulaire, prixActe, df);
-					}
-
-				}
-			}
-
-			if (formulaire.getPriseEnChargeFlag().equals("badge")) {
-				addActeBadgeFromDetailFacture(formulaire, prixActe, df);
-			}
-
-			double totalApayer = Double
-					.parseDouble(formulaire.getTotalApayer()) + montantTotal;
-			formulaire.setTotalApayer(String.valueOf(totalApayer));
-
-			double coteClinique = Double.parseDouble(formulaire
-					.getCoteClinique()) + montantTotal * qpc / 100;
-			formulaire.setCoteClinique(String.valueOf(coteClinique));
-
-			if (df.getActe().getReductible().equals("1")) {
-				double coteCliniqueReductible = Double.parseDouble(formulaire
-						.getCoteCliniqueReductible())
-						+ montantTotal
-						* qpc
-						/ 100;
-				formulaire.setCoteCliniqueReductible(String
-						.valueOf(coteCliniqueReductible));
-			}
-			formulaire.setResteApayer(String.valueOf(totalApayer
-					- Double.parseDouble(formulaire.getCoteAssureur())));
-
-			result = true;
-
-		} catch (Exception e) {
-
-			e.printStackTrace();
-			log.fatal(e.getMessage());
-
-		}
-
-		finally {
-			log.debug("********** Fin ajouterActeForFactureModifiee GestionCommercialeBO **********");
-			// SessionFactoryUtil.getInstance().close();
-			return result;
-		}
-	}
-
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see clinique.metier.gestion.commerciale.IGestionCommercialeBO#
+	 * setValeursResteApyer
+	 * (clinique.model.gestion.commerciale.GestionCommercialeForm)
+	 */
+	@Override
 	@SuppressWarnings("unchecked")
-	public void makeCopieOfPriseEnCharge(PriseEnCharge pc,
-			PriseEnChargeModifiee pcM, double montantPc, String userId) {
-		pcM.setPcNum(pc.getPcNum());
-		pcM.setPatient(pc.getPatient());
-		pcM.setPlafond(pc.getPlafond());
-		pcM.setPourcentage(pc.getPourcentage());
-		pcM.setFinValidite(pc.getFinValidite());
-		pcM.setDateCreation(pc.getDateCreation());
-		pcM.setNombreActes(pc.getNombreActes());
-		pcM.setMontantFact(pc.getMontantFact() - montantPc);
-		pcM.setCategorie(pc.getCategorie());
-		pcM.setStatut("1");
-		List list = pc.getPrestationCouvertesPcs();
-		if (list.size() != 0) {
-			for (Iterator iter = list.iterator(); iter.hasNext();) {
-				PrestationCouvertesPcModifiee pccouvM = new PrestationCouvertesPcModifiee();
-				pccouvM.setPresCouvId(ConstantesMetier.ID_PRESTATIONCOUVERTEPC
-						+ UtilDate.getInstance().getDateForId() + "" + userId);
-				PrestationCouvertesPc element = (PrestationCouvertesPc) iter
-						.next();
-				makeCopieOfPrtationCouv(element, pccouvM);
+	public void setValeursResteApyer(GestionCommercialeForm formulaire) {
 
-			}
-
-		}
-
-	}
-
-	public void makeCopieOfPrtationCouv(PrestationCouvertesPc pccouv,
-			PrestationCouvertesPcModifiee pccouvM) {
-		pccouvM.setActe(pccouv.getActe());
-		pccouvM.setStatut("1");
-		pccouvM.setType(pccouv.getType());
-		pccouvM.setLibelle(pccouv.getLibelle());
-		pccouvM.setLimite(pccouv.getLimite());
-		pccouvM.setNbreActes(pccouv.getNbreActes());
-		pccouvM.setNbreActesRestant(pccouv.getNbreActesRestant());
-	}
-
-	public int calculMajoration(GestionCommercialeForm formulaire) {
-		int majoration = 0;
+		double resteApayer = Double.parseDouble(formulaire.getTotalApayer())
+				- Double.parseDouble(formulaire.getCoteAssureur())
+				- Double.parseDouble(formulaire.getRemiseMontant());
 
 		if (!formulaire.getPriseEnChargeFlag().equals("aucune")) {
-			Categorie categorie = formulaire.getPatient().getCategorie();
-			if (categorie != null) {
-				majoration = categorie.getMajoration();
-			}
+			if (formulaire.getLibeleAssureur().equals("CNAM")) {
+				double petitMonnaieDrg = 0;
 
-			if (majoration == 0) {
-				majoration = Integer.valueOf(ParametresCliniqueDAO
-						.getInstance()
-						.getParametresCliniqueByParametreNom("majoration")
-						.getValeur()) / 100;
+				for (Iterator iter = formulaire.getDetailDrgCnamListFacture()
+						.iterator(); iter.hasNext();) {
+					DetailDgrCnamFacture element = (DetailDgrCnamFacture) iter
+							.next();
+
+					petitMonnaieDrg = petitMonnaieDrg
+							+ element.getPetitMonnaie();
+				}
+
+				resteApayer = resteApayer + petitMonnaieDrg;
 			}
-		} else {
-			majoration = Integer.valueOf(ParametresCliniqueDAO.getInstance()
-					.getParametresCliniqueByParametreNom("majoration")
-					.getValeur()) / 100;
 		}
 
-		return majoration;
+		double resteApayerSansMajoration = 0;
+		resteApayerSansMajoration = 100 * resteApayer
+				/ (100 + calculMajoration(formulaire));
+
+		formulaire.setResteApayer(String.valueOf(resteApayerSansMajoration));
+		formulaire.setResteApayerMajoration(String.valueOf(resteApayer));
+
+		if (resteApayer == 0) {
+			formulaire.setRecuRegle("1");
+		} else {
+			formulaire.setRecuRegle("0");
+		}
+
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see clinique.metier.gestion.commerciale.IGestionCommercialeBO#
+	 * setValeursResteApyer2
+	 * (clinique.model.gestion.commerciale.GestionCommercialeForm)
+	 */
+	@Override
+	public void setValeursResteApyer2(GestionCommercialeForm formulaire) {
+		double resteApayer = Double.parseDouble(formulaire.getTotalApayer())
+				- Double.parseDouble(formulaire.getCoteAssureur())
+				- Double.parseDouble(formulaire.getRemiseMontant());
+
+		double resteApayerSansMajoration = 0;
+		resteApayerSansMajoration = resteApayer - resteApayer
+				* calculMajoration(formulaire) / 100;
+
+		formulaire.setResteApayer(String.valueOf(resteApayerSansMajoration));
+		formulaire.setResteApayerMajoration(String.valueOf(resteApayer));
+
+		if (resteApayer == 0) {
+			formulaire.setRecuRegle("1");
+		} else {
+			formulaire.setRecuRegle("0");
+		}
+
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see clinique.metier.gestion.commerciale.IGestionCommercialeBO#
+	 * setValeursResteApyerHosp
+	 * (clinique.model.gestion.commerciale.GestionCommercialeForm)
+	 */
+	@Override
+	@SuppressWarnings("unchecked")
+	public void setValeursResteApyerHosp(GestionCommercialeForm formulaire)
+			throws Exception {
+
+		try {
+			double resteApayer = Double
+					.parseDouble(formulaire.getTotalApayer())
+					- Double.parseDouble(formulaire.getCoteAssureur())
+					- Double.parseDouble(formulaire.getRemiseMontant());
+
+			if (!formulaire.getPriseEnChargeFlag().equals("aucune")) {
+				if (formulaire.getLibeleAssureur().equals("CNAM")) {
+					double petitMonnaieDrg = 0;
+
+					for (Iterator iter = formulaire
+							.getDetailDrgCnamListFacture().iterator(); iter
+							.hasNext();) {
+						DetailDgrCnamFacture element = (DetailDgrCnamFacture) iter
+								.next();
+
+						petitMonnaieDrg = petitMonnaieDrg
+								+ element.getPetitMonnaie();
+					}
+
+					resteApayer = resteApayer + petitMonnaieDrg;
+				}
+			}
+
+			double resteApayerSansMajoration = 0;
+			int majoration = calculMajoration(formulaire);
+			resteApayerSansMajoration = 100 * resteApayer / (100 + majoration);
+
+			double avance = Double.parseDouble(formulaire.getAvance());
+			if (resteApayerSansMajoration > avance) {
+				resteApayerSansMajoration = resteApayerSansMajoration - avance;
+				formulaire.setaRendre("0");
+			} else {
+				if (avance - resteApayerSansMajoration == 0) {
+					formulaire.setaRendre("0");
+				} else {
+					formulaire.setaRendre(String.valueOf(avance
+							- resteApayerSansMajoration));
+
+				}
+				resteApayerSansMajoration = 0;
+
+			}
+
+			resteApayer = resteApayerSansMajoration + resteApayerSansMajoration
+					* majoration / 100;
+
+			formulaire
+					.setResteApayer(String.valueOf(resteApayerSansMajoration));
+			formulaire.setResteApayerMajoration(String.valueOf(resteApayer));
+
+			if (resteApayer == 0) {
+				formulaire.setRecuRegle("1");
+			} else {
+				formulaire.setRecuRegle("0");
+			}
+
+		}
+
+		catch (Exception e) {
+			e.printStackTrace();
+		}
+
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see clinique.metier.gestion.commerciale.IGestionCommercialeBO#
+	 * showHospForAddPrestation
+	 * (clinique.model.gestion.commerciale.GestionCommercialeForm)
+	 */
+	@Override
 	@SuppressWarnings({ "finally", "unchecked" })
-	public boolean ajouterDrgCnamDansDetailDrgCnamList(
+	public boolean showHospForAddPrestation(GestionCommercialeForm formulaire)
+			throws Exception {
+
+		log.debug("********** Debut patientPrestationsFormulaire GestionCommercialeBO **********");
+		boolean result = false;
+		try {
+
+			Hospitalisation hospitalisation = getHospitalisationDAO()
+					.getHospitalisation(formulaire.getHospitalisaionId());
+			formulaire.setDetailsFactureList(new ArrayList());
+
+			if (hospitalisation != null) {
+				formulaire.setHospitalisation(hospitalisation);
+				formulaire.setDateEntree(UtilDate.getInstance().dateToString(
+						hospitalisation.getDateEntree()));
+				formulaire.setChambreActuelle(hospitalisation.getChambre()
+						.getChambreLibelle());
+				formulaire.setAvance(String.valueOf(hospitalisation
+						.getFacture().getAvance()));
+				formulaire.setPatient(hospitalisation.getPatient());
+				formulaire.setFacture(hospitalisation.getFacture());
+			}
+
+			System.out.println("bbbbbbbbbb " + formulaire.getOperateur());
+			Recu recu = new Recu();
+			recu.setRecuId(ConstantesMetier.ID_RECU
+					+ UtilDate.getInstance().getDateForId()
+					+ ""
+					+ getUserDao().getUserByLogin(formulaire.getOperateur())
+							.getUserId());
+			recu.setDateRecu(UtilDate.getInstance().getDateToday());
+			recu.setFacture(formulaire.getFacture());
+			recu.setOperateur(formulaire.getOperateur());
+			formulaire.setRecu(recu);
+
+			Patient patient = formulaire.getPatient();
+			if (patient != null) {
+				formulaire.setPatientId(String.valueOf(patient.getPatientId()));
+				formulaire.setNom(patient.getNom());
+				formulaire.setPrenom(patient.getPrenom());
+				formulaire.setAdresse(patient.getAdresse());
+				formulaire.setCni(patient.getCni());
+				formulaire.setDateNaissance(UtilDate.getInstance()
+						.dateToString(patient.getDateNaissance()));
+
+				formulaire.setDateDerniereVisite(UtilDate.getInstance()
+						.dateToString(patient.getDateDerniereVisite()));
+				formulaire.setDatePremiereVisite(UtilDate.getInstance()
+						.dateToString(patient.getDatePremiereViste()));
+				formulaire.setLieuNaissance(patient.getLieuNaissance());
+				formulaire.setNni(patient.getNni());
+				formulaire.setPriseEnChargeFlag(patient.getPriseEnChargeFlag());
+
+				if (!formulaire.getPriseEnChargeFlag().equals("aucune")) {
+					PatientPcActuel patientPcActuel = getPatientPcActuelDAO()
+							.getPatientPcByPatient(patient);
+					if (patientPcActuel != null) {
+						if (patientPcActuel.getType().equals("badge")
+								&& patientPcActuel.getBadge() != null) {
+
+							formulaire.setNumeroBadge(patientPcActuel
+									.getBadge().getNumeroBadge());
+						} else {
+							formulaire.setNumeroBadge("");
+						}
+
+						formulaire.setLibeleAssureur(patient.getCategorie()
+								.getNomCategorie());
+						formulaire.setCategorieId(String.valueOf(patient
+								.getCategorie().getCategorieId()));
+					}
+				}
+				formulaire.setTelephone(patient.getTelephone());
+
+				// formulaire.setDetailsFactureList(null);
+
+				result = true;
+
+			}
+
+		} catch (Exception e) {
+			e.printStackTrace();
+			log.fatal(e.getMessage());
+
+		}
+
+		finally {
+			log.debug("********** Debut patientPrestationsFormulaire GestionCommercialeBO **********");
+			return result;
+		}
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see clinique.metier.gestion.commerciale.IGestionCommercialeBO#
+	 * showHospForChangeChambre
+	 * (clinique.model.gestion.commerciale.GestionCommercialeForm)
+	 */
+	@Override
+	@SuppressWarnings("finally")
+	public boolean showHospForChangeChambre(GestionCommercialeForm formulaire)
+			throws Exception {
+
+		log.debug("********** Debut patientPrestationsFormulaire GestionCommercialeBO **********");
+		boolean result = false;
+		try {
+
+			HospitalisationDAO hospitalisationDAO = getHospitalisationDAO();
+
+			Hospitalisation hospitalisation = hospitalisationDAO
+					.getHospitalisation(formulaire.getHospitalisaionId().trim());
+
+			if (hospitalisation != null) {
+				formulaire.setHospitalisation(hospitalisation);
+				formulaire.setDateEntree(UtilDate.getInstance().dateToString(
+						hospitalisation.getDateEntree()));
+				formulaire.setChambreActuelle(hospitalisation.getChambre()
+						.getChambreLibelle());
+				formulaire.setAvance(String.valueOf(hospitalisation
+						.getFacture().getAvance()));
+				formulaire.setPatient(hospitalisation.getPatient());
+			}
+
+			Patient patient = formulaire.getPatient();
+			if (patient != null) {
+				formulaire.setPatientId(String.valueOf(patient.getPatientId()));
+				formulaire.setNom(patient.getNom());
+				formulaire.setPrenom(patient.getPrenom());
+				formulaire.setAdresse(patient.getAdresse());
+				formulaire.setCni(patient.getCni());
+				formulaire.setDateNaissance(UtilDate.getInstance()
+						.dateToString(patient.getDateNaissance()));
+
+				formulaire.setDateDerniereVisite(UtilDate.getInstance()
+						.dateToString(patient.getDateDerniereVisite()));
+				formulaire.setDatePremiereVisite(UtilDate.getInstance()
+						.dateToString(patient.getDatePremiereViste()));
+				formulaire.setLieuNaissance(patient.getLieuNaissance());
+				formulaire.setNni(patient.getNni());
+				PatientPcActuel patientPcActuel = getPatientPcActuelDAO()
+						.getPatientPcByPatient(patient);
+				if (patientPcActuel.getType().equals("badge")
+						&& patientPcActuel.getBadge() != null) {
+					formulaire.setNumeroBadge(patientPcActuel.getBadge()
+							.getNumeroBadge());
+				} else {
+					formulaire.setNumeroBadge("");
+				}
+				formulaire.setTelephone(patient.getTelephone());
+
+				// formulaire.setDetailsFactureList(null);
+
+				result = true;
+
+			}
+
+		} catch (Exception e) {
+			log.fatal(e.getMessage());
+		}
+
+		finally {
+			log.debug("********** Debut patientPrestationsFormulaire GestionCommercialeBO **********");
+			return result;
+		}
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * clinique.metier.gestion.commerciale.IGestionCommercialeBO#showHospForSortie
+	 * (clinique.model.gestion.commerciale.GestionCommercialeForm)
+	 */
+	@Override
+	@SuppressWarnings("finally")
+	public boolean showHospForSortie(GestionCommercialeForm formulaire)
+			throws Exception {
+
+		log.debug("********** Debut showHospForSortie GestionCommercialeBO **********");
+		// Session session=SessionFactoryUtil.getInstance().openSession();
+		boolean result = false;
+		try {
+
+			Hospitalisation hospitalisation = getHospitalisationDAO()
+					.getHospitalisation(formulaire.getHospitalisaionId().trim());
+			if (hospitalisation != null) {
+				formulaire.setHospitalisation(hospitalisation);
+				formulaire.setDateEntree(UtilDate.getInstance().dateToString(
+						hospitalisation.getDateEntree()));
+				formulaire.setChambreActuelle(hospitalisation.getChambre()
+						.getChambreLibelle());
+				formulaire.setAvance(String.valueOf(hospitalisation
+						.getFacture().getAvance()));
+				formulaire.setPatient(hospitalisation.getPatient());
+				formulaire.setFacture(hospitalisation.getFacture());
+				formulaire.setDetailsFactureList(hospitalisation.getFacture()
+						.getDetailFactures());
+			}
+
+			Patient patient = formulaire.getPatient();
+			if (patient != null) {
+				formulaire.setPatientId(String.valueOf(patient.getPatientId()));
+				formulaire.setNom(patient.getNom());
+				formulaire.setPrenom(patient.getPrenom());
+				formulaire.setAdresse(patient.getAdresse());
+				formulaire.setCni(patient.getCni());
+				formulaire.setDateNaissance(UtilDate.getInstance()
+						.dateToString(patient.getDateNaissance()));
+
+				formulaire.setDateDerniereVisite(UtilDate.getInstance()
+						.dateToString(patient.getDateDerniereVisite()));
+				formulaire.setDatePremiereVisite(UtilDate.getInstance()
+						.dateToString(patient.getDatePremiereViste()));
+				formulaire.setLieuNaissance(patient.getLieuNaissance());
+				formulaire.setNni(patient.getNni());
+				formulaire.setPriseEnChargeFlag(patient.getPriseEnChargeFlag());
+				PatientPcActuel patientPcActuel = getPatientPcActuelDAO()
+						.getPatientPcByPatient(patient);
+
+				if (!formulaire.getPriseEnChargeFlag().equals("aucune")) {
+					if (patientPcActuel != null) {
+						if (patientPcActuel.getType().equals("badge")
+								&& patientPcActuel.getBadge() != null) {
+							formulaire.setNumeroBadge(patientPcActuel
+									.getBadge().getNumeroBadge());
+						} else {
+							formulaire.setNumeroBadge("");
+						}
+
+						formulaire.setLibeleAssureur(patient.getCategorie()
+								.getNomCategorie());
+						formulaire.setCategorieId(String.valueOf(patient
+								.getCategorie().getCategorieId()));
+					}
+				}
+
+				formulaire.setTelephone(patient.getTelephone());
+
+				result = true;
+
+			}
+
+		} catch (Exception e) {
+			e.printStackTrace();
+			log.fatal(e.getMessage());
+		}
+
+		finally {
+			log.debug("********** Debut showHospForSortie GestionCommercialeBO **********");
+			return result;
+		}
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see clinique.metier.gestion.commerciale.IGestionCommercialeBO#
+	 * showHospInfosForSortie
+	 * (clinique.model.gestion.commerciale.GestionCommercialeForm)
+	 */
+	@Override
+	@SuppressWarnings("finally")
+	public boolean showHospInfosForSortie(GestionCommercialeForm formulaire)
+			throws Exception {
+
+		log.debug("********** Debut showHospInfosForSortie GestionCommercialeBO **********");
+		boolean result = false;
+		try {
+
+			Hospitalisation hospitalisation = getHospitalisationDAO()
+					.getHospitalisation(formulaire.getHospitalisaionId().trim());
+			if (hospitalisation != null) {
+				formulaire.setHospitalisation(hospitalisation);
+				formulaire.setDateEntree(UtilDate.getInstance().dateToString(
+						hospitalisation.getDateEntree()));
+				formulaire.setChambreActuelle(hospitalisation.getChambre()
+						.getChambreLibelle());
+				formulaire.setAvance(String.valueOf(hospitalisation
+						.getFacture().getAvance()));
+				formulaire.setPatient(hospitalisation.getPatient());
+				formulaire.setFacture(hospitalisation.getFacture());
+				formulaire.setDetailsFactureList(hospitalisation.getFacture()
+						.getDetailFactures());
+				formulaire.setChambresHospList(hospitalisation
+						.getChambresHospitalisation());
+				formulaire.setDateSortie(UtilDate.getInstance().dateToString(
+						hospitalisation.getDateSortie()));
+			}
+
+			Patient patient = formulaire.getPatient();
+			if (patient != null) {
+				formulaire.setPatientId(String.valueOf(patient.getPatientId()));
+				formulaire.setNom(patient.getNom());
+				formulaire.setPrenom(patient.getPrenom());
+				formulaire.setAdresse(patient.getAdresse());
+				formulaire.setCni(patient.getCni());
+				formulaire.setDateNaissance(UtilDate.getInstance()
+						.dateToString(patient.getDateNaissance()));
+
+				formulaire.setDateDerniereVisite(UtilDate.getInstance()
+						.dateToString(patient.getDateDerniereVisite()));
+				formulaire.setDatePremiereVisite(UtilDate.getInstance()
+						.dateToString(patient.getDatePremiereViste()));
+				formulaire.setLieuNaissance(patient.getLieuNaissance());
+				formulaire.setNni(patient.getNni());
+				formulaire.setPriseEnChargeFlag(patient.getPriseEnChargeFlag());
+				PatientPcActuel patientPcActuel = getPatientPcActuelDAO()
+						.getPatientPcByPatient(patient);
+
+				if (!formulaire.getPriseEnChargeFlag().equals("aucune")) {
+					if (patientPcActuel != null) {
+						if (patientPcActuel.getType().equals("badge")
+								&& patientPcActuel.getBadge() != null) {
+							formulaire.setNumeroBadge(patientPcActuel
+									.getBadge().getNumeroBadge());
+						} else {
+							formulaire.setNumeroBadge("");
+						}
+
+						formulaire.setLibeleAssureur(patient.getCategorie()
+								.getNomCategorie());
+						formulaire.setCategorieId(String.valueOf(patient
+								.getCategorie().getCategorieId()));
+					}
+				}
+
+				formulaire.setTelephone(patient.getTelephone());
+
+				result = true;
+
+			}
+
+		} catch (Exception e) {
+			e.printStackTrace();
+			log.fatal(e.getMessage());
+		}
+
+		finally {
+			log.debug("********** Debut showHospInfosForSortie GestionCommercialeBO **********");
+			return result;
+		}
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see clinique.metier.gestion.commerciale.IGestionCommercialeBO#
+	 * supprimerDetailDrgFromListeDetailDrgCnamFacture
+	 * (clinique.model.gestion.commerciale.GestionCommercialeForm)
+	 */
+	@Override
+	@SuppressWarnings({ "unchecked", "finally" })
+	public boolean supprimerDetailDrgFromListeDetailDrgCnamFacture(
 			GestionCommercialeForm formulaire) throws Exception {
 
 		boolean result = false;
-		log.debug("********** Debut ajouterDrgCnamDansDetailDrgCnamList GestionCommercialeBO **********");
-		// Session session=SessionFactoryUtil.getInstance().openSession();
+		log.debug("********** Debut supprimerDetailDrgFromListeDetailDrgCnamFacture GestionCommercialeBO **********");
 
 		try {
-			List detailDrgCnamListFacture = formulaire
+			List detailDrgCnamFactureList = formulaire
 					.getDetailDrgCnamListFacture();
-			DetailDgrCnamFacture detailDrg = new DetailDgrCnamFacture();
-			DrgCnam drg = DrgCnamDAO.getInstance().getDrgCnam(
-					formulaire.getDrgCnamId());
-			int pourcentage = CategorieDAO
-					.getInstance()
-					.getCategorie(Integer.parseInt(formulaire.getCategorieId()))
+			DetailDgrCnamFacture detail = new DetailDgrCnamFacture();
+			int pourcentage = getCategorieDAO().getCategorie(
+					Integer.parseInt(formulaire.getCategorieId()))
 					.getPourcentage();
-			// debut id reglement 16
-			detailDrg
-					.setDetailDrgCnamId(ConstantesMetier.ID_DETAILDRGCNAMLISTFACTURE
-							+ UtilDate.getInstance().getDateForId()
-							+ ""
-							+ getUserDao().getUserByLogin(
-									formulaire.getOperateur()).getUserId());
 
-			detailDrg.setDateDetail(UtilDate.getInstance().getDateToday());
-			detailDrg.setStatut("1");
-			detailDrg.setOperateur(formulaire.getOperateur());
-			detailDrg.setDrgCnam(drg);
+			for (Iterator iter = detailDrgCnamFactureList.iterator(); iter
+					.hasNext();) {
+				DetailDgrCnamFacture element = (DetailDgrCnamFacture) iter
+						.next();
 
-			detailDrgCnamListFacture.add(detailDrg);
+				if (element.getDetailDrgCnamId().equals(
+						formulaire.getIdDetailDrgAsupprimer())) {
+					detail = element;
+				}
+			}
 
+			DrgCnam drg = detail.getDrgCnam();
 			double montantDrg = drg.getMontant() * pourcentage / 100;
 			double totalMontantDrg = 0;
 
 			double cotePartAssureur;
 
-			if (formulaire.getTotalMontantDrg().isEmpty()) {
-				totalMontantDrg = 0;
-				formulaire.setTotalMontantDrg("0");
-			}
-
 			totalMontantDrg = Double.parseDouble(formulaire
-					.getTotalMontantDrg()) + drg.getMontant();
+					.getTotalMontantDrg()) - drg.getMontant();
 			formulaire.setTotalMontantDrg(String.valueOf(totalMontantDrg));
 
-			if (formulaire.getCoteAssureur().isEmpty()) {
-				cotePartAssureur = 0;
-				formulaire.setCoteAssureur("0");
-			}
-
-			cotePartAssureur = Double.parseDouble(formulaire.getCoteAssureur());
+			cotePartAssureur = Double.parseDouble(formulaire.getCoteAssureur())
+					- montantDrg;
+			formulaire.setCoteAssureur(String.valueOf(cotePartAssureur));
 
 			double totalApayer = Double
 					.parseDouble(formulaire.getTotalApayer());
+
 			double resteApayer = totalApayer - cotePartAssureur;
-			double petitMonnaie = 0;
 
-			if (montantDrg > resteApayer) {
-				resteApayer = 0;
-				petitMonnaie = montantDrg - (totalApayer - cotePartAssureur);
-			}
-
-			detailDrg.setPetitMonnaie(petitMonnaie);
-
-			cotePartAssureur = Double.parseDouble(formulaire.getCoteAssureur())
-					+ montantDrg;
-			formulaire.setCoteAssureur(String.valueOf(cotePartAssureur));
-			if (resteApayer != 0) {
-				resteApayer = totalApayer - cotePartAssureur;
-			}
 			formulaire.setResteApayer(String.valueOf(resteApayer));
 
-			formulaire.setDetailDrgCnamListFacture(detailDrgCnamListFacture);
+			System.out.println(" total a payer " + totalApayer);
+			System.out.println(" total montant DRG " + totalMontantDrg);
+			System.out.println(" cp Ass " + cotePartAssureur);
+			System.out.println(" resteApayer " + resteApayer);
+
+			detailDrgCnamFactureList.remove(detail);
+			formulaire.setDetailDrgCnamListFacture(detailDrgCnamFactureList);
+
 			result = true;
 
 		} catch (Exception e) {
+
 			e.printStackTrace();
 			log.fatal(e.getMessage());
 
 		}
 
 		finally {
-			// session.close();
-			log.debug("********** Fin ajouterDrgCnamDansDetailDrgCnamList GestionCommercialeBO **********");
+			log.debug("********** Fin supprimerDetailDrgFromListeDetailDrgCnamFacture GestionCommercialeBO **********");
+			// SessionFactoryUtil.getInstance().close();
 			return result;
 		}
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see clinique.metier.gestion.commerciale.IGestionCommercialeBO#
+	 * supprimerPrestFromListeDevis
+	 * (clinique.model.gestion.commerciale.GestionCommercialeForm)
+	 */
+	@Override
 	@SuppressWarnings({ "unchecked", "finally" })
 	public boolean supprimerPrestFromListeDevis(
 			GestionCommercialeForm formulaire) throws Exception {
@@ -6943,325 +7905,191 @@ public class GestionCommercialeBO implements ConstantesMetier {
 		}
 	}
 
-	@SuppressWarnings("unchecked")
-	public void makeTransactionActeurs(List transactionComptes,
-			GestionCommercialeForm formulaire, int idkey) {
-		Acteur acteur;
-		Acteur acteur1;
-		Compte compte;
-		Compte compte1;
-		double montant = 0;
-		String chaineKey;
-
-		for (Iterator iter = formulaire.getDetailsFactureList().iterator(); iter
-				.hasNext();) {
-
-			DetailFacture element = (DetailFacture) iter.next();
-
-			TransactionCompte transactionCompte = new TransactionCompte();
-			TransactionCompte transactionCompte1 = new TransactionCompte();
-
-			if (element.getMedecinExiste().equals("1")) {
-
-				acteur = element.getMedecin();
-				if (acteur != null) {
-					idkey = idkey + 1;
-					chaineKey = ConstantesMetier.ID_TRANSACTIONCOMPTE
-							+ UtilDate.getInstance().getDateForId2()
-							+ UtilDate.getInstance().getChaineKey(idkey)
-							+ getUserDao().getUserByLogin(
-									formulaire.getOperateur()).getUserId();
-
-					compte = CompteDAO.getInstance()
-							.getCompteFromActeur(acteur);
-					if (compte != null) {
-
-						montant = element.getPrixReel() * element.getQpActeur()
-								/ 100;
-
-						compte.setSoldeAvant(compte.getSolde());
-						compte.setSolde(compte.getSolde() + montant);
-
-						transactionCompte.setTransactionId(chaineKey);
-						transactionCompte.setDateTransaction(UtilDate
-								.getInstance().getDateToday());
-						transactionCompte.setCompte(compte);
-						transactionCompte.setMontant(montant);
-						transactionCompte.setOperation("credit");
-						transactionCompte.setOperateur(formulaire
-								.getOperateur());
-						transactionCompte.setStatut("1");
-
-						transactionComptes.add(transactionCompte);
-
-						// compte.getTransactionsCompte().add(transactionCompte);
-
-					}
-				}
-			}
-
-			if (element.getInfirmierExiste().equals("1")) {
-				acteur1 = element.getInfirmier();
-				if (acteur1 != null) {
-					idkey = idkey + 1;
-					chaineKey = ConstantesMetier.ID_TRANSACTIONCOMPTE
-							+ UtilDate.getInstance().getDateForId2()
-							+ UtilDate.getInstance().getChaineKey(idkey)
-							+ getUserDao().getUserByLogin(
-									formulaire.getOperateur()).getUserId();
-
-					compte1 = CompteDAO.getInstance().getCompteFromActeur(
-							acteur1);
-					if (compte1 != null) {
-
-						montant = element.getPrixReel()
-								* element.getQpAssistant() / 100;
-
-						compte1.setSoldeAvant(compte1.getSolde());
-						compte1.setSolde(compte1.getSolde() + montant);
-
-						transactionCompte1.setTransactionId(chaineKey);
-						transactionCompte1.setDateTransaction(UtilDate
-								.getInstance().getDateToday());
-						transactionCompte1.setCompte(compte1);
-						transactionCompte1.setMontant(montant);
-						transactionCompte1.setOperation("credit");
-						transactionCompte1.setOperateur(formulaire
-								.getOperateur());
-						transactionCompte1.setStatut("1");
-
-						transactionComptes.add(transactionCompte1);
-
-						// compte1.getTransactionsCompte().add(transactionCompte1);
-
-					}
-
-				}
-			}
-		}
-
-	}
-
-	@SuppressWarnings("unchecked")
-	public void makeTransactionCliniqueAndAssureur(List transactionComptes,
-			List transactionCompteCategories,
-			GestionCommercialeForm formulaire, int idkey) {
-
-		// Compte compte;
-		double montant = 0;
-		String chaineKey;
-
-		Compte compteClinique = CompteDAO.getInstance().getCompte(
-				ConstantesMetier.COMPTECLINIQUE_ID);
-
-		for (Iterator iter = formulaire.getReglementsList().iterator(); iter
-				.hasNext();) {
-
-			Reglement element = (Reglement) iter.next();
-			idkey = idkey + 1;
-			chaineKey = ConstantesMetier.ID_TRANSACTIONCOMPTE
-					+ UtilDate.getInstance().getDateForId2()
-					+ UtilDate.getInstance().getChaineKey(idkey)
-					+ getUserDao().getUserByLogin(formulaire.getOperateur())
-							.getUserId();
-
-			TransactionCompte transactionCompte = new TransactionCompte();
-
-			montant = element.getMontant() + element.getPetitMonnaie();
-
-			compteClinique.setSoldeAvant(compteClinique.getSolde());
-			compteClinique.setSolde(compteClinique.getSolde() + montant);
-
-			transactionCompte.setTransactionId(chaineKey);
-			transactionCompte.setDateTransaction(UtilDate.getInstance()
-					.getDateToday());
-			transactionCompte.setCompte(compteClinique);
-			transactionCompte.setMontant(montant);
-			transactionCompte.setOperation("credit");
-			transactionCompte.setOperateur(formulaire.getOperateur());
-			transactionCompte.setStatut("1");
-
-			transactionComptes.add(transactionCompte);
-
-			if (element.getTypePayement().getTypePayementId() == 4) {
-
-				if (element.getTypePC().equals("badge")
-						|| element.getTypePC().equals("priseEnCharge")) {
-					idkey = idkey + 1;
-					chaineKey = ConstantesMetier.ID_TRANSACTIONCOMPTECATEGORIE
-							+ UtilDate.getInstance().getDateForId2()
-							+ UtilDate.getInstance().getChaineKey(idkey)
-							+ getUserDao().getUserByLogin(
-									formulaire.getOperateur()).getUserId();
-
-					TransactionCompteCategorie transactionCompteCategorie = new TransactionCompteCategorie();
-
-					CompteCategorie compteCategorie = CompteCategorieDAO
-							.getInstance().getCompteCategorieFromCategorie(
-									element.getCategorie());
-
-					compteCategorie.setSoldeAvant(compteCategorie.getSolde());
-					compteCategorie.setSolde(compteCategorie.getSolde()
-							- montant);
-
-					transactionCompteCategorie.setTransactionId(chaineKey);
-					transactionCompteCategorie.setDateTransaction(UtilDate
-							.getInstance().getDateToday());
-					transactionCompteCategorie.setCompte(compteCategorie);
-					transactionCompteCategorie.setMontant(montant);
-					transactionCompteCategorie.setOperation("debit");
-					transactionCompteCategorie.setOperateur(formulaire
-							.getOperateur());
-					transactionCompteCategorie.setStatut("1");
-
-					transactionCompteCategories.add(transactionCompteCategorie);
-
-				} else {
-					Compte compte;
-					PcPersonnel pc = element.getPcPersonnel();
-					if (pc != null) {
-						idkey = idkey + 1;
-						chaineKey = ConstantesMetier.ID_TRANSACTIONCOMPTE
-								+ UtilDate.getInstance().getDateForId2()
-								+ UtilDate.getInstance().getChaineKey(idkey)
-								+ getUserDao().getUserByLogin(
-										formulaire.getOperateur()).getUserId();
-
-						transactionCompte.setDateTransaction(UtilDate
-								.getInstance().getDateToday());
-						compte = CompteDAO.getInstance().getCompte(
-								pc.getCompte().getCompteId());
-						if (compte != null) {
-
-							double solde = compte.getSolde();
-
-							compte.setSoldeAvant(solde);
-							compte.setSolde(solde - montant);
-
-							transactionCompte.setTransactionId(chaineKey);
-							transactionCompte.setCompte(compte);
-							transactionCompte.setMontant(montant);
-							transactionCompte.setOperation("debit");
-							transactionCompte.setOperateur(formulaire
-									.getOperateur());
-							transactionCompte.setStatut("1");
-
-							transactionComptes.add(transactionCompte);
-						}
-
-					}
-				}
-			}
-
-		}
-	}
-
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see clinique.metier.gestion.commerciale.IGestionCommercialeBO#
+	 * supprimerPrestFromListePrestCouvertes
+	 * (clinique.model.gestion.commerciale.GestionCommercialeForm)
+	 */
+	@Override
 	@SuppressWarnings({ "unchecked", "finally" })
-	public boolean getListFacturesAimprimer(GestionCommercialeForm formulaire)
-			throws Exception {
+	public boolean supprimerPrestFromListePrestCouvertes(
+			GestionCommercialeForm formulaire) throws Exception {
 
-		log.debug("********** Debut getListFacturesAimprimer GestionCommercialeBO **********");
-		// Session session=SessionFactoryUtil.getInstance().openSession();
 		boolean result = false;
+		log.debug("********** Debut ajouterActe GestionCommercialeBO **********");
+
 		try {
-			if (formulaire.getIsFirst().equals("true")) {
-				String dateR = UtilDate.getInstance().dateToString(
-						UtilDate.getInstance().getDateToday());
-				formulaire.setDateDebutRechFact(dateR);
-				formulaire.setDateFinRechFact(dateR);
+			List prestCouvList = formulaire.getPrestationCouvertesPcs();
+			PrestationCouvertesPc pcCouv = new PrestationCouvertesPc();
+			for (Iterator iter = prestCouvList.iterator(); iter.hasNext();) {
+				PrestationCouvertesPc element = (PrestationCouvertesPc) iter
+						.next();
+
+				if (element.getPresCouvId().equals(
+						formulaire.getIdPrestAsupprimer())) {
+					pcCouv = element;
+				}
 			}
-
-			Collection<Facture> list = FactureDAO.getInstance()
-					.listFacturesAimprimer(formulaire.getDateDebutRechFact(),
-							formulaire.getDateFinRechFact());
-
-			if (list != null) {
-				initialiserForm(formulaire);
-				formulaire.setDateDebutRechFact("");
-				formulaire.setDateFinRechFact("");
-
-				formulaire.setFacturesAimprimerList((List) list);
-				result = true;
-			}
+			prestCouvList.remove(pcCouv);
+			formulaire.setPrestationCouvertesPcs(prestCouvList);
+			formulaire.setTypePcCouverte("famille");
+			result = true;
 
 		} catch (Exception e) {
 
-			log.fatal(e.getMessage());
-		}
-
-		finally {
-			// session.close();
-			log.debug("********** Debut getListFacturesAimprimer GestionCommercialeBO **********");
-			return result;
-		}
-	}
-
-	@SuppressWarnings({ "finally", "unchecked" })
-	public boolean getListDevisAimprimer(GestionCommercialeForm formulaire)
-			throws Exception {
-
-		log.debug("********** Debut getListDevisAimprimer GestionCommercialeBO **********");
-		// Session session=SessionFactoryUtil.getInstance().openSession();
-		boolean result = false;
-		try {
-			if (formulaire.getIsFirst().equals("true")) {
-				String dateR = UtilDate.getInstance().dateToString(
-						UtilDate.getInstance().getDateToday());
-				formulaire.setDateDebutRechFact(dateR);
-				formulaire.setDateFinRechFact(dateR);
-				System.out.println("datttttttttttttttte :" + dateR);
-			}
-
-			Collection<DevisAssureur> list = DevisAssureurDAO.getInstance()
-					.listDevisAimprimer(formulaire.getDateDebutRechFact(),
-							formulaire.getDateFinRechFact());
-
-			if (list != null) {
-				initialiserForm(formulaire);
-				formulaire.setDateDebutRechFact("");
-				formulaire.setDateFinRechFact("");
-
-				formulaire.setDevisAimprimerList((List) list);
-				result = true;
-			}
-
-		} catch (Exception e) {
-
-			log.fatal(e.getMessage());
-		}
-
-		finally {
-			// session.close();
-			log.debug("********** Debut getListDevisAimprimer GestionCommercialeBO **********");
-			return result;
-		}
-	}
-
-	@SuppressWarnings("unchecked")
-	public List<DevisAssureur> listDevisAimprimer(String date1, String date2) {
-		log.debug("********** Debut listDevisAimprimer FactureDAO **********");
-		try {
-
-			List<DevisAssureur> devisList = null;
-			Session session = SessionFactoryUtil.getInstance().openSession();
-			String strQuery = "select distinct devis ";
-			strQuery += " from DevisAssureur devis ";
-			strQuery += " where devis.statut = " + STATUT_VALIDE;
-			strQuery += " and devis.dateDevis between '"
-					+ UtilDate.getInstance().stringToDateMysql(date1)
-					+ "' and '"
-					+ UtilDate.getInstance().stringToDateMysql(date2) + "'";
-			strQuery += " order by devis.devisAssureurId asc";
-			// System.out.println(strQuery);
-			org.hibernate.Query query = session.createQuery(strQuery);
-			devisList = query.list();
-			return devisList;
-		} catch (Exception e) {
 			e.printStackTrace();
 			log.fatal(e.getMessage());
-			return null;
-		} finally {
-			log.debug("********** Fin listDevisAimprimer FactureDAO **********");
+
+		}
+
+		finally {
+			log.debug("********** Fin ajouterActe GestionCommercialeBO **********");
+			return result;
+		}
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see clinique.metier.gestion.commerciale.IGestionCommercialeBO#
+	 * supprimerReglementFromListeReglement
+	 * (clinique.model.gestion.commerciale.GestionCommercialeForm)
+	 */
+	@Override
+	@SuppressWarnings({ "finally", "unchecked" })
+	public boolean supprimerReglementFromListeReglement(
+			GestionCommercialeForm formulaire) throws Exception {
+
+		boolean result = false;
+		log.debug("********** Debut supprimerReglementFromListeReglement GestionCommercialeBO **********");
+
+		try {
+			List reglementsList = formulaire.getReglementsList();
+			Reglement reglement = new Reglement();
+			double resteApayerMajoration = Double.parseDouble(formulaire
+					.getResteApayerMajoration());
+			double resteApayer = Double
+					.parseDouble(formulaire.getResteApayer());
+
+			for (Iterator iter = reglementsList.iterator(); iter.hasNext();) {
+				Reglement element = (Reglement) iter.next();
+
+				if (element.getReglementId().equals(
+						formulaire.getIdReglementAsupprimer())) {
+					reglement = element;
+				}
+			}
+
+			if (reglement.getMajore().equals("0")) {
+				resteApayer = resteApayer + reglement.getMontant();
+				resteApayerMajoration = (1 + calculMajoration(formulaire))
+						* resteApayer / 100;
+				formulaire.setResteApayer(String.valueOf(resteApayer));
+				formulaire.setResteApayerMajoration(String
+						.valueOf(resteApayerMajoration));
+
+				reglementsList.remove(reglement);
+				formulaire.setReglementsList(reglementsList);
+				formulaire.setRecuRegle("0");
+
+			} else {
+				resteApayerMajoration = resteApayerMajoration
+						+ reglement.getMontant();
+				resteApayer = 100 * resteApayerMajoration
+						/ (100 + calculMajoration(formulaire));
+				formulaire.setResteApayer(String.valueOf(resteApayer));
+				formulaire.setResteApayerMajoration(String
+						.valueOf(resteApayerMajoration));
+
+				reglementsList.remove(reglement);
+				formulaire.setReglementsList(reglementsList);
+				formulaire.setRecuRegle("0");
+			}
+
+			result = true;
+
+		} catch (Exception e) {
+
+			e.printStackTrace();
+			log.fatal(e.getMessage());
+
+		}
+
+		finally {
+			log.debug("********** Fin supprimerReglementFromListeReglement GestionCommercialeBO **********");
+			return result;
+		}
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see clinique.metier.gestion.commerciale.IGestionCommercialeBO#
+	 * supprimerReglementHospFromListeReglement
+	 * (clinique.model.gestion.commerciale.GestionCommercialeForm)
+	 */
+	@Override
+	@SuppressWarnings({ "finally", "unchecked" })
+	public boolean supprimerReglementHospFromListeReglement(
+			GestionCommercialeForm formulaire) throws Exception {
+
+		boolean result = false;
+		log.debug("********** Debut supprimerReglementHospFromListeReglement GestionCommercialeBO **********");
+		// Session session=SessionFactoryUtil.getInstance().openSession();
+
+		try {
+			List reglementsList = formulaire.getReglementsList();
+			Reglement reglement = new Reglement();
+			// double
+			// resteApayer=Double.parseDouble(formulaire.getResteApayer());
+			double resteApayerMajoration = Double.parseDouble(formulaire
+					.getResteApayerMajoration());
+			// double dejapayer=Double.parseDouble(formulaire.getDejapaye());
+			for (Iterator iter = reglementsList.iterator(); iter.hasNext();) {
+				Reglement element = (Reglement) iter.next();
+
+				if (element.getReglementId().equals(
+						formulaire.getIdReglementAsupprimer())) {
+					reglement = element;
+				}
+			}
+
+			if (reglement.getTypePayement().getTypePayementId() == 1) {
+				reglementsList.clear();
+				if (ajouterActesHosp(formulaire)) {
+					setSortie(formulaire);
+					checkRemise(formulaire);
+					setValeursResteApyerHosp(formulaire);
+					initialiserCombosTypePyement(formulaire);
+					initialiserCombosPcPersonnel(formulaire);
+				}
+
+			} else {
+				resteApayerMajoration = resteApayerMajoration
+						+ reglement.getMontant();
+				formulaire.setResteApayerMajoration(String
+						.valueOf(resteApayerMajoration));
+				reglementsList.remove(reglement);
+				formulaire.setReglementsList(reglementsList);
+				formulaire.setRecuRegle("0");
+			}
+
+			result = true;
+
+		} catch (Exception e) {
+
+			e.printStackTrace();
+			log.fatal(e.getMessage());
+
+		}
+
+		finally {
+			// session.close();
+			log.debug("********** Fin supprimerReglementHospFromListeReglement GestionCommercialeBO **********");
+			// SessionFactoryUtil.getInstance().close();
+			return result;
 		}
 	}
 

@@ -94,4 +94,9 @@
 		null="false" />
 	<message-resources parameter="erreurGestionCommerciale"
 		null="false" key="erreurGestionCommerciale" />
+	<plug-in className="org.springframework.web.struts.ContextLoaderPlugIn">
+		<set-property property="contextConfigLocation"
+		value="/WEB-INF/classes/ApplicationContext.xml" />
+  	</plug-in>
+	
 </struts-config>

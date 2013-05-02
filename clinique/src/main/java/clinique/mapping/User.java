@@ -58,4 +58,71 @@ public class User extends Entity {
 		this.profil = profil;
 	}
 
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + (login == null ? 0 : login.hashCode());
+		result = prime * result
+				+ (operateur == null ? 0 : operateur.hashCode());
+		result = prime * result + (password == null ? 0 : password.hashCode());
+		result = prime * result + (profil == null ? 0 : profil.hashCode());
+		result = prime * result + (statut == null ? 0 : statut.hashCode());
+		result = prime * result + userId;
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj) {
+			return true;
+		}
+		if (obj == null) {
+			return false;
+		}
+		if (getClass() != obj.getClass()) {
+			return false;
+		}
+		User other = (User) obj;
+		if (login == null) {
+			if (other.login != null) {
+				return false;
+			}
+		} else if (!login.equals(other.login)) {
+			return false;
+		}
+		if (operateur == null) {
+			if (other.operateur != null) {
+				return false;
+			}
+		} else if (!operateur.equals(other.operateur)) {
+			return false;
+		}
+		if (password == null) {
+			if (other.password != null) {
+				return false;
+			}
+		} else if (!password.equals(other.password)) {
+			return false;
+		}
+		if (profil == null) {
+			if (other.profil != null) {
+				return false;
+			}
+		} else if (!profil.equals(other.profil)) {
+			return false;
+		}
+		if (statut == null) {
+			if (other.statut != null) {
+				return false;
+			}
+		} else if (!statut.equals(other.statut)) {
+			return false;
+		}
+		if (userId != other.userId) {
+			return false;
+		}
+		return true;
+	}
+
 };

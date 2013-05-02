@@ -27,7 +27,7 @@ public class UserDAO extends CliniqueHibernateDaoSupport<User> {
 		log.debug("********** Debut getUserByLoginEtPassword UserDAO **********");
 
 		try {
-			Session session = SessionFactoryUtil.getInstance().openSession();
+			Session session = getSession();
 			List<User> users = session.createQuery(
 					"select user from User user where user.login='" + login
 							+ "' and user.password='" + password + "'").list();
@@ -49,7 +49,7 @@ public class UserDAO extends CliniqueHibernateDaoSupport<User> {
 		log.debug("********** Debut getUserByLogin UserDAO **********");
 
 		try {
-			Session session = SessionFactoryUtil.getInstance().openSession();
+			Session session = getSession();
 			List<User> users = session.createQuery(
 					"select user from User user where user.login='" + login
 							+ "'").list();
@@ -69,7 +69,7 @@ public class UserDAO extends CliniqueHibernateDaoSupport<User> {
 	public void saveUser(User user) {
 		log.debug("********** Debut saveUser UserDAO **********");
 		try {
-			Session session = SessionFactoryUtil.getInstance().openSession();
+			Session session = getSession();
 			user.setStatut(STATUT_VALIDE);
 			session.save(user);
 		} catch (Exception e) {
@@ -84,7 +84,7 @@ public class UserDAO extends CliniqueHibernateDaoSupport<User> {
 	public void updateUser(User user) {
 		log.debug("********** Debut updateUser UserDAO **********");
 		try {
-			Session session = SessionFactoryUtil.getInstance().openSession();
+			Session session = getSession();
 			session.update(user);
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -97,7 +97,7 @@ public class UserDAO extends CliniqueHibernateDaoSupport<User> {
 	public void deleteUser(User user) {
 		log.debug("********** Debut deleteUser UserDAO **********");
 		try {
-			Session session = SessionFactoryUtil.getInstance().openSession();
+			Session session = getSession();
 			user.setStatut(STATUT_SUPPRIME);
 			session.update(user);
 		} catch (Exception e) {
@@ -114,7 +114,7 @@ public class UserDAO extends CliniqueHibernateDaoSupport<User> {
 
 		try {
 			List<User> users = null;
-			Session session = SessionFactoryUtil.getInstance().openSession();
+			Session session = getSession();
 			String strQuery = "select distinct user ";
 			strQuery += "from User user";
 			strQuery += " where user.statut = " + STATUT_VALIDE;
@@ -138,7 +138,7 @@ public class UserDAO extends CliniqueHibernateDaoSupport<User> {
 
 		try {
 			List<User> users = null;
-			Session session = SessionFactoryUtil.getInstance().openSession();
+			Session session = getSession();
 			String strQuery = "select distinct user ";
 			strQuery += "from User user";
 			strQuery += "where user.statut = " + STATUT_SUPPRIME;
@@ -156,7 +156,7 @@ public class UserDAO extends CliniqueHibernateDaoSupport<User> {
 	}
 
 	@Override
-	protected Class<?> getHandledCalss() {
+	protected Class<?> getEntityClass() {
 		return User.class;
 	}
 }

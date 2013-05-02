@@ -12,16 +12,11 @@ import clinique.mapping.Profil;
 public class ProfilDAO extends CliniqueHibernateDaoSupport<Profil> {
 
 	private static Logger log = Logger.getLogger(ProfilDAO.class);
-	private static final ProfilDAO INSTANCE = new ProfilDAO();
-
-	public static ProfilDAO getInstance() {
-		return INSTANCE;
-	}
 
 	public void saveProfil(Profil profil) {
 		log.debug("********** Debut saveProfil ProfilDAO **********");
 		try {
-			Session session = SessionFactoryUtil.getInstance().openSession();
+			Session session = getSession();
 			profil.setStatut(STATUT_VALIDE);
 			session.save(profil);
 		} catch (Exception e) {
@@ -35,7 +30,7 @@ public class ProfilDAO extends CliniqueHibernateDaoSupport<Profil> {
 	public void updateProfil(Profil profil) {
 		log.debug("********** Debut updateProfil ProfilDAO **********");
 		try {
-			Session session = SessionFactoryUtil.getInstance().openSession();
+			Session session = getSession();
 			session.update(profil);
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -48,7 +43,7 @@ public class ProfilDAO extends CliniqueHibernateDaoSupport<Profil> {
 	public void deleteProfil(Profil profil) {
 		log.debug("********** Debut deleteProfil ProfilDAO **********");
 		try {
-			Session session = SessionFactoryUtil.getInstance().openSession();
+			Session session = getSession();
 			profil.setStatut(STATUT_SUPPRIME);
 			session.update(profil);
 		} catch (Exception e) {
@@ -64,7 +59,7 @@ public class ProfilDAO extends CliniqueHibernateDaoSupport<Profil> {
 		log.debug("********** Debut listProfilsUsers ProfilDAO **********");
 		try {
 			List<Profil> profilsUsers = null;
-			Session session = SessionFactoryUtil.getInstance().openSession();
+			Session session = getSession();
 			String strQuery = "select distinct profil ";
 			strQuery += "from Profil profil, User user ";
 			strQuery += "where profil.profilId = user.profil.profilId ";
@@ -88,7 +83,7 @@ public class ProfilDAO extends CliniqueHibernateDaoSupport<Profil> {
 		log.debug("********** Debut listProfils ProfilDAO **********");
 		try {
 			List<Profil> profils = null;
-			Session session = SessionFactoryUtil.getInstance().openSession();
+			Session session = getSession();
 			String strQuery = "select distinct profil ";
 			strQuery += "from Profil profil";
 			strQuery += "where profil.statut = " + STATUT_VALIDE;
@@ -110,7 +105,7 @@ public class ProfilDAO extends CliniqueHibernateDaoSupport<Profil> {
 		log.debug("********** Debut listProfilsSupprimes ProfilDAO **********");
 		try {
 			List<Profil> profils = null;
-			Session session = SessionFactoryUtil.getInstance().openSession();
+			Session session = getSession();
 			String strQuery = "select distinct profil ";
 			strQuery += "from Profil profil";
 			strQuery += "where profil.statut = " + STATUT_SUPPRIME;
@@ -128,7 +123,7 @@ public class ProfilDAO extends CliniqueHibernateDaoSupport<Profil> {
 	}
 
 	@Override
-	protected Class<?> getHandledCalss() {
+	protected Class<?> getEntityClass() {
 		return Profil.class;
 	}
 }

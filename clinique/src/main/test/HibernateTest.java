@@ -6,7 +6,7 @@ import clinique.dao.ProfilDAO;
 import clinique.dao.UserDAO;
 import clinique.mapping.Profil;
 import clinique.mapping.User;
-import clinique.metier.securite.AuthentificationBO;
+import clinique.metier.securite.IAuthentificationBO;
 
 @Test
 public class HibernateTest extends AbstractCliniqueTestNGSpringContextTests {
@@ -15,7 +15,7 @@ public class HibernateTest extends AbstractCliniqueTestNGSpringContextTests {
 	@Autowired
 	private ProfilDAO profilDAO;
 	@Autowired
-	private AuthentificationBO authentificationBO;
+	private IAuthentificationBO authentificationBO;
 
 	public void testUserDao() throws Throwable {
 		User user = userDAO.getUser(1);
