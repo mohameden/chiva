@@ -71,16 +71,16 @@
 			org.springframework.web.context.support.HttpRequestHandlerServlet
 		</servlet-class>
 		<load-on-startup>1</load-on-startup>
-		<context-param>
-			<param-name>contextConfigLocation</param-name>
-			<param-value>/WEB-INF/classes/ApplicationContext.xml</param-value>
-		</context-param>
-
-		<listener>
-			<listener-class>org.springframework.web.context.ContextLoaderListener
-			</listener-class>
-		</listener>
 	</servlet>
+	<context-param>
+		<param-name>contextConfigLocation</param-name>
+		<param-value>/WEB-INF/classes/ApplicationContext.xml</param-value>
+	</context-param>
+
+	<listener>
+		<listener-class>org.springframework.web.context.ContextLoaderListener
+		</listener-class>
+	</listener>
 	<servlet-mapping>
 		<servlet-name>action</servlet-name>
 		<url-pattern>*.do</url-pattern>
