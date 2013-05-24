@@ -25,14 +25,19 @@ import clinique.dao.ActeurActeHDAO;
 import clinique.dao.ActeurDAO;
 import clinique.dao.AssureurDAO;
 import clinique.dao.BadgeDAO;
+import clinique.dao.BlackListeDAO;
 import clinique.dao.CategorieDAO;
 import clinique.dao.ChambreDAO;
 import clinique.dao.ChambresHospitalisationDAO;
 import clinique.dao.ClasseDAO;
 import clinique.dao.CompteCategorieDAO;
 import clinique.dao.CompteDAO;
+import clinique.dao.DetailFactureDAO;
+import clinique.dao.DetailFactureModifieesDAO;
+import clinique.dao.DevisActesDAO;
 import clinique.dao.DevisAssureurDAO;
 import clinique.dao.DrgCnamDAO;
+import clinique.dao.EntrepriseDAO;
 import clinique.dao.ExclusionActeAssureurDAO;
 import clinique.dao.FactureDAO;
 import clinique.dao.FactureModifieesDAO;
@@ -42,6 +47,7 @@ import clinique.dao.ParametresCliniqueDAO;
 import clinique.dao.PatientDAO;
 import clinique.dao.PatientPcActuelDAO;
 import clinique.dao.PcPersonnelDAO;
+import clinique.dao.PrestationCouvertesPcDAO;
 import clinique.dao.PriseEnChargeDAO;
 import clinique.dao.RecuDAO;
 import clinique.dao.ReglementDAO;
@@ -123,6 +129,8 @@ public class GestionCommercialeBO extends TransactionalBO implements
 	@Autowired
 	private BadgeDAO badgeDAO;
 	@Autowired
+	private BlackListeDAO blackListeDAO;
+	@Autowired
 	private CategorieDAO categorieDAO;
 	@Autowired
 	private ChambreDAO chambreDAO;
@@ -133,9 +141,17 @@ public class GestionCommercialeBO extends TransactionalBO implements
 	@Autowired
 	private CompteDAO compteDAO;
 	@Autowired
+	private DetailFactureDAO detailFactureDAO;
+	@Autowired
+	private DetailFactureModifieesDAO detailFactureModifieesDAO;
+	@Autowired
+	private DevisActesDAO devisActesDAO;
+	@Autowired
 	private DevisAssureurDAO devisAssureurDAO;
 	@Autowired
 	private DrgCnamDAO drgCnamDAO;
+	@Autowired
+	private EntrepriseDAO entrepriseDAO;
 	@Autowired
 	private ExclusionActeAssureurDAO exclusionActeAssureurDAO;
 	@Autowired
@@ -156,6 +172,8 @@ public class GestionCommercialeBO extends TransactionalBO implements
 	private PcPersonnelDAO pcPersonnelDAO;
 	@Autowired
 	private PriseEnChargeDAO priseEnChargeDAO;
+	@Autowired
+	private PrestationCouvertesPcDAO prestationCouvertesPcDAO;
 	@Autowired
 	private RecuDAO recuDAO;
 	@Autowired
@@ -933,7 +951,7 @@ public class GestionCommercialeBO extends TransactionalBO implements
 							.next();
 					element.setStatut("1");
 					element.setPriseEnCharge(pc);
-					pc.getPrestationCouvertesPcs().add(element);
+					prestationCouvertesPcDAO.save(element);
 				}
 
 				formulaire.setPriseEnCharge(pc);
@@ -1155,7 +1173,7 @@ public class GestionCommercialeBO extends TransactionalBO implements
 							.next();
 					element.setStatut("1");
 					element.setPriseEnCharge(pc);
-					pc.getPrestationCouvertesPcs().add(element);
+					prestationCouvertesPcDAO.save(element);
 				}
 
 				formulaire.setPriseEnCharge(pc);
@@ -1553,8 +1571,9 @@ public class GestionCommercialeBO extends TransactionalBO implements
 				if (checkPcValide(formulaire.getPriseEnCharge(), formulaire)) {
 					if (checkActePC(formulaire)) {
 						addActePC(formulaire, prixActe);
-					} else if (formulaire.getPriseEnCharge()
-							.getPrestationCouvertesPcs().size() == 0) {
+					} else if (prestationCouvertesPcDAO
+							.findPrestationCouvertesByPc(
+									formulaire.getPriseEnCharge()).size() == 0) {
 						addActePCWithoutPrestationCouv(formulaire, prixActe);
 					}
 
@@ -1601,7 +1620,7 @@ public class GestionCommercialeBO extends TransactionalBO implements
 			formulaire.setDetailsFactureList(detailsFactureList);
 			result = true;
 
-		} catch (Exception e) {
+		} catch (Throwable e) {
 
 			e.printStackTrace();
 			log.fatal(e.getMessage());
@@ -1788,8 +1807,9 @@ public class GestionCommercialeBO extends TransactionalBO implements
 				if (checkPcValide(formulaire.getPriseEnCharge(), formulaire)) {
 					if (checkActePC(formulaire)) {
 						addActePC(formulaire, prixActe);
-					} else if (formulaire.getPriseEnCharge()
-							.getPrestationCouvertesPcs().size() == 0) {
+					} else if (prestationCouvertesPcDAO
+							.findPrestationCouvertesByPc(
+									formulaire.getPriseEnCharge()).size() == 0) {
 						addActePCWithoutPrestationCouv(formulaire, prixActe);
 					}
 
@@ -1870,8 +1890,9 @@ public class GestionCommercialeBO extends TransactionalBO implements
 				if (checkPcValide(formulaire.getPriseEnCharge(), formulaire)) {
 					if (checkActePC(formulaire)) {
 						addActePCFromDetailFacture(formulaire, prixActe, df);
-					} else if (formulaire.getPriseEnCharge()
-							.getPrestationCouvertesPcs().size() == 0) {
+					} else if (prestationCouvertesPcDAO
+							.findPrestationCouvertesByPc(
+									formulaire.getPriseEnCharge()).size() == 0) {
 						addActePCWithoutPrestationCouvFromDetailFacture(
 								formulaire, prixActe, df);
 					}
@@ -2599,7 +2620,7 @@ public class GestionCommercialeBO extends TransactionalBO implements
 				total_HT = total_HT + element.getMontantTotal();
 				element.setStatut("1");
 				element.setFacture(facture);
-				facture.getDetailFactures().add(element);
+				detailFactureDAO.save(element);
 			}
 
 			double remiseCash = 0;
@@ -2612,7 +2633,7 @@ public class GestionCommercialeBO extends TransactionalBO implements
 				remiseCash = remiseCash + element.getRemiseCash();
 				element.setStatut("1");
 				element.setFacture(facture);
-				facture.getReglements().add(element);
+				reglementDAO.save(element);
 			}
 
 			facture.setRemiseCash(remiseCash);
@@ -2787,7 +2808,7 @@ public class GestionCommercialeBO extends TransactionalBO implements
 				total_HT = total_HT + element.getMontantTotal();
 				element.setStatut("1");
 				element.setFacture(facture);
-				facture.getDetailFactures().add(element);
+				detailFactureDAO.save(element);
 			}
 
 			int nbreChambresHosp = 0;
@@ -2853,15 +2874,13 @@ public class GestionCommercialeBO extends TransactionalBO implements
 
 			getFactureDAO().update(facture);
 
-			for (Object element2 : hospitalisation.getChambresHospitalisation()) {
-				ChambresHospitalisation element = (ChambresHospitalisation) element2;
-				chambresHospitalisationDAO.evict(element);
-			}
+			List<ChambresHospitalisation> list = chambresHospitalisationDAO
+					.findChambresHospitalisationByHospitalisation(hospitalisation);
 
 			for (int i = 0; i < nbreChambresHosp; i++) {
 				ChambresHospitalisation element = (ChambresHospitalisation) formulaire
 						.getChambresHospList().get(i);
-				hospitalisation.getChambresHospitalisation().set(i, element);
+				list.set(i, element);
 			}
 
 			hospitalisation.setDateSortie(UtilDate.getInstance().stringToDate(
@@ -3218,9 +3237,12 @@ public class GestionCommercialeBO extends TransactionalBO implements
 			}
 
 			int i = 0, j = 0;
+			List<ChambresHospitalisation> list = chambresHospitalisationDAO
+					.findChambresHospitalisationByHospitalisation(hospitalisation);
 			boolean chambresHospitalisationExiste = false;
 			ChambresHospitalisation chambresHospitalisation = null;
-			for (Object element2 : hospitalisation.getChambresHospitalisation()) {
+			for (Object element2 : chambresHospitalisationDAO
+					.findChambresHospitalisationByHospitalisation(hospitalisation)) {
 				ChambresHospitalisation element = (ChambresHospitalisation) element2;
 				if (element.getChambre().getChambreId() == ancienneChambre
 						.getChambreId()
@@ -3239,8 +3261,7 @@ public class GestionCommercialeBO extends TransactionalBO implements
 
 			if (chambresHospitalisationExiste
 					&& chambresHospitalisation != null) {
-				hospitalisation.getChambresHospitalisation().set(j,
-						chambresHospitalisation);
+				list.set(j, chambresHospitalisation);
 			}
 
 			if (Nvellechambre != null) {
@@ -3265,8 +3286,7 @@ public class GestionCommercialeBO extends TransactionalBO implements
 				chaHospitalisation.setHeureEntree(Integer.parseInt(formulaire
 						.getHeureHosp()));
 				chaHospitalisation.setHospitalisation(hospitalisation);
-				hospitalisation.getChambresHospitalisation().add(
-						chaHospitalisation);
+				chambresHospitalisationDAO.save(chaHospitalisation);
 
 			}
 
@@ -3625,8 +3645,10 @@ public class GestionCommercialeBO extends TransactionalBO implements
 
 			if (assureur.getStatut().equals("1")) {
 
-				if (assureur.getEntreprises().size() > 0) {
-					for (Object element : assureur.getEntreprises()) {
+				List<Entreprise> entreprisesByAssureur = entrepriseDAO
+						.findEntreprisesByAssureur(assureur);
+				if (entreprisesByAssureur.size() > 0) {
+					for (Object element : entreprisesByAssureur) {
 
 						Entreprise ent = (Entreprise) element;
 
@@ -3660,11 +3682,10 @@ public class GestionCommercialeBO extends TransactionalBO implements
 				PatientPcActuel patientPcActuel = getPatientPcActuelDAO()
 						.getPatientPcByPatient(patient);
 
-				for (Object element : getCategorieDAO().getCategorie(
-						Integer.parseInt(formulaire.getCategorieId()))
-						.getBlackListes()) {
-
-					BlackListe blackListe = (BlackListe) element;
+				Categorie categorie = getCategorieDAO().getCategorie(
+						Integer.parseInt(formulaire.getCategorieId()));
+				for (BlackListe blackListe : blackListeDAO
+						.findBlackListesByCategorie(categorie)) {
 
 					if (patientPcActuel.getType().equals("badge")
 							&& patientPcActuel.getBadge() != null) {
@@ -3735,8 +3756,8 @@ public class GestionCommercialeBO extends TransactionalBO implements
 
 			if (classe.getStatut().equals("1")) {
 
-				if (classe.getActes().size() > 0) {
-					for (Object element : classe.getActes()) {
+				if (acteDAO.findActesByClasse(classe).size() > 0) {
+					for (Object element : acteDAO.findActesByClasse(classe)) {
 
 						Acte acte = (Acte) element;
 
@@ -3766,10 +3787,10 @@ public class GestionCommercialeBO extends TransactionalBO implements
 
 			if (entreprise.getStatut().equals("1")) {
 
-				if (entreprise.getCategories().size() > 0) {
-					for (Object element : entreprise.getCategories()) {
-
-						Categorie categorie = (Categorie) element;
+				List<Categorie> categoriesByEntreprise = categorieDAO
+						.findCategoriesByEntreprise(entreprise);
+				if (categoriesByEntreprise.size() > 0) {
+					for (Categorie categorie : categoriesByEntreprise) {
 
 						if (categorie.getStatut().equals("1")) {
 							result = true;
@@ -3801,12 +3822,11 @@ public class GestionCommercialeBO extends TransactionalBO implements
 
 			int nbreFact = 0;
 			Facture facture = new Facture();
-			if (getPatientDAO().getPatient(formulaire.getPatientId())
-					.getFactures().size() > 0) {
-				for (Object element : getPatientDAO().getPatient(
-						formulaire.getPatientId()).getFactures()) {
-
-					Facture fact = (Facture) element;
+			Patient patientf = getPatientDAO().getPatient(
+					formulaire.getPatientId());
+			List<Facture> factures = factureDAO.findFacturesByPatient(patientf);
+			if (factures.size() > 0) {
+				for (Facture fact : factures) {
 					if (fact.getStatut().equals(STATUT_SUPPRIME)) {
 						if (nbreFact == 0) {
 							facture = fact;
@@ -3859,7 +3879,8 @@ public class GestionCommercialeBO extends TransactionalBO implements
 		try {
 
 			if (famillePres.getStatut().equals("1")) {
-				for (Object element : famillePres.getActes()) {
+				for (Object element : acteDAO
+						.findActesByFamillePrestation(famillePres)) {
 
 					Acte acte = (Acte) element;
 
@@ -3929,7 +3950,8 @@ public class GestionCommercialeBO extends TransactionalBO implements
 			if (pc.getPlafond() > 0) {
 				if (pc.getPlafond() > pc.getMontantFact()) {
 
-					if (pc.getPrestationCouvertesPcs().size() > 0) {
+					if (prestationCouvertesPcDAO
+							.findPrestationCouvertesByPc(pc).size() > 0) {
 						result = checkPrestationCouvertesPC(pc);
 
 					} else {
@@ -3986,7 +4008,8 @@ public class GestionCommercialeBO extends TransactionalBO implements
 	@SuppressWarnings("unchecked")
 	public boolean checkPrestationCouvertesPC(PriseEnCharge pc) {
 		boolean result = false;
-		for (Object element2 : pc.getPrestationCouvertesPcs()) {
+		for (Object element2 : prestationCouvertesPcDAO
+				.findPrestationCouvertesByPc(pc)) {
 			PrestationCouvertesPc element = (PrestationCouvertesPc) element2;
 			if (element.getStatut().equals("1")) {
 				if (element.getLimite().equals("1")) {
@@ -4329,7 +4352,7 @@ public class GestionCommercialeBO extends TransactionalBO implements
 				element.setDevisAssureur(devisAssureur);
 				element.setStatut("1");
 				element.setOperateur(formulaire.getOperateur().trim());
-				devisAssureur.getDevisActes().add(element);
+				devisActesDAO.create(element);
 			}
 
 			result = true;
@@ -4371,7 +4394,7 @@ public class GestionCommercialeBO extends TransactionalBO implements
 				element.setFacture(formulaire.getFacture());
 				element.setRecu(formulaire.getRecu());
 				element.setHospitalisation(formulaire.getHospitalisation());
-				formulaire.getRecu().getDetailFactures().add(element);
+				detailFactureDAO.save(element);
 			}
 
 			// System.out.println("voila "+UserDAO.getInstance().getUserByLogin(formulaire.getOperateur()).getUserId());
@@ -4457,7 +4480,8 @@ public class GestionCommercialeBO extends TransactionalBO implements
 			factureM.setIsHospitalisation(facture.getIsHospitalisation());
 			factureModifieesDAO.save(factureM);
 
-			for (Object element2 : facture.getDetailFactures()) {
+			for (Object element2 : detailFactureDAO
+					.findDetailFactureByFacture(facture)) {
 				DetailFacture element = (DetailFacture) element2;
 				DetailFactureModifiees dfM = new DetailFactureModifiees();
 
@@ -4496,8 +4520,7 @@ public class GestionCommercialeBO extends TransactionalBO implements
 							* dfM.getPrixDepl());
 					// *******************************
 				}
-
-				factureM.getDetailFactures().add(dfM);
+				detailFactureModifieesDAO.save(dfM);
 			}
 
 			result = true;
@@ -4566,13 +4589,15 @@ public class GestionCommercialeBO extends TransactionalBO implements
 				formulaire.setPriseEnChargeFlag("aucune");
 				formulaire.setPrestationCouvertesPcs(new ArrayList());
 
-				for (Object element2 : patient.getPriseEnCharges()) {
+				for (Object element2 : priseEnChargeDAO
+						.findPriseEnChargeByPatient(patient)) {
 					PriseEnCharge element = (PriseEnCharge) element2;
 					if (checkPC(element)) {
 						formulaire.setPriseEnChargeFlag("priseEnCharge");
 						formulaire.setPriseEnCharge(element);
-						formulaire.setPrestationCouvertesPcs(element
-								.getPrestationCouvertesPcs());
+						formulaire
+								.setPrestationCouvertesPcs(prestationCouvertesPcDAO
+										.findPrestationCouvertesByPc(element));
 
 						formulaire.setNumPC(element.getPcNum());
 
@@ -4688,8 +4713,9 @@ public class GestionCommercialeBO extends TransactionalBO implements
 				if (checkPC(element)) {
 					formulaire.setPriseEnChargeFlag("priseEnCharge");
 					formulaire.setPriseEnCharge(element);
-					formulaire.setPrestationCouvertesPcs(element
-							.getPrestationCouvertesPcs());
+					formulaire
+							.setPrestationCouvertesPcs(prestationCouvertesPcDAO
+									.findPrestationCouvertesByPc(element));
 				}
 			}
 		}
@@ -5173,8 +5199,9 @@ public class GestionCommercialeBO extends TransactionalBO implements
 
 				formulaire.setTelephone(patient.getTelephone());
 
-				formulaire.setDetailsFactureModifieesList(factureM
-						.getDetailFactures());
+				formulaire
+						.setDetailsFactureModifieesList(detailFactureModifieesDAO
+								.findDetailFactureModifieesByFacture(factureM));
 
 				if (factureM.getIsHospitalisation().equals("1")) {
 					formulaire.setIsHospitalisation("1");
@@ -5251,9 +5278,10 @@ public class GestionCommercialeBO extends TransactionalBO implements
 
 			i = 0;
 			// charger combo entreprise
-			for (Object element2 : assureurDAO.getAssureur(
-					FirstSelectedAssureur.getAssureurId()).getEntreprises()) {
-				Entreprise element = (Entreprise) element2;
+			Assureur assureur = assureurDAO.getAssureur(FirstSelectedAssureur
+					.getAssureurId());
+			for (Entreprise element : entrepriseDAO
+					.findEntreprisesByAssureur(assureur)) {
 				if (checkEntreprise(element)) {
 					if (i == 0) {
 						FirstSelectedEntreprise = element;
@@ -5267,7 +5295,8 @@ public class GestionCommercialeBO extends TransactionalBO implements
 			}
 
 			// charger combo categorie
-			for (Object element2 : FirstSelectedEntreprise.getCategories()) {
+			for (Object element2 : categorieDAO
+					.findCategoriesByEntreprise(FirstSelectedEntreprise)) {
 				Categorie element = (Categorie) element2;
 				if (checkCategorie(element)) {
 
@@ -5486,9 +5515,10 @@ public class GestionCommercialeBO extends TransactionalBO implements
 			// charger combo Actes
 			List actes = null;
 			if (formulaire.getChoixActePar().equals("famille")) {
-				actes = FirstSelectedFamillePrest.getActes();
+				actes = acteDAO
+						.findActesByFamillePrestation(FirstSelectedFamillePrest);
 			} else if (formulaire.getChoixActePar().equals("classe")) {
-				actes = FirstSelectedClasse.getActes();
+				actes = acteDAO.findActesByClasse(FirstSelectedClasse);
 			}
 			for (Iterator iter = actes.iterator(); iter.hasNext();) {
 				Acte element = (Acte) iter.next();
@@ -5504,7 +5534,8 @@ public class GestionCommercialeBO extends TransactionalBO implements
 			}
 
 			// charger combo ActeurActes
-			for (Object element2 : FirstSelectedActe.getActeurActes()) {
+			for (Object element2 : acteurActeDAO
+					.findActeurActesByActe(FirstSelectedActe)) {
 				ActeurActe element = (ActeurActe) element2;
 				if (checkActeur(element)) {
 					if (element.getActeur().getAssistant().equals("0")) {
@@ -5816,7 +5847,7 @@ public class GestionCommercialeBO extends TransactionalBO implements
 		pcM.setMontantFact(pc.getMontantFact() - montantPc);
 		pcM.setCategorie(pc.getCategorie());
 		pcM.setStatut("1");
-		List list = pc.getPrestationCouvertesPcs();
+		List list = prestationCouvertesPcDAO.findPrestationCouvertesByPc(pc);
 		if (list.size() != 0) {
 			for (Iterator iter = list.iterator(); iter.hasNext();) {
 				PrestationCouvertesPcModifiee pccouvM = new PrestationCouvertesPcModifiee();
@@ -6232,10 +6263,10 @@ public class GestionCommercialeBO extends TransactionalBO implements
 			Entreprise FirstSelectedEntreprise = new Entreprise();
 
 			// charger combo entreprise
-			for (Object element2 : assureurDAO.getAssureur(
-					Integer.parseInt(formulaire.getAssureurId()))
-					.getEntreprises()) {
-				Entreprise element = (Entreprise) element2;
+			Assureur assureur = assureurDAO.getAssureur(Integer
+					.parseInt(formulaire.getAssureurId()));
+			for (Entreprise element : entrepriseDAO
+					.findEntreprisesByAssureur(assureur)) {
 				if (checkEntreprise(element)) {
 					if (element.getEntrepriseId() == Integer
 							.parseInt(formulaire.getEntrepriseId())) {
@@ -6249,7 +6280,8 @@ public class GestionCommercialeBO extends TransactionalBO implements
 
 			// charger combo categorie
 			if (FirstSelectedEntreprise != null) {
-				for (Object element2 : FirstSelectedEntreprise.getCategories()) {
+				for (Object element2 : categorieDAO
+						.findCategoriesByEntreprise(FirstSelectedEntreprise)) {
 					Categorie element = (Categorie) element2;
 					if (checkCategorie(element)) {
 
@@ -6402,9 +6434,7 @@ public class GestionCommercialeBO extends TransactionalBO implements
 					.getHeureHosp()));
 			chaHospitalisation.setChambre(chambre);
 			chaHospitalisation.setHospitalisation(hospitalisation);
-			hospitalisation.getChambresHospitalisation()
-					.add(chaHospitalisation);
-
+			chambresHospitalisationDAO.save(chaHospitalisation);
 			getHospitalisationDAO().save(hospitalisation);
 
 			// session.flush();
@@ -6878,8 +6908,10 @@ public class GestionCommercialeBO extends TransactionalBO implements
 
 		try {
 			Hospitalisation hospitalisation = formulaire.getHospitalisation();
-			formulaire.setChambresHospList(hospitalisation
-					.getChambresHospitalisation());
+
+			formulaire
+					.setChambresHospList(chambresHospitalisationDAO
+							.findChambresHospitalisationByHospitalisation(hospitalisation));
 
 			int i = 0;
 			for (Iterator iter = formulaire.getChambresHospList().iterator(); iter
@@ -6914,12 +6946,12 @@ public class GestionCommercialeBO extends TransactionalBO implements
 
 				i++;
 			}
-
+			List<ChambresHospitalisation> list = chambresHospitalisationDAO
+					.findChambresHospitalisationByHospitalisation(hospitalisation);
 			for (i = 0; i < nbreChambresHosp; i++) {
 				ChambresHospitalisation element = (ChambresHospitalisation) formulaire
 						.getChambresHospList().get(i);
-				formulaire.getHospitalisation().getChambresHospitalisation()
-						.set(i, element);
+				list.set(i, element);
 			}
 
 			formulaire.getHospitalisation().setEncours("2");
@@ -6964,8 +6996,8 @@ public class GestionCommercialeBO extends TransactionalBO implements
 		}
 
 		PriseEnCharge pc = formulaire.getPriseEnCharge();
-
-		pc.getPrestationCouvertesPcs().set(i - 1, pcCouv);
+		prestationCouvertesPcDAO.findPrestationCouvertesByPc(pc).set(i - 1,
+				pcCouv);
 		formulaire.setPriseEnCharge(pc);
 
 	}
@@ -6987,8 +7019,9 @@ public class GestionCommercialeBO extends TransactionalBO implements
 
 		try {
 			Hospitalisation hospitalisation = formulaire.getHospitalisation();
-			formulaire.setChambresHospList(hospitalisation
-					.getChambresHospitalisation());
+			formulaire
+					.setChambresHospList(chambresHospitalisationDAO
+							.findChambresHospitalisationByHospitalisation(hospitalisation));
 
 			int i = 0;
 			for (Iterator iter = formulaire.getChambresHospList().iterator(); iter
@@ -7023,12 +7056,12 @@ public class GestionCommercialeBO extends TransactionalBO implements
 				addFraisChambre(formulaire, frais);
 				i++;
 			}
-
+			List<ChambresHospitalisation> list = chambresHospitalisationDAO
+					.findChambresHospitalisationByHospitalisation(hospitalisation);
 			for (i = 0; i < nbreChambresHosp; i++) {
 				ChambresHospitalisation element = (ChambresHospitalisation) formulaire
 						.getChambresHospList().get(i);
-				formulaire.getHospitalisation().getChambresHospitalisation()
-						.set(i, element);
+				list.set(i, element);
 			}
 
 			formulaire.getHospitalisation().setEncours("0");
@@ -7076,17 +7109,13 @@ public class GestionCommercialeBO extends TransactionalBO implements
 			chambre.setEtat("1");
 			getChambreDAO().update(chambre);
 
-			for (Object element2 : hospitalisation.getChambresHospitalisation()) {
-				ChambresHospitalisation element = (ChambresHospitalisation) element2;
-				chambresHospitalisationDAO.evict(element);
-			}
-
 			int nbreChambresHosp = formulaire.getChambresHospList().size();
-
+			List<ChambresHospitalisation> list = chambresHospitalisationDAO
+					.findChambresHospitalisationByHospitalisation(hospitalisation);
 			for (int i = 0; i < nbreChambresHosp; i++) {
 				ChambresHospitalisation element = (ChambresHospitalisation) formulaire
 						.getChambresHospList().get(i);
-				hospitalisation.getChambresHospitalisation().set(i, element);
+				list.set(i, element);
 			}
 
 			hospitalisation.setDateSortie(UtilDate.getInstance().stringToDate(
@@ -7628,8 +7657,9 @@ public class GestionCommercialeBO extends TransactionalBO implements
 						.getFacture().getAvance()));
 				formulaire.setPatient(hospitalisation.getPatient());
 				formulaire.setFacture(hospitalisation.getFacture());
-				formulaire.setDetailsFactureList(hospitalisation.getFacture()
-						.getDetailFactures());
+				Facture facture = hospitalisation.getFacture();
+				formulaire.setDetailsFactureList(detailFactureDAO
+						.findDetailFactureByFacture(facture));
 			}
 
 			Patient patient = formulaire.getPatient();
@@ -7714,10 +7744,12 @@ public class GestionCommercialeBO extends TransactionalBO implements
 						.getFacture().getAvance()));
 				formulaire.setPatient(hospitalisation.getPatient());
 				formulaire.setFacture(hospitalisation.getFacture());
-				formulaire.setDetailsFactureList(hospitalisation.getFacture()
-						.getDetailFactures());
-				formulaire.setChambresHospList(hospitalisation
-						.getChambresHospitalisation());
+				Facture facture = hospitalisation.getFacture();
+				formulaire.setDetailsFactureList(detailFactureDAO
+						.findDetailFactureByFacture(facture));
+				formulaire
+						.setChambresHospList(chambresHospitalisationDAO
+								.findChambresHospitalisationByHospitalisation(hospitalisation));
 				formulaire.setDateSortie(UtilDate.getInstance().dateToString(
 						hospitalisation.getDateSortie()));
 			}

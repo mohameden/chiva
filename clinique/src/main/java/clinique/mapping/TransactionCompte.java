@@ -2,7 +2,7 @@ package clinique.mapping;
 
 import java.util.Date;
 
-public class TransactionCompte extends Entity {
+public class TransactionCompte extends Entity<TransactionCompte> {
 
 	/**
 	 * 
@@ -170,6 +170,23 @@ public class TransactionCompte extends Entity {
 			return false;
 		}
 		return true;
+	}
+
+	@Override
+	protected TransactionCompte createEntity() {
+		return new TransactionCompte();
+	}
+
+	@Override
+	public void updateWith(TransactionCompte entity) {
+		operation = entity.getOperation();
+		montant = entity.getMontant();
+		EntityCopier<Compte> aCopier = new EntityCopier<Compte>();
+		compte = aCopier.copy(entity.getCompte());
+		etat = entity.getEtat();
+		statut = entity.getStatut();
+		operateur = entity.getOperateur();
+		dateTransaction = entity.getDateTransaction();
 	}
 
 }

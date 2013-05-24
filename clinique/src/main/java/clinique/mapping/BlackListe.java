@@ -2,7 +2,7 @@ package clinique.mapping;
 
 import java.util.Date;
 
-public class BlackListe extends Entity {
+public class BlackListe extends Entity<BlackListe> {
 
 	/**
 	 * 
@@ -149,6 +149,23 @@ public class BlackListe extends Entity {
 			return false;
 		}
 		return true;
+	}
+
+	@Override
+	protected BlackListe createEntity() {
+		return new BlackListe();
+	}
+
+	@Override
+	public void updateWith(BlackListe entity) {
+		blacklisteId = entity.getBlacklisteId();
+		numeroBadge = entity.getNumeroBadge();
+		statut = entity.getStatut();
+		operateur = entity.getOperateur();
+		dateDebut = entity.getDateDebut();
+		dateFin = entity.getDateFin();
+		EntityCopier<Categorie> cCopier = new EntityCopier<Categorie>();
+		categorie = cCopier.copy(entity.getCategorie());
 	}
 
 }

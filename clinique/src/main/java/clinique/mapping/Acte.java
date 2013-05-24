@@ -1,9 +1,8 @@
 package clinique.mapping;
 
 import java.util.Date;
-import java.util.List;
 
-public class Acte extends Entity {
+public class Acte extends Entity<Acte> {
 
 	/**
 	 * 
@@ -29,8 +28,6 @@ public class Acte extends Entity {
 
 	private Classe classe;
 	private FamillePrestation famillePrestation;
-
-	private List<ActeurActe> acteurActes;
 
 	public int getActeId() {
 		return acteId;
@@ -136,14 +133,6 @@ public class Acte extends Entity {
 		this.classe = classe;
 	}
 
-	public List<ActeurActe> getActeurActes() {
-		return acteurActes;
-	}
-
-	public void setActeurActes(List<ActeurActe> acteurActes) {
-		this.acteurActes = acteurActes;
-	}
-
 	public FamillePrestation getFamillePrestation() {
 		return famillePrestation;
 	}
@@ -197,8 +186,6 @@ public class Acte extends Entity {
 		final int prime = 31;
 		int result = 1;
 		result = prime * result + acteId;
-		result = prime * result
-				+ (acteurActes == null ? 0 : acteurActes.hashCode());
 		result = prime * result + (classe == null ? 0 : classe.hashCode());
 		result = prime * result + (coef == null ? 0 : coef.hashCode());
 		result = prime * result
@@ -242,13 +229,6 @@ public class Acte extends Entity {
 		}
 		Acte other = (Acte) obj;
 		if (acteId != other.acteId) {
-			return false;
-		}
-		if (acteurActes == null) {
-			if (other.acteurActes != null) {
-				return false;
-			}
-		} else if (!acteurActes.equals(other.acteurActes)) {
 			return false;
 		}
 		if (classe == null) {
@@ -347,4 +327,34 @@ public class Acte extends Entity {
 		return true;
 	}
 
+	@Override
+	protected Acte createEntity() {
+		return new Acte();
+	}
+
+	@Override
+	public void updateWith(Acte entity) {
+
+		acteId = entity.getActeId();
+		nomActe = entity.getNomActe();
+		prix = entity.getPrix();
+		prixUrg = entity.getPrixUrg();
+		prixDepl = entity.getPrixDepl();
+		pck = entity.getPck();
+		coef = entity.getCoef();
+		tauxPraticien = entity.getTauxPraticien();
+		tauxAssistant = entity.getTauxAssistant();
+		tauxPraticienUrg = entity.getTauxPraticienUrg();
+		tauxAssistantUrg = entity.getTauxAssistantUrg();
+		tauxDepAssistant = entity.getTauxDepAssistant();
+		statut = entity.getStatut();
+		operateur = entity.getOperateur();
+		reductible = entity.getReductible();
+		dateDebut = entity.getDateDebut();
+		dateFin = entity.getDateFin();
+		EntityCopier<Classe> classeCopier = new EntityCopier<Classe>();
+		classe = classeCopier.copy(entity.getClasse());
+		EntityCopier<FamillePrestation> fpCopier = new EntityCopier<FamillePrestation>();
+		famillePrestation = fpCopier.copy(entity.getFamillePrestation());
+	}
 }

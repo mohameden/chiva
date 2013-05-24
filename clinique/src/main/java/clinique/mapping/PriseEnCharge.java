@@ -1,10 +1,8 @@
 package clinique.mapping;
 
-import java.util.ArrayList;
 import java.util.Date;
-import java.util.List;
 
-public class PriseEnCharge extends Entity {
+public class PriseEnCharge extends Entity<PriseEnCharge> {
 
 	/**
 	 * 
@@ -24,8 +22,6 @@ public class PriseEnCharge extends Entity {
 	private Patient patient;
 
 	private Categorie categorie;
-
-	private List<PrestationCouvertesPc> prestationCouvertesPcs = new ArrayList<PrestationCouvertesPc>();
 
 	public String getPcNum() {
 		return pcNum;
@@ -107,15 +103,6 @@ public class PriseEnCharge extends Entity {
 		this.operateur = operateur;
 	}
 
-	public List<PrestationCouvertesPc> getPrestationCouvertesPcs() {
-		return prestationCouvertesPcs;
-	}
-
-	public void setPrestationCouvertesPcs(
-			List<PrestationCouvertesPc> prestationCouvertesPcs) {
-		this.prestationCouvertesPcs = prestationCouvertesPcs;
-	}
-
 	public String getPcId() {
 		return pcId;
 	}
@@ -154,10 +141,6 @@ public class PriseEnCharge extends Entity {
 		temp = Double.doubleToLongBits(plafond);
 		result = prime * result + (int) (temp ^ temp >>> 32);
 		result = prime * result + pourcentage;
-		result = prime
-				* result
-				+ (prestationCouvertesPcs == null ? 0 : prestationCouvertesPcs
-						.hashCode());
 		result = prime * result + (statut == null ? 0 : statut.hashCode());
 		return result;
 	}
@@ -237,13 +220,6 @@ public class PriseEnCharge extends Entity {
 		if (pourcentage != other.pourcentage) {
 			return false;
 		}
-		if (prestationCouvertesPcs == null) {
-			if (other.prestationCouvertesPcs != null) {
-				return false;
-			}
-		} else if (!prestationCouvertesPcs.equals(other.prestationCouvertesPcs)) {
-			return false;
-		}
 		if (statut == null) {
 			if (other.statut != null) {
 				return false;
@@ -252,6 +228,29 @@ public class PriseEnCharge extends Entity {
 			return false;
 		}
 		return true;
+	}
+
+	@Override
+	protected PriseEnCharge createEntity() {
+		return new PriseEnCharge();
+	}
+
+	@Override
+	public void updateWith(PriseEnCharge entity) {
+		pcId = entity.getPcId();
+		pcNum = entity.getPcNum();
+		plafond = entity.getPlafond();
+		pourcentage = entity.getPourcentage();
+		finValidite = entity.getFinValidite();
+		dateCreation = entity.getDateCreation();
+		nombreActes = entity.getNombreActes();
+		montantFact = entity.getMontantFact();
+		statut = entity.getStatut();
+		operateur = entity.getOperateur();
+		EntityCopier<Categorie> cCopier = new EntityCopier<Categorie>();
+		categorie = cCopier.copy(entity.getCategorie());
+		EntityCopier<Patient> pCopier = new EntityCopier<Patient>();
+		patient = pCopier.copy(entity.getPatient());
 	}
 
 }

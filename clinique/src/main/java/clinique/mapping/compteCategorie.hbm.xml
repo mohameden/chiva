@@ -13,15 +13,7 @@
 <property name="statut" column="statut" />
 <property name="operateur" column="operateur" />
 
-<bag name="transactionsCompte" lazy="true" inverse="true" cascade="all-delete-orphan" >
-    <key column="compte_id"/>
-    <one-to-many class="TransactionCompteCategorie"/>
-</bag>
-
-
 <many-to-one name="categorie" class="Categorie" cascade="none" column="categorie_id"/>
-
-
 
  </class>
 </hibernate-mapping>

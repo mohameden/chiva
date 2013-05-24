@@ -1,10 +1,8 @@
 package clinique.mapping;
 
-import java.util.ArrayList;
 import java.util.Date;
-import java.util.List;
 
-public class Patient extends Entity {
+public class Patient extends Entity<Patient> {
 
 	/**
 	 * 
@@ -28,11 +26,6 @@ public class Patient extends Entity {
 	private Categorie categorie;
 
 	private String priseEnChargeFlag;
-
-	private List<Facture> factures = new ArrayList<Facture>();
-	private List<PriseEnCharge> priseEnCharges = new ArrayList<PriseEnCharge>();
-	private List<Hospitalisation> hospitalisations = new ArrayList<Hospitalisation>();
-	private List<Badge> badges = new ArrayList<Badge>();
 
 	public String getNom() {
 		return nom;
@@ -106,30 +99,6 @@ public class Patient extends Entity {
 		this.operateur = operateur;
 	}
 
-	public List<Facture> getFactures() {
-		return factures;
-	}
-
-	public void setFactures(List<Facture> factures) {
-		this.factures = factures;
-	}
-
-	public List<PriseEnCharge> getPriseEnCharges() {
-		return priseEnCharges;
-	}
-
-	public void setPriseEnCharges(List<PriseEnCharge> priseEnCharges) {
-		this.priseEnCharges = priseEnCharges;
-	}
-
-	public List<Hospitalisation> getHospitalisations() {
-		return hospitalisations;
-	}
-
-	public void setHospitalisations(List<Hospitalisation> hospitalisations) {
-		this.hospitalisations = hospitalisations;
-	}
-
 	public Date getDateNaissance() {
 		return dateNaissance;
 	}
@@ -178,20 +147,11 @@ public class Patient extends Entity {
 		this.priseEnChargeFlag = priseEnChargeFlag;
 	}
 
-	public List<Badge> getBadges() {
-		return badges;
-	}
-
-	public void setBadges(List<Badge> badges) {
-		this.badges = badges;
-	}
-
 	@Override
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;
 		result = prime * result + (adresse == null ? 0 : adresse.hashCode());
-		result = prime * result + (badges == null ? 0 : badges.hashCode());
 		result = prime * result
 				+ (categorie == null ? 0 : categorie.hashCode());
 		result = prime * result + (cni == null ? 0 : cni.hashCode());
@@ -204,9 +164,6 @@ public class Patient extends Entity {
 		result = prime
 				* result
 				+ (datePremiereViste == null ? 0 : datePremiereViste.hashCode());
-		result = prime * result + (factures == null ? 0 : factures.hashCode());
-		result = prime * result
-				+ (hospitalisations == null ? 0 : hospitalisations.hashCode());
 		result = prime * result
 				+ (lieuNaissance == null ? 0 : lieuNaissance.hashCode());
 		result = prime * result + (nni == null ? 0 : nni.hashCode());
@@ -219,8 +176,6 @@ public class Patient extends Entity {
 		result = prime
 				* result
 				+ (priseEnChargeFlag == null ? 0 : priseEnChargeFlag.hashCode());
-		result = prime * result
-				+ (priseEnCharges == null ? 0 : priseEnCharges.hashCode());
 		result = prime * result + (statut == null ? 0 : statut.hashCode());
 		result = prime * result
 				+ (telephone == null ? 0 : telephone.hashCode());
@@ -244,13 +199,6 @@ public class Patient extends Entity {
 				return false;
 			}
 		} else if (!adresse.equals(other.adresse)) {
-			return false;
-		}
-		if (badges == null) {
-			if (other.badges != null) {
-				return false;
-			}
-		} else if (!badges.equals(other.badges)) {
 			return false;
 		}
 		if (categorie == null) {
@@ -286,20 +234,6 @@ public class Patient extends Entity {
 				return false;
 			}
 		} else if (!datePremiereViste.equals(other.datePremiereViste)) {
-			return false;
-		}
-		if (factures == null) {
-			if (other.factures != null) {
-				return false;
-			}
-		} else if (!factures.equals(other.factures)) {
-			return false;
-		}
-		if (hospitalisations == null) {
-			if (other.hospitalisations != null) {
-				return false;
-			}
-		} else if (!hospitalisations.equals(other.hospitalisations)) {
 			return false;
 		}
 		if (lieuNaissance == null) {
@@ -351,13 +285,6 @@ public class Patient extends Entity {
 		} else if (!priseEnChargeFlag.equals(other.priseEnChargeFlag)) {
 			return false;
 		}
-		if (priseEnCharges == null) {
-			if (other.priseEnCharges != null) {
-				return false;
-			}
-		} else if (!priseEnCharges.equals(other.priseEnCharges)) {
-			return false;
-		}
 		if (statut == null) {
 			if (other.statut != null) {
 				return false;
@@ -373,6 +300,31 @@ public class Patient extends Entity {
 			return false;
 		}
 		return true;
+	}
+
+	@Override
+	protected Patient createEntity() {
+		return new Patient();
+	}
+
+	@Override
+	public void updateWith(Patient entity) {
+		patientId = entity.getPatientId();
+		nom = entity.getNom();
+		prenom = entity.getPrenom();
+		dateNaissance = entity.getDateNaissance();
+		lieuNaissance = entity.getLieuNaissance();
+		telephone = entity.getTelephone();
+		adresse = entity.getAdresse();
+		cni = entity.getCni();
+		nni = entity.getNni();
+		datePremiereViste = entity.getDatePremiereViste();
+		dateDerniereVisite = entity.getDateDerniereVisite();
+		statut = entity.getStatut();
+		operateur = entity.getOperateur();
+		priseEnChargeFlag = entity.getPriseEnChargeFlag();
+		EntityCopier<Categorie> cCopier = new EntityCopier<Categorie>();
+		categorie = cCopier.copy(entity.getCategorie());
 	}
 
 	/*

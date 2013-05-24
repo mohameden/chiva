@@ -24,13 +24,6 @@
 <property name="dateDebut" column="date_debut" />
 <property name="dateFin" column="date_fin" />
 
-
-<bag name="acteurActes" lazy="true" inverse="true" cascade="all" >
-    <key column="acte_id"/>
-    <one-to-many class="ActeurActe"/>
-</bag>
-
-
 <many-to-one name="classe" class="Classe" cascade="none" column="classe_id"/>
 <many-to-one name="famillePrestation" class="FamillePrestation" cascade="none" column="famille_prestation_id"/>
  </class>

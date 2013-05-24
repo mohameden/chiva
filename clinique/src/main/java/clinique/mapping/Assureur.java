@@ -1,9 +1,7 @@
 package clinique.mapping;
 
-import java.util.ArrayList;
-import java.util.List;
 
-public class Assureur extends Entity {
+public class Assureur extends Entity<Assureur> {
 
 	/**
 	 * 
@@ -14,7 +12,6 @@ public class Assureur extends Entity {
 	private String adresse;
 	private String statut;
 	private String operateur;
-	private List<Entreprise> entreprises = new ArrayList<Entreprise>();
 
 	public int getAssureurId() {
 		return assureurId;
@@ -56,22 +53,12 @@ public class Assureur extends Entity {
 		this.operateur = operateur;
 	}
 
-	public List<Entreprise> getEntreprises() {
-		return entreprises;
-	}
-
-	public void setEntreprises(List<Entreprise> entreprises) {
-		this.entreprises = entreprises;
-	}
-
 	@Override
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;
 		result = prime * result + (adresse == null ? 0 : adresse.hashCode());
 		result = prime * result + assureurId;
-		result = prime * result
-				+ (entreprises == null ? 0 : entreprises.hashCode());
 		result = prime * result
 				+ (nomAssureur == null ? 0 : nomAssureur.hashCode());
 		result = prime * result
@@ -102,13 +89,6 @@ public class Assureur extends Entity {
 		if (assureurId != other.assureurId) {
 			return false;
 		}
-		if (entreprises == null) {
-			if (other.entreprises != null) {
-				return false;
-			}
-		} else if (!entreprises.equals(other.entreprises)) {
-			return false;
-		}
 		if (nomAssureur == null) {
 			if (other.nomAssureur != null) {
 				return false;
@@ -131,6 +111,20 @@ public class Assureur extends Entity {
 			return false;
 		}
 		return true;
+	}
+
+	@Override
+	protected Assureur createEntity() {
+		return new Assureur();
+	}
+
+	@Override
+	public void updateWith(Assureur entity) {
+		assureurId = entity.getAssureurId();
+		nomAssureur = entity.getNomAssureur();
+		adresse = entity.getAdresse();
+		statut = entity.getStatut();
+		operateur = entity.getOperateur();
 	}
 
 }

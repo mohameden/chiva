@@ -13,11 +13,6 @@
 <property name="statut" column="statut" />
 <property name="operateur" column="operateur" />
 
-<bag name="categories" lazy="true" inverse="true" cascade="all-delete-orphan" >
-    <key column="entreprise_id"/>
-    <one-to-many class="Categorie"/>
-</bag>
-
 <many-to-one name="assureur" class="Assureur" cascade="none" column="assureur_id"/>
  </class>
 </hibernate-mapping>

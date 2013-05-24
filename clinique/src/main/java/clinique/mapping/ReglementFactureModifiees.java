@@ -2,7 +2,8 @@ package clinique.mapping;
 
 import java.util.Date;
 
-public class ReglementFactureModifiees extends Entity {
+public class ReglementFactureModifiees extends
+		Entity<ReglementFactureModifiees> {
 
 	/**
 	 * 
@@ -291,6 +292,38 @@ public class ReglementFactureModifiees extends Entity {
 			return false;
 		}
 		return true;
+	}
+
+	@Override
+	protected ReglementFactureModifiees createEntity() {
+		return new ReglementFactureModifiees();
+	}
+
+	@Override
+	public void updateWith(ReglementFactureModifiees entity) {
+		reglementId = entity.getReglementId();
+		montant = entity.getMontant();
+		dateReglement = entity.getDateReglement();
+		statut = entity.getStatut();
+		operateur = entity.getOperateur();
+		description = entity.getDescription();
+		petitMonnaie = entity.getPetitMonnaie();
+		typePC = entity.getTypePC();
+		EntityCopier<Categorie> cCopier = new EntityCopier<Categorie>();
+		categorie = cCopier.copy(entity.getCategorie());
+		EntityCopier<PcPersonnel> pCopier = new EntityCopier<PcPersonnel>();
+		pcPersonnel = pCopier.copy(entity.getPcPersonnel());
+		EntityCopier<TypePayement> tCopier = new EntityCopier<TypePayement>();
+		typePayement = tCopier.copy(entity.getTypePayement());
+
+		EntityCopier<FactureModifiees> fCopier = new EntityCopier<FactureModifiees>();
+		facture = fCopier.copy(entity.getFacture());
+		EntityCopier<PriseEnCharge> pcCopier = new EntityCopier<PriseEnCharge>();
+		priseEnCharge = pcCopier.copy(entity.getPriseEnCharge());
+		EntityCopier<Badge> bCopier = new EntityCopier<Badge>();
+		badge = bCopier.copy(entity.getBadge());
+		EntityCopier<PriseEnChargeModifiee> pcmCopier = new EntityCopier<PriseEnChargeModifiee>();
+		priseEnChargeM = pcmCopier.copy(entity.getPriseEnChargeM());
 	}
 
 }

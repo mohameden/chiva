@@ -3,9 +3,11 @@ package clinique.dao;
 import java.util.List;
 
 import org.apache.log4j.Logger;
+import org.hibernate.Query;
 import org.hibernate.Session;
 import org.springframework.stereotype.Repository;
 
+import clinique.mapping.Assureur;
 import clinique.mapping.Entreprise;
 
 @Repository
@@ -137,6 +139,15 @@ public class EntrepriseDAO extends CliniqueHibernateDaoSupport<Entreprise> {
 		} finally {
 			log.debug("********** Fin listEntreprisesSupprimees EntrepriseDAO **********");
 		}
+	}
+
+	@SuppressWarnings("unchecked")
+	public List<Entreprise> findEntreprisesByAssureur(final Assureur assureur) {
+		String queryString = "from Entreprise where assureur = :assureur";
+		Session session = getSession();
+		Query query = session.createQuery(queryString);
+		query.setParameter("assureur", assureur);
+		return query.list();
 	}
 
 	@Override

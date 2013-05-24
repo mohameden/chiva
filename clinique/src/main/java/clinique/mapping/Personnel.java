@@ -1,9 +1,7 @@
 package clinique.mapping;
 
-import java.util.ArrayList;
-import java.util.List;
 
-public class Personnel extends Entity {
+public class Personnel extends Entity<Personnel> {
 
 	/**
 	 * 
@@ -17,8 +15,6 @@ public class Personnel extends Entity {
 
 	private String statut;
 	private String operateur;
-
-	private List<Compte> comptes = new ArrayList<Compte>();
 
 	public int getPersonnelId() {
 		return personnelId;
@@ -76,20 +72,11 @@ public class Personnel extends Entity {
 		this.acteur = acteur;
 	}
 
-	public List<Compte> getComptes() {
-		return comptes;
-	}
-
-	public void setComptes(List<Compte> comptes) {
-		this.comptes = comptes;
-	}
-
 	@Override
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;
 		result = prime * result + (acteur == null ? 0 : acteur.hashCode());
-		result = prime * result + (comptes == null ? 0 : comptes.hashCode());
 		result = prime * result + (isActeur == null ? 0 : isActeur.hashCode());
 		result = prime * result + (nom == null ? 0 : nom.hashCode());
 		result = prime * result
@@ -117,13 +104,6 @@ public class Personnel extends Entity {
 				return false;
 			}
 		} else if (!acteur.equals(other.acteur)) {
-			return false;
-		}
-		if (comptes == null) {
-			if (other.comptes != null) {
-				return false;
-			}
-		} else if (!comptes.equals(other.comptes)) {
 			return false;
 		}
 		if (isActeur == null) {
@@ -165,6 +145,23 @@ public class Personnel extends Entity {
 			return false;
 		}
 		return true;
+	}
+
+	@Override
+	protected Personnel createEntity() {
+		return new Personnel();
+	}
+
+	@Override
+	public void updateWith(Personnel entity) {
+		personnelId = entity.getPersonnelId();
+		nom = entity.getNom();
+		prenom = entity.getPrenom();
+		isActeur = entity.getIsActeur();
+		EntityCopier<Acteur> aCopier = new EntityCopier<Acteur>();
+		acteur = aCopier.copy(entity.getActeur());
+		statut = entity.getStatut();
+		operateur = entity.getOperateur();
 	}
 
 }

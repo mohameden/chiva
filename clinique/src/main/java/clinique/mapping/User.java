@@ -1,6 +1,6 @@
 package clinique.mapping;
 
-public class User extends Entity {
+public class User extends Entity<User> {
 	private static final long serialVersionUID = -3254624837294225658L;
 	private int userId;
 	private String login;
@@ -123,6 +123,22 @@ public class User extends Entity {
 			return false;
 		}
 		return true;
+	}
+
+	@Override
+	protected User createEntity() {
+		return new User();
+	}
+
+	@Override
+	public void updateWith(User entity) {
+		userId = entity.getUserId();
+		login = entity.getLogin();
+		password = entity.getPassword();
+		statut = entity.getStatut();
+		operateur = entity.getOperateur();
+		EntityCopier<Profil> aCopier = new EntityCopier<Profil>();
+		profil = aCopier.copy(entity.getProfil());
 	}
 
 };

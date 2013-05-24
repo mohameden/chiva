@@ -1,6 +1,6 @@
 package clinique.mapping;
 
-public class Produit extends Entity {
+public class Produit extends Entity<Produit> {
 
 	/**
 	 * 
@@ -188,6 +188,27 @@ public class Produit extends Entity {
 			return false;
 		}
 		return true;
+	}
+
+	@Override
+	protected Produit createEntity() {
+		return new Produit();
+	}
+
+	@Override
+	public void updateWith(Produit entity) {
+		produitId = entity.getProduitId();
+		nomProduit = entity.getNomProduit();
+		facturable = entity.getFacturable();
+		prix = entity.getPrix();
+		quantiteDisponible = entity.getQuantiteDisponible();
+		seuilMinimum = entity.getSeuilMinimum();
+		statut = entity.getStatut();
+		operateur = entity.getOperateur();
+		EntityCopier<Acte> aCopier = new EntityCopier<Acte>();
+		acte = aCopier.copy(entity.getActe());
+		EntityCopier<Classe> cCopier = new EntityCopier<Classe>();
+		classe = cCopier.copy(entity.getClasse());
 	}
 
 }

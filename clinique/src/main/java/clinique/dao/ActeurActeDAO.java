@@ -4,6 +4,7 @@ import java.util.Date;
 import java.util.List;
 
 import org.apache.log4j.Logger;
+import org.hibernate.Query;
 import org.hibernate.Session;
 import org.springframework.stereotype.Repository;
 
@@ -194,6 +195,24 @@ public class ActeurActeDAO extends CliniqueHibernateDaoSupport<ActeurActe> {
 		} finally {
 			log.debug("********** Fin getActeurActeAssureurByDate ActeurActeAssureurDAO **********");
 		}
+	}
+
+	@SuppressWarnings("unchecked")
+	public List<ActeurActe> findActeurActesByActe(final Acte acte) {
+		String queryString = "from ActeurActe where acte = :acte";
+		Session session = getSession();
+		Query query = session.createQuery(queryString);
+		query.setParameter("acte", acte);
+		return query.list();
+	}
+
+	@SuppressWarnings("unchecked")
+	public List<ActeurActe> findActeurActesByActeur(final Acteur acteur) {
+		String queryString = "from ActeurActe where acteur = :acteur";
+		Session session = getSession();
+		Query query = session.createQuery(queryString);
+		query.setParameter("acteur", acteur);
+		return query.list();
 	}
 
 	@Override

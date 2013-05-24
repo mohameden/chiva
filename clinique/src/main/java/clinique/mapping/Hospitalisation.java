@@ -1,10 +1,8 @@
 package clinique.mapping;
 
-import java.util.ArrayList;
 import java.util.Date;
-import java.util.List;
 
-public class Hospitalisation extends Entity {
+public class Hospitalisation extends Entity<Hospitalisation> {
 
 	private static final long serialVersionUID = -9222994556707937186L;
 	private String hospitalisationId;
@@ -17,8 +15,6 @@ public class Hospitalisation extends Entity {
 	private Patient patient;
 	private Chambre chambre;
 	private Facture facture;
-
-	private List<ChambresHospitalisation> chambresHospitalisation = new ArrayList<ChambresHospitalisation>();
 
 	public String getHospitalisationId() {
 		return hospitalisationId;
@@ -60,15 +56,6 @@ public class Hospitalisation extends Entity {
 		this.operateur = operateur;
 	}
 
-	public List<ChambresHospitalisation> getChambresHospitalisation() {
-		return chambresHospitalisation;
-	}
-
-	public void setChambresHospitalisation(
-			List<ChambresHospitalisation> chambresHospitalisation) {
-		this.chambresHospitalisation = chambresHospitalisation;
-	}
-
 	public String getEncours() {
 		return encours;
 	}
@@ -106,10 +93,6 @@ public class Hospitalisation extends Entity {
 		final int prime = 31;
 		int result = 1;
 		result = prime * result + (chambre == null ? 0 : chambre.hashCode());
-		result = prime
-				* result
-				+ (chambresHospitalisation == null ? 0
-						: chambresHospitalisation.hashCode());
 		result = prime * result
 				+ (dateEntree == null ? 0 : dateEntree.hashCode());
 		result = prime * result
@@ -143,14 +126,6 @@ public class Hospitalisation extends Entity {
 				return false;
 			}
 		} else if (!chambre.equals(other.chambre)) {
-			return false;
-		}
-		if (chambresHospitalisation == null) {
-			if (other.chambresHospitalisation != null) {
-				return false;
-			}
-		} else if (!chambresHospitalisation
-				.equals(other.chambresHospitalisation)) {
 			return false;
 		}
 		if (dateEntree == null) {
@@ -210,6 +185,27 @@ public class Hospitalisation extends Entity {
 			return false;
 		}
 		return true;
+	}
+
+	@Override
+	protected Hospitalisation createEntity() {
+		return new Hospitalisation();
+	}
+
+	@Override
+	public void updateWith(Hospitalisation entity) {
+		hospitalisationId = entity.getHospitalisationId();
+		dateEntree = entity.getDateEntree();
+		dateSortie = entity.getDateSortie();
+		statut = entity.getStatut();
+		operateur = entity.getOperateur();
+		encours = entity.getEncours();
+		EntityCopier<Patient> pCopier = new EntityCopier<Patient>();
+		patient = pCopier.copy(entity.getPatient());
+		EntityCopier<Chambre> cCopier = new EntityCopier<Chambre>();
+		chambre = cCopier.copy(entity.getChambre());
+		EntityCopier<Facture> fCopier = new EntityCopier<Facture>();
+		facture = fCopier.copy(entity.getFacture());
 	}
 
 }

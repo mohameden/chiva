@@ -1,10 +1,14 @@
 package clinique.dao;
 
+import java.util.List;
+
 import org.apache.log4j.Logger;
+import org.hibernate.Query;
 import org.hibernate.Session;
 import org.springframework.stereotype.Repository;
 
 import clinique.mapping.ChambresHospitalisation;
+import clinique.mapping.Hospitalisation;
 
 @Repository
 public class ChambresHospitalisationDAO extends
@@ -76,6 +80,16 @@ public class ChambresHospitalisationDAO extends
 		} finally {
 			log.debug("********** Fin deleteChambresHospitalisation ChambresHospitalisationDAO **********");
 		}
+	}
+
+	@SuppressWarnings("unchecked")
+	public List<ChambresHospitalisation> findChambresHospitalisationByHospitalisation(
+			final Hospitalisation hospitalisation) {
+		String queryString = "from ChambresHospitalisation where hospitalisation = :hospitalisation";
+		Session session = getSession();
+		Query query = session.createQuery(queryString);
+		query.setParameter("hospitalisation", hospitalisation);
+		return query.list();
 	}
 
 	@Override

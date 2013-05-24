@@ -1,6 +1,6 @@
 package clinique.mapping;
 
-public class PatientPcActuel extends Entity {
+public class PatientPcActuel extends Entity<PatientPcActuel> {
 
 	/**
 	 * 
@@ -153,6 +153,25 @@ public class PatientPcActuel extends Entity {
 			return false;
 		}
 		return true;
+	}
+
+	@Override
+	protected PatientPcActuel createEntity() {
+		return new PatientPcActuel();
+	}
+
+	@Override
+	public void updateWith(PatientPcActuel entity) {
+		patientPcActuelId = entity.getPatientPcActuelId();
+		statut = entity.getStatut();
+		operateur = entity.getOperateur();
+		EntityCopier<Badge> bCopier = new EntityCopier<Badge>();
+		badge = bCopier.copy(entity.getBadge());
+		EntityCopier<PriseEnCharge> pCopier = new EntityCopier<PriseEnCharge>();
+		priseEnCharge = pCopier.copy(entity.getPriseEnCharge());
+		EntityCopier<Patient> paCopier = new EntityCopier<Patient>();
+		patient = paCopier.copy(entity.getPatient());
+		type = entity.getType();
 	}
 
 }

@@ -2,7 +2,7 @@ package clinique.mapping;
 
 import java.util.Date;
 
-public class DetailFactureModifiees extends Entity {
+public class DetailFactureModifiees extends Entity<DetailFactureModifiees> {
 
 	/**
 	 * 
@@ -446,6 +446,46 @@ public class DetailFactureModifiees extends Entity {
 			return false;
 		}
 		return true;
+	}
+
+	@Override
+	protected DetailFactureModifiees createEntity() {
+		return new DetailFactureModifiees();
+	}
+
+	@Override
+	public void updateWith(DetailFactureModifiees entity) {
+		detailFactId = entity.getDetailFactId();
+		nomActe = entity.getNomActe();
+		nbrActes = entity.getNbrActes();
+		urgenceActe = entity.getUrgenceActe();
+		depl = entity.getDepl();
+		prix = entity.getPrix();
+		prixUrg = entity.getPrixUrg();
+		prixDepl = entity.getPrixDepl();
+		statut = entity.getStatut();
+		operateur = entity.getOperateur();
+		montantTotal = entity.getMontantTotal();
+		type = entity.getType();
+		EntityCopier<Recu> rCopier = new EntityCopier<Recu>();
+		recu = rCopier.copy(entity.getRecu());
+		EntityCopier<Acte> aCopier = new EntityCopier<Acte>();
+		acte = aCopier.copy(entity.getActe());
+		EntityCopier<FactureModifiees> fCopier = new EntityCopier<FactureModifiees>();
+		facture = fCopier.copy(entity.getFacture());
+		EntityCopier<Hospitalisation> hCopier = new EntityCopier<Hospitalisation>();
+		hospitalisation = hCopier.copy(entity.getHospitalisation());
+		EntityCopier<Acteur> acCopier = new EntityCopier<Acteur>();
+		medecin = acCopier.copy(entity.getMedecin());
+		infirmier = acCopier.copy(entity.getInfirmier());
+		medecinExiste = entity.getMedecinExiste();
+		infirmierExiste = entity.getInfirmierExiste();
+		qpActeur = entity.getQpActeur();
+		qpAssistant = entity.getQpAssistant();
+		prixReel = entity.getPrixReel();
+		coteClinique = entity.getCoteClinique();
+		coteCliniqueMajore = entity.getCoteCliniqueMajore();
+		dateDetail = entity.getDateDetail();
 	}
 
 }

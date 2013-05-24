@@ -3,10 +3,12 @@ package clinique.dao;
 import java.util.List;
 
 import org.apache.log4j.Logger;
+import org.hibernate.Query;
 import org.hibernate.Session;
 import org.springframework.stereotype.Repository;
 
 import clinique.mapping.BlackListe;
+import clinique.mapping.Categorie;
 
 @Repository
 public class BlackListeDAO extends CliniqueHibernateDaoSupport<BlackListe> {
@@ -114,6 +116,15 @@ public class BlackListeDAO extends CliniqueHibernateDaoSupport<BlackListe> {
 		} finally {
 			log.debug("********** Fin listBlackListesSupprimees BlackListeDAO **********");
 		}
+	}
+
+	@SuppressWarnings("unchecked")
+	public List<BlackListe> findBlackListesByCategorie(final Categorie categorie) {
+		String queryString = "from BlackListe where categorie = :categorie";
+		Session session = getSession();
+		Query query = session.createQuery(queryString);
+		query.setParameter("categorie", categorie);
+		return query.list();
 	}
 
 	@Override

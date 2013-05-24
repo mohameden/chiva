@@ -1,6 +1,6 @@
 package clinique.mapping;
 
-public class DroitAcces extends Entity {
+public class DroitAcces extends Entity<DroitAcces> {
 
 	/**
 	 * 
@@ -110,6 +110,22 @@ public class DroitAcces extends Entity {
 			return false;
 		}
 		return true;
+	}
+
+	@Override
+	protected DroitAcces createEntity() {
+		return new DroitAcces();
+	}
+
+	@Override
+	public void updateWith(DroitAcces entity) {
+		dAccId = entity.getdAccId();
+		statut = entity.getStatut();
+		operateur = entity.getOperateur();
+		EntityCopier<Profil> aCopier = new EntityCopier<Profil>();
+		profil = aCopier.copy(entity.getProfil());
+		EntityCopier<Menu> mCopier = new EntityCopier<Menu>();
+		menu = mCopier.copy(entity.getMenu());
 	}
 
 }

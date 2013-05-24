@@ -1,10 +1,8 @@
 package clinique.mapping;
 
-import java.util.ArrayList;
 import java.util.Date;
-import java.util.List;
 
-public class DevisAssureur extends Entity {
+public class DevisAssureur extends Entity<DevisAssureur> {
 
 	/**
 	 * 
@@ -20,8 +18,6 @@ public class DevisAssureur extends Entity {
 
 	private Categorie categorie;
 	private Patient patient;
-
-	private List<DevisActes> devisActes = new ArrayList<DevisActes>();
 
 	public String getDevisAssureurId() {
 		return devisAssureurId;
@@ -79,14 +75,6 @@ public class DevisAssureur extends Entity {
 		this.patient = patient;
 	}
 
-	public List<DevisActes> getDevisActes() {
-		return devisActes;
-	}
-
-	public void setDevisActes(List<DevisActes> devisActes) {
-		this.devisActes = devisActes;
-	}
-
 	@Override
 	public int hashCode() {
 		final int prime = 31;
@@ -95,8 +83,6 @@ public class DevisAssureur extends Entity {
 				+ (categorie == null ? 0 : categorie.hashCode());
 		result = prime * result
 				+ (dateDevis == null ? 0 : dateDevis.hashCode());
-		result = prime * result
-				+ (devisActes == null ? 0 : devisActes.hashCode());
 		result = prime * result
 				+ (devisAssureurId == null ? 0 : devisAssureurId.hashCode());
 		result = prime * result
@@ -135,13 +121,6 @@ public class DevisAssureur extends Entity {
 		} else if (!dateDevis.equals(other.dateDevis)) {
 			return false;
 		}
-		if (devisActes == null) {
-			if (other.devisActes != null) {
-				return false;
-			}
-		} else if (!devisActes.equals(other.devisActes)) {
-			return false;
-		}
 		if (devisAssureurId == null) {
 			if (other.devisAssureurId != null) {
 				return false;
@@ -175,6 +154,24 @@ public class DevisAssureur extends Entity {
 			return false;
 		}
 		return true;
+	}
+
+	@Override
+	protected DevisAssureur createEntity() {
+		return new DevisAssureur();
+	}
+
+	@Override
+	public void updateWith(DevisAssureur entity) {
+		devisAssureurId = entity.getDevisAssureurId();
+		total = entity.getTotal();
+		dateDevis = entity.getDateDevis();
+		statut = entity.getStatut();
+		operateur = entity.getOperateur();
+		EntityCopier<Categorie> cCopier = new EntityCopier<Categorie>();
+		categorie = cCopier.copy(entity.getCategorie());
+		EntityCopier<Patient> pCopier = new EntityCopier<Patient>();
+		patient = pCopier.copy(entity.getPatient());
 	}
 
 }

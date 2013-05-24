@@ -761,6 +761,7 @@ public class GestionCommercialeAction extends DispatchActionSupport {
 			}
 
 		} catch (Exception e) {
+			e.printStackTrace();
 			log.fatal(e.getMessage());
 			return mapping.findForward("error");
 		} finally {
@@ -1046,7 +1047,7 @@ public class GestionCommercialeAction extends DispatchActionSupport {
 				return mapping.findForward("modules");
 			}
 
-		} catch (Exception e) {
+		} catch (Throwable e) {
 			log.fatal(e.getMessage());
 			return mapping.findForward("error");
 		} finally {

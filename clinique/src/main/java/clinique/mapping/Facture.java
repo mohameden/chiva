@@ -1,10 +1,8 @@
 package clinique.mapping;
 
-import java.util.ArrayList;
 import java.util.Date;
-import java.util.List;
 
-public class Facture extends Entity {
+public class Facture extends Entity<Facture> {
 
 	/**
 	 * 
@@ -36,9 +34,7 @@ public class Facture extends Entity {
 
 	private Patient patient;
 
-	private List<Reglement> reglements = new ArrayList<Reglement>();
-	private List<Recu> recus = new ArrayList<Recu>();
-	private List<DetailFacture> detailFactures = new ArrayList<DetailFacture>();
+	private FactureFlagType factureFlagType;
 
 	public String getNumFact() {
 		return numFact;
@@ -80,14 +76,6 @@ public class Facture extends Entity {
 		this.patient = patient;
 	}
 
-	public List<Reglement> getReglements() {
-		return reglements;
-	}
-
-	public void setReglements(List<Reglement> reglements) {
-		this.reglements = reglements;
-	}
-
 	public double getMajoration() {
 		return majoration;
 	}
@@ -104,28 +92,12 @@ public class Facture extends Entity {
 		this.totalHT = totalHT;
 	}
 
-	public List<Recu> getRecus() {
-		return recus;
-	}
-
-	public void setRecus(List<Recu> recus) {
-		this.recus = recus;
-	}
-
 	public String getFactureId() {
 		return factureId;
 	}
 
 	public void setFactureId(String factureId) {
 		this.factureId = factureId;
-	}
-
-	public List<DetailFacture> getDetailFactures() {
-		return detailFactures;
-	}
-
-	public void setDetailFactures(List<DetailFacture> detailFactures) {
-		this.detailFactures = detailFactures;
 	}
 
 	public double getQpc() {
@@ -250,8 +222,6 @@ public class Facture extends Entity {
 		result = prime * result + (badge == null ? 0 : badge.hashCode());
 		result = prime * result + (dateFact == null ? 0 : dateFact.hashCode());
 		result = prime * result
-				+ (detailFactures == null ? 0 : detailFactures.hashCode());
-		result = prime * result
 				+ (factureId == null ? 0 : factureId.hashCode());
 		result = prime * result
 				+ (isException == null ? 0 : isException.hashCode());
@@ -270,9 +240,6 @@ public class Facture extends Entity {
 				+ (priseEnCharge == null ? 0 : priseEnCharge.hashCode());
 		temp = Double.doubleToLongBits(qpc);
 		result = prime * result + (int) (temp ^ temp >>> 32);
-		result = prime * result + (recus == null ? 0 : recus.hashCode());
-		result = prime * result
-				+ (reglements == null ? 0 : reglements.hashCode());
 		temp = Double.doubleToLongBits(remise);
 		result = prime * result + (int) (temp ^ temp >>> 32);
 		temp = Double.doubleToLongBits(remiseCash);
@@ -318,13 +285,6 @@ public class Facture extends Entity {
 				return false;
 			}
 		} else if (!dateFact.equals(other.dateFact)) {
-			return false;
-		}
-		if (detailFactures == null) {
-			if (other.detailFactures != null) {
-				return false;
-			}
-		} else if (!detailFactures.equals(other.detailFactures)) {
 			return false;
 		}
 		if (factureId == null) {
@@ -387,20 +347,6 @@ public class Facture extends Entity {
 		if (Double.doubleToLongBits(qpc) != Double.doubleToLongBits(other.qpc)) {
 			return false;
 		}
-		if (recus == null) {
-			if (other.recus != null) {
-				return false;
-			}
-		} else if (!recus.equals(other.recus)) {
-			return false;
-		}
-		if (reglements == null) {
-			if (other.reglements != null) {
-				return false;
-			}
-		} else if (!reglements.equals(other.reglements)) {
-			return false;
-		}
 		if (Double.doubleToLongBits(remise) != Double
 				.doubleToLongBits(other.remise)) {
 			return false;
@@ -442,6 +388,60 @@ public class Facture extends Entity {
 			return false;
 		}
 		return true;
+	}
+
+	public FactureFlagType getFactureFlagType() {
+		return factureFlagType;
+	}
+
+	public void setFactureFlagType(FactureFlagType factureFlagType) {
+		this.factureFlagType = factureFlagType;
+	}
+
+	public int getNbrOfLineToPrint() {
+
+		// Set<FamillePrestation> set = new HashSet<FamillePrestation>();
+		// for (DetailFacture detail : detailFactures) {
+		// set.add(detail.getActe().getFamillePrestation());
+		// }
+		//
+		// return detailFactures.size() + set.size();
+		return 0;
+	}
+
+	@Override
+	protected Facture createEntity() {
+		return new Facture();
+	}
+
+	@Override
+	public void updateWith(Facture entity) {
+		factureId = entity.getFactureId();
+		numFact = entity.getNumFact();
+		dateFact = entity.getDateFact();
+		totalHT = entity.getTotalHT();
+		remise = entity.getRemise();
+		majoration = entity.getMajoration();
+		avance = entity.getAvance();
+		netApayer = entity.getNetApayer();
+		statut = entity.getStatut();
+		operateur = entity.getOperateur();
+		totalTva = entity.getTotalTva();
+		qpc = entity.getQpc();
+		tauxRemise = entity.getTauxRemise();
+		tauxMajoration = entity.getTauxMajoration();
+		remiseCash = entity.getRemiseCash();
+		isException = entity.getIsException();
+		typePc = entity.getTypePc();
+		EntityCopier<Badge> bCopier = new EntityCopier<Badge>();
+		badge = bCopier.copy(entity.getBadge());
+		EntityCopier<PriseEnCharge> pCopier = new EntityCopier<PriseEnCharge>();
+		priseEnCharge = pCopier.copy(entity.getPriseEnCharge());
+		isHospitalisation = entity.getIsHospitalisation();
+		totalReglementPc = entity.getTotalReglementPc();
+		EntityCopier<Patient> paCopier = new EntityCopier<Patient>();
+		patient = paCopier.copy(entity.getPatient());
+		factureFlagType = entity.getFactureFlagType();
 	}
 
 }

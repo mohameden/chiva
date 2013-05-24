@@ -2,7 +2,7 @@ package clinique.mapping;
 
 import java.util.Date;
 
-public class ActeH extends Entity {
+public class ActeH extends Entity<ActeH> {
 
 	/**
 	 * 
@@ -346,6 +346,38 @@ public class ActeH extends Entity {
 			return false;
 		}
 		return true;
+	}
+
+	@Override
+	protected ActeH createEntity() {
+		return new ActeH();
+	}
+
+	@Override
+	public void updateWith(ActeH entity) {
+		acteHId = entity.getActeHId();
+		EntityCopier<Acte> aCopier = new EntityCopier<Acte>();
+		acte = aCopier.copy(entity.getActe());
+		nomActe = entity.getNomActe();
+		prix = entity.getPrix();
+		prixUrg = entity.getPrixUrg();
+		prixDepl = entity.getPrixDepl();
+		pck = entity.getPck();
+		coef = entity.getCoef();
+		tauxPraticien = entity.getTauxPraticien();
+		tauxAssistant = entity.getTauxAssistant();
+		tauxPraticienUrg = entity.getTauxPraticienUrg();
+		tauxAssistantUrg = entity.getTauxAssistantUrg();
+		tauxDepAssistant = entity.getTauxDepAssistant();
+		statut = entity.getStatut();
+		operateur = entity.getOperateur();
+		reductible = entity.getReductible();
+		dateDebut = entity.getDateDebut();
+		dateFin = entity.getDateFin();
+		EntityCopier<Classe> cCopier = new EntityCopier<Classe>();
+		classe = cCopier.copy(entity.getClasse());
+		EntityCopier<FamillePrestation> fpCopier = new EntityCopier<FamillePrestation>();
+		famillePrestation = fpCopier.copy(entity.getFamillePrestation());
 	}
 
 }

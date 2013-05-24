@@ -2,7 +2,7 @@ package clinique.mapping;
 
 import java.util.Date;
 
-public class ChambreH extends Entity {
+public class ChambreH extends Entity<ChambreH> {
 
 	/**
 	 * 
@@ -188,6 +188,25 @@ public class ChambreH extends Entity {
 			return false;
 		}
 		return true;
+	}
+
+	@Override
+	protected ChambreH createEntity() {
+		return new ChambreH();
+	}
+
+	@Override
+	public void updateWith(ChambreH entity) {
+		chambreHId = entity.getChambreHId();
+		chambreNum = entity.getChambreNum();
+		chambreLibelle = entity.getChambreLibelle();
+		tarif = entity.getTarif();
+		etat = entity.getEtat();
+		statut = entity.getStatut();
+		dateDebut = entity.getDateDebut();
+		dateFin = entity.getDateFin();
+		EntityCopier<Chambre> chCopier = new EntityCopier<Chambre>();
+		chambre = chCopier.copy(entity.getChambre());
 	}
 
 }

@@ -1,9 +1,7 @@
 package clinique.mapping;
 
-import java.util.ArrayList;
-import java.util.List;
 
-public class PcPersonnel extends Entity {
+public class PcPersonnel extends Entity<PcPersonnel> {
 
 	/**
 	 * 
@@ -16,7 +14,6 @@ public class PcPersonnel extends Entity {
 	private String operateur;
 
 	private Compte compte;
-	private List<Reglement> reglements = new ArrayList<Reglement>();
 
 	public int getPcPersonnelId() {
 		return pcPersonnelId;
@@ -50,14 +47,6 @@ public class PcPersonnel extends Entity {
 		this.pcNom = pcNom;
 	}
 
-	public List<Reglement> getReglements() {
-		return reglements;
-	}
-
-	public void setReglements(List<Reglement> reglements) {
-		this.reglements = reglements;
-	}
-
 	public Compte getCompte() {
 		return compte;
 	}
@@ -75,8 +64,6 @@ public class PcPersonnel extends Entity {
 				+ (operateur == null ? 0 : operateur.hashCode());
 		result = prime * result + (pcNom == null ? 0 : pcNom.hashCode());
 		result = prime * result + pcPersonnelId;
-		result = prime * result
-				+ (reglements == null ? 0 : reglements.hashCode());
 		result = prime * result + (statut == null ? 0 : statut.hashCode());
 		return result;
 	}
@@ -117,13 +104,6 @@ public class PcPersonnel extends Entity {
 		if (pcPersonnelId != other.pcPersonnelId) {
 			return false;
 		}
-		if (reglements == null) {
-			if (other.reglements != null) {
-				return false;
-			}
-		} else if (!reglements.equals(other.reglements)) {
-			return false;
-		}
 		if (statut == null) {
 			if (other.statut != null) {
 				return false;
@@ -132,6 +112,21 @@ public class PcPersonnel extends Entity {
 			return false;
 		}
 		return true;
+	}
+
+	@Override
+	protected PcPersonnel createEntity() {
+		return new PcPersonnel();
+	}
+
+	@Override
+	public void updateWith(PcPersonnel entity) {
+		pcPersonnelId = entity.getPcPersonnelId();
+		pcNom = entity.getPcNom();
+		statut = entity.getStatut();
+		operateur = entity.getOperateur();
+		EntityCopier<Compte> bCopier = new EntityCopier<Compte>();
+		compte = bCopier.copy(entity.getCompte());
 	}
 
 }

@@ -1,10 +1,8 @@
 package clinique.mapping;
 
-import java.util.ArrayList;
 import java.util.Date;
-import java.util.List;
 
-public class Compte extends Entity {
+public class Compte extends Entity<Compte> {
 
 	/**
 	 * 
@@ -20,10 +18,6 @@ public class Compte extends Entity {
 	private String statut;
 	private String operateur;
 	private Date dateTransaction;
-
-	private List<TransactionCompte> transactionsCompte = new ArrayList<TransactionCompte>();
-
-	private List<PcPersonnel> pcPersonnels = new ArrayList<PcPersonnel>();
 
 	public String getCompteId() {
 		return compteId;
@@ -97,22 +91,6 @@ public class Compte extends Entity {
 		this.dateTransaction = dateTransaction;
 	}
 
-	public List<TransactionCompte> getTransactionsCompte() {
-		return transactionsCompte;
-	}
-
-	public void setTransactionsCompte(List<TransactionCompte> transactionsCompte) {
-		this.transactionsCompte = transactionsCompte;
-	}
-
-	public List<PcPersonnel> getPcPersonnels() {
-		return pcPersonnels;
-	}
-
-	public void setPcPersonnels(List<PcPersonnel> pcPersonnels) {
-		this.pcPersonnels = pcPersonnels;
-	}
-
 	@Override
 	public int hashCode() {
 		final int prime = 31;
@@ -126,8 +104,6 @@ public class Compte extends Entity {
 		result = prime * result
 				+ (operateur == null ? 0 : operateur.hashCode());
 		result = prime * result
-				+ (pcPersonnels == null ? 0 : pcPersonnels.hashCode());
-		result = prime * result
 				+ (personnel == null ? 0 : personnel.hashCode());
 		long temp;
 		temp = Double.doubleToLongBits(solde);
@@ -135,10 +111,6 @@ public class Compte extends Entity {
 		temp = Double.doubleToLongBits(soldeAvant);
 		result = prime * result + (int) (temp ^ temp >>> 32);
 		result = prime * result + (statut == null ? 0 : statut.hashCode());
-		result = prime
-				* result
-				+ (transactionsCompte == null ? 0 : transactionsCompte
-						.hashCode());
 		return result;
 	}
 
@@ -189,13 +161,6 @@ public class Compte extends Entity {
 		} else if (!operateur.equals(other.operateur)) {
 			return false;
 		}
-		if (pcPersonnels == null) {
-			if (other.pcPersonnels != null) {
-				return false;
-			}
-		} else if (!pcPersonnels.equals(other.pcPersonnels)) {
-			return false;
-		}
 		if (personnel == null) {
 			if (other.personnel != null) {
 				return false;
@@ -218,14 +183,26 @@ public class Compte extends Entity {
 		} else if (!statut.equals(other.statut)) {
 			return false;
 		}
-		if (transactionsCompte == null) {
-			if (other.transactionsCompte != null) {
-				return false;
-			}
-		} else if (!transactionsCompte.equals(other.transactionsCompte)) {
-			return false;
-		}
 		return true;
+	}
+
+	@Override
+	protected Compte createEntity() {
+		return new Compte();
+	}
+
+	@Override
+	public void updateWith(Compte entity) {
+		compteId = entity.getCompteId();
+		numeroCompte = entity.getNumeroCompte();
+		soldeAvant = entity.getSoldeAvant();
+		solde = entity.getSolde();
+		etat = entity.getEtat();
+		statut = entity.getStatut();
+		operateur = entity.getOperateur();
+		dateTransaction = entity.getDateTransaction();
+		EntityCopier<Personnel> pCopier = new EntityCopier<Personnel>();
+		personnel = pCopier.copy(entity.getPersonnel());
 	}
 
 }

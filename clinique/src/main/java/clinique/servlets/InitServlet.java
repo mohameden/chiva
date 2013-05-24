@@ -19,9 +19,12 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.HttpRequestHandler;
 
 import clinique.dao.ActeDAO;
+import clinique.dao.ActeurActeDAO;
 import clinique.dao.AssureurDAO;
+import clinique.dao.BlackListeDAO;
 import clinique.dao.CategorieDAO;
 import clinique.dao.ClasseDAO;
+import clinique.dao.DevisActesDAO;
 import clinique.dao.DevisAssureurDAO;
 import clinique.dao.EntrepriseDAO;
 import clinique.dao.FamillePrestationDAO;
@@ -54,17 +57,21 @@ import clinique.utils.UtilDate;
 public class InitServlet implements HttpRequestHandler, ConstantesMetier {
 
 	private static Logger log = Logger.getLogger(InitServlet.class);
-	public static String CHEMIN_ROOT;
-	public static String CHEMIN_ROOT_RELATIVE;
+	public static String CHEMIN_ROOT = "";
+	public static String CHEMIN_ROOT_RELATIVE = "";
 
 	@Autowired
 	private ActeDAO acteDAO;
 	@Autowired
 	private AssureurDAO assureurDAO;
 	@Autowired
+	private BlackListeDAO blackListeDAO;
+	@Autowired
 	private CategorieDAO categorieDAO;
 	@Autowired
 	private ClasseDAO classeDAO;
+	@Autowired
+	private DevisActesDAO devisActesDAO;
 	@Autowired
 	private DevisAssureurDAO devisAssureurDAO;
 	@Autowired
@@ -79,6 +86,8 @@ public class InitServlet implements HttpRequestHandler, ConstantesMetier {
 	private TypePayementDAO typePayementDAO;
 	@Autowired
 	private FamillePrestationDAO famillePrestationDAO;
+	@Autowired
+	private ActeurActeDAO acteurActeDAO;
 
 	private ActeDAO getActeDAO() {
 		return acteDAO;
@@ -339,7 +348,7 @@ public class InitServlet implements HttpRequestHandler, ConstantesMetier {
 			return null;
 		}
 		try {
-			for (Object element : classe.getActes()) {
+			for (Object element : acteDAO.findActesByClasse(classe)) {
 				Acte acte = (Acte) element;
 				if (acte.getStatut().equals(STATUT_VALIDE)) {
 					listEntities.add(new LabelValueBean(acte.getNomActe(),
@@ -381,7 +390,8 @@ public class InitServlet implements HttpRequestHandler, ConstantesMetier {
 			return null;
 		}
 		try {
-			for (Object element : famillePrestation.getActes()) {
+			for (Object element : acteDAO
+					.findActesByFamillePrestation(famillePrestation)) {
 
 				Acte acte = (Acte) element;
 				if (acte.getStatut().equals(STATUT_VALIDE)) {
@@ -422,9 +432,8 @@ public class InitServlet implements HttpRequestHandler, ConstantesMetier {
 			return null;
 		}
 		try {
-			for (Iterator iterator = (Iterator) acte.getActeurActes(); iterator
-					.hasNext();) {
-				ActeurActe acteurActe = (ActeurActe) iterator.next();
+			for (ActeurActe acteurActe : acteurActeDAO
+					.findActeurActesByActe(acte)) {
 				if (acteurActe.getStatut().equals(STATUT_VALIDE)) {
 					Acteur acteur = acteurActe.getActeur();
 					if (acteur != null
@@ -456,8 +465,8 @@ public class InitServlet implements HttpRequestHandler, ConstantesMetier {
 			return null;
 		}
 		try {
-			for (Object element : acte.getActeurActes()) {
-				ActeurActe acteurActe = (ActeurActe) element;
+			for (ActeurActe acteurActe : acteurActeDAO
+					.findActeurActesByActe(acte)) {
 				if (acteurActe.getStatut().equals(STATUT_VALIDE)) {
 					Acteur acteur = acteurActe.getActeur();
 					if (acteur != null
@@ -489,8 +498,8 @@ public class InitServlet implements HttpRequestHandler, ConstantesMetier {
 			return null;
 		}
 		try {
-			for (Object element : acte.getActeurActes()) {
-				ActeurActe acteurActe = (ActeurActe) element;
+			for (ActeurActe acteurActe : acteurActeDAO
+					.findActeurActesByActe(acte)) {
 				if (acteurActe.getStatut().equals(STATUT_VALIDE)) {
 					Acteur acteur = acteurActe.getActeur();
 					if (acteur != null
@@ -522,7 +531,8 @@ public class InitServlet implements HttpRequestHandler, ConstantesMetier {
 			return null;
 		}
 		try {
-			for (Object element : entreprise.getCategories()) {
+			for (Object element : categorieDAO
+					.findCategoriesByEntreprise(entreprise)) {
 				Categorie categorie = (Categorie) element;
 				if (categorie.getStatut().equals(STATUT_VALIDE)) {
 					listEntities.add(new LabelValueBean(categorie
@@ -552,7 +562,8 @@ public class InitServlet implements HttpRequestHandler, ConstantesMetier {
 			return null;
 		}
 		try {
-			listEntities = devisAssureur.getDevisActes();
+			listEntities = devisActesDAO
+					.findDevisActesByDevisAssureur(devisAssureur);
 		} catch (Exception e) {
 			e.printStackTrace();
 			log.fatal(e.getMessage());
@@ -574,10 +585,11 @@ public class InitServlet implements HttpRequestHandler, ConstantesMetier {
 			return null;
 		}
 		try {
-			for (Object element : assureur.getEntreprises()) {
-				Entreprise entreprise = (Entreprise) element;
+			for (Entreprise entreprise : entrepriseDAO
+					.findEntreprisesByAssureur(assureur)) {
 				if (entreprise.getStatut().equals(STATUT_VALIDE)) {
-					for (Object element2 : entreprise.getCategories()) {
+					for (Object element2 : categorieDAO
+							.findCategoriesByEntreprise(entreprise)) {
 						Categorie categorie = (Categorie) element2;
 						if (categorie.getStatut().equals(STATUT_VALIDE)) {
 							listEntities.add(new LabelValueBean(entreprise
@@ -667,9 +679,10 @@ public class InitServlet implements HttpRequestHandler, ConstantesMetier {
 			return false;
 		}
 		try {
-			for (Object element : getCategorieDAO().getCategorie(
-					Integer.parseInt(categorieId)).getBlackListes()) {
-				BlackListe blackListe = (BlackListe) element;
+			Categorie categorie = getCategorieDAO().getCategorie(
+					Integer.parseInt(categorieId));
+			for (BlackListe blackListe : blackListeDAO
+					.findBlackListesByCategorie(categorie)) {
 				if (blackListe.getStatut().equals(STATUT_VALIDE)
 						&& blackListe.getNumeroBadge().equals(idBadge)) {
 					result = true;

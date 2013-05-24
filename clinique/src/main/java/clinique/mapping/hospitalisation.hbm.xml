@@ -20,10 +20,5 @@
 
 <many-to-one name="facture" class="Facture" cascade="none" column="facture_id"/>
 
-<bag name="ChambresHospitalisation" lazy="true" inverse="true" cascade="all-delete-orphan" >
-    <key column="hospitalisation_id"/>
-    <one-to-many class="ChambresHospitalisation"/>
-</bag>
-
  </class>
 </hibernate-mapping>

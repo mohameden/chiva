@@ -1,10 +1,8 @@
 package clinique.mapping;
 
-import java.util.ArrayList;
 import java.util.Date;
-import java.util.List;
 
-public class FactureGlobal extends Entity {
+public class FactureGlobal extends Entity<FactureGlobal> {
 
 	/**
 	 * 
@@ -16,8 +14,6 @@ public class FactureGlobal extends Entity {
 	private Date dateFacture;
 	private String statut;
 	private String operateur;
-
-	private List<FactureGlobalFacture> factureGlobalFactures = new ArrayList<FactureGlobalFacture>();
 
 	public String getFactureGlobalId() {
 		return factureGlobalId;
@@ -67,15 +63,6 @@ public class FactureGlobal extends Entity {
 		this.operateur = operateur;
 	}
 
-	public List<FactureGlobalFacture> getFactureGlobalFactures() {
-		return factureGlobalFactures;
-	}
-
-	public void setFactureGlobalFactures(
-			List<FactureGlobalFacture> factureGlobalFactures) {
-		this.factureGlobalFactures = factureGlobalFactures;
-	}
-
 	@Override
 	public int hashCode() {
 		final int prime = 31;
@@ -84,10 +71,6 @@ public class FactureGlobal extends Entity {
 				+ (categorie == null ? 0 : categorie.hashCode());
 		result = prime * result
 				+ (dateFacture == null ? 0 : dateFacture.hashCode());
-		result = prime
-				* result
-				+ (factureGlobalFactures == null ? 0 : factureGlobalFactures
-						.hashCode());
 		result = prime * result
 				+ (factureGlobalId == null ? 0 : factureGlobalId.hashCode());
 		result = prime * result
@@ -124,13 +107,6 @@ public class FactureGlobal extends Entity {
 		} else if (!dateFacture.equals(other.dateFacture)) {
 			return false;
 		}
-		if (factureGlobalFactures == null) {
-			if (other.factureGlobalFactures != null) {
-				return false;
-			}
-		} else if (!factureGlobalFactures.equals(other.factureGlobalFactures)) {
-			return false;
-		}
 		if (factureGlobalId == null) {
 			if (other.factureGlobalId != null) {
 				return false;
@@ -160,6 +136,22 @@ public class FactureGlobal extends Entity {
 			return false;
 		}
 		return true;
+	}
+
+	@Override
+	protected FactureGlobal createEntity() {
+		return new FactureGlobal();
+	}
+
+	@Override
+	public void updateWith(FactureGlobal entity) {
+		factureGlobalId = entity.getFactureGlobalId();
+		EntityCopier<Categorie> cCopier = new EntityCopier<Categorie>();
+		categorie = cCopier.copy(entity.getCategorie());
+		numeroFacture = entity.getNumeroFacture();
+		dateFacture = entity.getDateFacture();
+		statut = entity.getStatut();
+		operateur = entity.getOperateur();
 	}
 
 }

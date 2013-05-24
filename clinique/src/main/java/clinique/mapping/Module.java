@@ -1,9 +1,7 @@
 package clinique.mapping;
 
-import java.util.ArrayList;
-import java.util.List;
 
-public class Module extends Entity {
+public class Module extends Entity<Module> {
 
 	/**
 	 * 
@@ -13,8 +11,6 @@ public class Module extends Entity {
 	private String nomModule;
 	private String statut;
 	private String operateur;
-
-	private List<Menu> menus = new ArrayList<Menu>();
 
 	public int getModuleId() {
 		return moduleId;
@@ -48,19 +44,10 @@ public class Module extends Entity {
 		this.operateur = operateur;
 	}
 
-	public List<Menu> getMenus() {
-		return menus;
-	}
-
-	public void setMenus(List<Menu> menus) {
-		this.menus = menus;
-	}
-
 	@Override
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;
-		result = prime * result + (menus == null ? 0 : menus.hashCode());
 		result = prime * result + moduleId;
 		result = prime * result
 				+ (nomModule == null ? 0 : nomModule.hashCode());
@@ -82,13 +69,6 @@ public class Module extends Entity {
 			return false;
 		}
 		Module other = (Module) obj;
-		if (menus == null) {
-			if (other.menus != null) {
-				return false;
-			}
-		} else if (!menus.equals(other.menus)) {
-			return false;
-		}
 		if (moduleId != other.moduleId) {
 			return false;
 		}
@@ -114,6 +94,19 @@ public class Module extends Entity {
 			return false;
 		}
 		return true;
+	}
+
+	@Override
+	protected Module createEntity() {
+		return new Module();
+	}
+
+	@Override
+	public void updateWith(Module entity) {
+		moduleId = entity.getModuleId();
+		nomModule = entity.getNomModule();
+		statut = entity.getStatut();
+		operateur = entity.getOperateur();
 	}
 
 }

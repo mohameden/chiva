@@ -3,10 +3,12 @@ package clinique.dao;
 import java.util.List;
 
 import org.apache.log4j.Logger;
+import org.hibernate.Query;
 import org.hibernate.Session;
 import org.springframework.stereotype.Repository;
 
 import clinique.mapping.Facture;
+import clinique.mapping.Patient;
 import clinique.utils.UtilDate;
 
 @Repository
@@ -195,6 +197,15 @@ public class FactureDAO extends CliniqueHibernateDaoSupport<Facture> {
 		} finally {
 			log.debug("********** Fin listFactures FactureDAO **********");
 		}
+	}
+
+	@SuppressWarnings("unchecked")
+	public List<Facture> findFacturesByPatient(final Patient patient) {
+		String queryString = "from Facture where patient = :patient";
+		Session session = getSession();
+		Query query = session.createQuery(queryString);
+		query.setParameter("patient", patient);
+		return query.list();
 	}
 
 	@Override

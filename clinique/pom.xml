@@ -75,7 +75,7 @@
 				</exclusion>
 				<exclusion>
 					<groupId>com.sun.jdmk</groupId>
-    				<artifactId>jmxtools</artifactId>
+					<artifactId>jmxtools</artifactId>
 				</exclusion>
 			</exclusions>
 		</dependency>
@@ -258,5 +258,16 @@
 				</exclusion>
 			</exclusions>
 		</dependency>
+		<dependency>
+			<groupId>com.itextpdf</groupId>
+			<artifactId>itextpdf</artifactId>
+			<version>5.4.1</version>
+		</dependency>
+		<dependency>
+			<groupId>com.itextpdf.tool</groupId>
+			<artifactId>xmlworker</artifactId>
+			<version>5.4.1</version>
+		</dependency>
+
 	</dependencies>
 </project>

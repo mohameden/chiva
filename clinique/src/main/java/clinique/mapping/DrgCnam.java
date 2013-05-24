@@ -2,7 +2,7 @@ package clinique.mapping;
 
 import java.util.Date;
 
-public class DrgCnam extends Entity {
+public class DrgCnam extends Entity<DrgCnam> {
 
 	/**
 	 * 
@@ -163,6 +163,23 @@ public class DrgCnam extends Entity {
 			return false;
 		}
 		return true;
+	}
+
+	@Override
+	protected DrgCnam createEntity() {
+		return new DrgCnam();
+	}
+
+	@Override
+	public void updateWith(DrgCnam entity) {
+		drgCnamId = entity.getDrgCnamId();
+		numDrg = entity.getNumDrg();
+		nomDrg = entity.getNomDrg();
+		montant = entity.getMontant();
+		operateur = entity.getOperateur();
+		statut = entity.getStatut();
+		dateDebut = entity.getDateDebut();
+		dateFin = entity.getDateFin();
 	}
 
 }

@@ -1,6 +1,6 @@
 package clinique.mapping;
 
-public class FactureGlobalFacture extends Entity {
+public class FactureGlobalFacture extends Entity<FactureGlobalFacture> {
 
 	/**
 	 * 
@@ -119,6 +119,22 @@ public class FactureGlobalFacture extends Entity {
 			return false;
 		}
 		return true;
+	}
+
+	@Override
+	protected FactureGlobalFacture createEntity() {
+		return new FactureGlobalFacture();
+	}
+
+	@Override
+	public void updateWith(FactureGlobalFacture entity) {
+		factureGlobalFactureId = entity.getFactureGlobalFactureId();
+		EntityCopier<FactureGlobal> fgCopier = new EntityCopier<FactureGlobal>();
+		factureGlobal = fgCopier.copy(entity.getFactureGlobal());
+		EntityCopier<Facture> fCopier = new EntityCopier<Facture>();
+		facture = fCopier.copy(entity.getFacture());
+		statut = entity.getStatut();
+		operateur = entity.getOperateur();
 	}
 
 }

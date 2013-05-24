@@ -1,10 +1,8 @@
 package clinique.mapping;
 
-import java.util.ArrayList;
 import java.util.Date;
-import java.util.List;
 
-public class Recu extends Entity {
+public class Recu extends Entity<Recu> {
 
 	/**
 	 * 
@@ -17,7 +15,6 @@ public class Recu extends Entity {
 	private double total;
 
 	private Facture facture;
-	private List<DetailFacture> detailFactures = new ArrayList<DetailFacture>();
 	private Reglement reglement;
 
 	public Date getDateRecu() {
@@ -52,14 +49,6 @@ public class Recu extends Entity {
 		this.facture = facture;
 	}
 
-	public List<DetailFacture> getDetailFactures() {
-		return detailFactures;
-	}
-
-	public void setDetailFactures(List<DetailFacture> detailFactures) {
-		this.detailFactures = detailFactures;
-	}
-
 	public String getRecuId() {
 		return recuId;
 	}
@@ -90,9 +79,6 @@ public class Recu extends Entity {
 		int result = 1;
 		result = prime * result + (dateRecu == null ? 0 : dateRecu.hashCode());
 		result = prime * result
-				+ (detailFactures == null ? 0 : detailFactures.hashCode());
-		result = prime * result + (facture == null ? 0 : facture.hashCode());
-		result = prime * result
 				+ (operateur == null ? 0 : operateur.hashCode());
 		result = prime * result + (recuId == null ? 0 : recuId.hashCode());
 		result = prime * result
@@ -121,13 +107,6 @@ public class Recu extends Entity {
 				return false;
 			}
 		} else if (!dateRecu.equals(other.dateRecu)) {
-			return false;
-		}
-		if (detailFactures == null) {
-			if (other.detailFactures != null) {
-				return false;
-			}
-		} else if (!detailFactures.equals(other.detailFactures)) {
 			return false;
 		}
 		if (facture == null) {
@@ -170,6 +149,24 @@ public class Recu extends Entity {
 			return false;
 		}
 		return true;
+	}
+
+	@Override
+	protected Recu createEntity() {
+		return new Recu();
+	}
+
+	@Override
+	public void updateWith(Recu entity) {
+		recuId = entity.getRecuId();
+		dateRecu = entity.getDateRecu();
+		statut = entity.getStatut();
+		operateur = entity.getOperateur();
+		total = entity.getTotal();
+		EntityCopier<Facture> fCopier = new EntityCopier<Facture>();
+		facture = fCopier.copy(entity.getFacture());
+		EntityCopier<Reglement> rCopier = new EntityCopier<Reglement>();
+		reglement = rCopier.copy(entity.getReglement());
 	}
 
 }

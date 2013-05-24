@@ -1,6 +1,6 @@
 package clinique.mapping;
 
-public class Fournisseur extends Entity {
+public class Fournisseur extends Entity<Fournisseur> {
 
 	/**
 	 * 
@@ -136,6 +136,22 @@ public class Fournisseur extends Entity {
 			return false;
 		}
 		return true;
+	}
+
+	@Override
+	protected Fournisseur createEntity() {
+		return new Fournisseur();
+	}
+
+	@Override
+	public void updateWith(Fournisseur entity) {
+		fournisseurId = entity.getFournisseurId();
+		nomFournisseur = entity.getNomFournisseur();
+		adresse = entity.getAdresse();
+		telephone1 = entity.getTelephone1();
+		telephone2 = entity.getTelephone2();
+		statut = entity.getStatut();
+		operateur = entity.getOperateur();
 	}
 
 }

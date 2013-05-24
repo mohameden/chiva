@@ -3,10 +3,12 @@ package clinique.dao;
 import java.util.List;
 
 import org.apache.log4j.Logger;
+import org.hibernate.Query;
 import org.hibernate.Session;
 import org.springframework.stereotype.Repository;
 
 import clinique.mapping.PrestationCouvertesPc;
+import clinique.mapping.PriseEnCharge;
 
 @Repository
 public class PrestationCouvertesPcDAO extends
@@ -135,6 +137,16 @@ public class PrestationCouvertesPcDAO extends
 		} finally {
 			log.debug("********** Fin listPrestationsCouvertesPcsSupprimees PrestationCouvertesPcDAO **********");
 		}
+	}
+
+	@SuppressWarnings("unchecked")
+	public List<PrestationCouvertesPc> findPrestationCouvertesByPc(
+			final PriseEnCharge priseEnCharge) {
+		String queryString = "from PrestationCouvertesPc where priseEnCharge = :priseEnCharge";
+		Session session = getSession();
+		Query query = session.createQuery(queryString);
+		query.setParameter("priseEnCharge", priseEnCharge);
+		return query.list();
 	}
 
 	@Override

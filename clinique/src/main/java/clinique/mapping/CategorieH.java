@@ -1,10 +1,8 @@
 package clinique.mapping;
 
-import java.util.ArrayList;
 import java.util.Date;
-import java.util.List;
 
-public class CategorieH extends Entity {
+public class CategorieH extends Entity<CategorieH> {
 
 	/**
 	 * 
@@ -22,8 +20,6 @@ public class CategorieH extends Entity {
 	private String prefixeFacture;
 
 	private Entreprise entreprise;
-	private List<BlackListe> blackListes = new ArrayList<BlackListe>();
-	private List<Reglement> reglements = new ArrayList<Reglement>();
 
 	public int getPourcentage() {
 		return pourcentage;
@@ -73,22 +69,6 @@ public class CategorieH extends Entity {
 		this.categorieId = categorieId;
 	}
 
-	public List<BlackListe> getBlackListes() {
-		return blackListes;
-	}
-
-	public void setBlackListes(List<BlackListe> blackListes) {
-		this.blackListes = blackListes;
-	}
-
-	public List<Reglement> getReglements() {
-		return reglements;
-	}
-
-	public void setReglements(List<Reglement> reglements) {
-		this.reglements = reglements;
-	}
-
 	public Date getDatedebutAssurance() {
 		return datedebutAssurance;
 	}
@@ -134,8 +114,6 @@ public class CategorieH extends Entity {
 		final int prime = 31;
 		int result = 1;
 		result = prime * result
-				+ (blackListes == null ? 0 : blackListes.hashCode());
-		result = prime * result
 				+ (categorieHId == null ? 0 : categorieHId.hashCode());
 		result = prime * result + categorieId;
 		result = prime
@@ -154,8 +132,6 @@ public class CategorieH extends Entity {
 		result = prime * result + pourcentage;
 		result = prime * result
 				+ (prefixeFacture == null ? 0 : prefixeFacture.hashCode());
-		result = prime * result
-				+ (reglements == null ? 0 : reglements.hashCode());
 		result = prime * result + (statut == null ? 0 : statut.hashCode());
 		return result;
 	}
@@ -172,13 +148,6 @@ public class CategorieH extends Entity {
 			return false;
 		}
 		CategorieH other = (CategorieH) obj;
-		if (blackListes == null) {
-			if (other.blackListes != null) {
-				return false;
-			}
-		} else if (!blackListes.equals(other.blackListes)) {
-			return false;
-		}
 		if (categorieHId == null) {
 			if (other.categorieHId != null) {
 				return false;
@@ -237,13 +206,6 @@ public class CategorieH extends Entity {
 		} else if (!prefixeFacture.equals(other.prefixeFacture)) {
 			return false;
 		}
-		if (reglements == null) {
-			if (other.reglements != null) {
-				return false;
-			}
-		} else if (!reglements.equals(other.reglements)) {
-			return false;
-		}
 		if (statut == null) {
 			if (other.statut != null) {
 				return false;
@@ -252,6 +214,27 @@ public class CategorieH extends Entity {
 			return false;
 		}
 		return true;
+	}
+
+	@Override
+	protected CategorieH createEntity() {
+		return new CategorieH();
+	}
+
+	@Override
+	public void updateWith(CategorieH entity) {
+		categorieHId = entity.getCategorieHId();
+		categorieId = entity.getCategorieId();
+		nomCategorie = entity.getNomCategorie();
+		pourcentage = entity.getPourcentage();
+		statut = entity.getStatut();
+		operateur = entity.getOperateur();
+		datedebutAssurance = entity.getDatedebutAssurance();
+		datefinAssurance = entity.getDatefinAssurance();
+		majoration = entity.getMajoration();
+		prefixeFacture = entity.getPrefixeFacture();
+		EntityCopier<Entreprise> eCopier = new EntityCopier<Entreprise>();
+		entreprise = eCopier.copy(entity.getEntreprise());
 	}
 
 }

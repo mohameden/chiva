@@ -10,11 +10,5 @@
 <property name="nomModule" column="nom_module" />
 <property name="statut" column="statut" />
 <property name="operateur" column="operateur" />
-
-<bag name="menus" lazy="true" inverse="true" cascade="all-delete-orphan" >
-    <key column="module_id"/>
-    <one-to-many class="Module"/>
-</bag>
-
  </class>
 </hibernate-mapping>

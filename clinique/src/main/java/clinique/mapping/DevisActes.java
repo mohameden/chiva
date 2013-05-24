@@ -1,6 +1,6 @@
 package clinique.mapping;
 
-public class DevisActes extends Entity {
+public class DevisActes extends Entity<DevisActes> {
 
 	/**
 	 * 
@@ -161,6 +161,25 @@ public class DevisActes extends Entity {
 			return false;
 		}
 		return true;
+	}
+
+	@Override
+	protected DevisActes createEntity() {
+		return new DevisActes();
+	}
+
+	@Override
+	public void updateWith(DevisActes entity) {
+		devisActesId = entity.getDevisActesId();
+		total = entity.getTotal();
+		prix = entity.getPrix();
+		nbre = entity.getNbre();
+		statut = entity.getStatut();
+		operateur = entity.getOperateur();
+		EntityCopier<Acte> aCopier = new EntityCopier<Acte>();
+		acte = aCopier.copy(entity.getActe());
+		EntityCopier<DevisAssureur> dCopier = new EntityCopier<DevisAssureur>();
+		devisAssureur = dCopier.copy(entity.getDevisAssureur());
 	}
 
 }

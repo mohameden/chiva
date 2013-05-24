@@ -12,13 +12,6 @@
 <property name="total" column="total" />
 <property name="statut" column="statut" />
 <property name="operateur" column="operateur" />
-
-
-
-<bag name="detailFactures" lazy="true" inverse="true" cascade="all-delete-orphan" >
-    <key column="recu_id"/>
-    <one-to-many class="DetailFacture"/>
-</bag>
 <many-to-one name="facture" class="Facture" cascade="none" column="facture_id"/>
 <many-to-one name="reglement" class="Reglement" cascade="none" column="reglement_id"/>
 

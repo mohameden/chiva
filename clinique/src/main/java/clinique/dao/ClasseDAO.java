@@ -66,7 +66,7 @@ public class ClasseDAO extends CliniqueHibernateDaoSupport<Classe> {
 			Session session = getSession();
 			classe.setStatut(STATUT_SUPPRIME);
 			session.update(classe);
-			List<Acte> actes = classe.getActes();
+			List<Acte> actes = acteDAO.findActesByClasse(classe);
 			if (actes != null && actes.size() > 0) {
 				for (Acte acte : actes) {
 					if (acte != null

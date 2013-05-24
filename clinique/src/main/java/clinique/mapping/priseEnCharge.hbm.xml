@@ -17,14 +17,6 @@
 <property name="statut" column="statut" />
 <property name="operateur" column="operateur" />
 
-
-
-<bag name="prestationCouvertesPcs" lazy="true" inverse="true" cascade="all-delete-orphan" >
-    <key column="pc_id"/>
-    <one-to-many class="PrestationCouvertesPc"/>
-</bag>
-
-
 <!--  
 <set name="prestationCouvertesPcs" cascade="none" lazy="true">
 			<key>

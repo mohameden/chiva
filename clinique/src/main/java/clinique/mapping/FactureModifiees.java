@@ -1,10 +1,8 @@
 package clinique.mapping;
 
-import java.util.ArrayList;
 import java.util.Date;
-import java.util.List;
 
-public class FactureModifiees extends Entity {
+public class FactureModifiees extends Entity<FactureModifiees> {
 
 	/**
 	 * 
@@ -36,10 +34,6 @@ public class FactureModifiees extends Entity {
 	private Patient patient;
 	private String isHospitalisation;
 	private PriseEnChargeModifiee priseEnChargeM;
-
-	private List<ReglementFactureModifiees> reglements = new ArrayList<ReglementFactureModifiees>();
-
-	private List<DetailFactureModifiees> detailFactures = new ArrayList<DetailFactureModifiees>();
 
 	public String getNumFact() {
 		return numFact;
@@ -169,22 +163,6 @@ public class FactureModifiees extends Entity {
 		this.factureModifieeId = factureModifieeId;
 	}
 
-	public List<ReglementFactureModifiees> getReglements() {
-		return reglements;
-	}
-
-	public void setReglements(List<ReglementFactureModifiees> reglements) {
-		this.reglements = reglements;
-	}
-
-	public List<DetailFactureModifiees> getDetailFactures() {
-		return detailFactures;
-	}
-
-	public void setDetailFactures(List<DetailFactureModifiees> detailFactures) {
-		this.detailFactures = detailFactures;
-	}
-
 	public Facture getFacture() {
 		return facture;
 	}
@@ -252,8 +230,6 @@ public class FactureModifiees extends Entity {
 		result = prime * result + (dateFact == null ? 0 : dateFact.hashCode());
 		result = prime * result
 				+ (dateModification == null ? 0 : dateModification.hashCode());
-		result = prime * result
-				+ (detailFactures == null ? 0 : detailFactures.hashCode());
 		result = prime * result + (facture == null ? 0 : facture.hashCode());
 		result = prime
 				* result
@@ -277,8 +253,6 @@ public class FactureModifiees extends Entity {
 				+ (priseEnChargeM == null ? 0 : priseEnChargeM.hashCode());
 		temp = Double.doubleToLongBits(qpc);
 		result = prime * result + (int) (temp ^ temp >>> 32);
-		result = prime * result
-				+ (reglements == null ? 0 : reglements.hashCode());
 		temp = Double.doubleToLongBits(remise);
 		result = prime * result + (int) (temp ^ temp >>> 32);
 		result = prime * result + (statut == null ? 0 : statut.hashCode());
@@ -328,13 +302,6 @@ public class FactureModifiees extends Entity {
 				return false;
 			}
 		} else if (!dateModification.equals(other.dateModification)) {
-			return false;
-		}
-		if (detailFactures == null) {
-			if (other.detailFactures != null) {
-				return false;
-			}
-		} else if (!detailFactures.equals(other.detailFactures)) {
 			return false;
 		}
 		if (facture == null) {
@@ -411,13 +378,6 @@ public class FactureModifiees extends Entity {
 		if (Double.doubleToLongBits(qpc) != Double.doubleToLongBits(other.qpc)) {
 			return false;
 		}
-		if (reglements == null) {
-			if (other.reglements != null) {
-				return false;
-			}
-		} else if (!reglements.equals(other.reglements)) {
-			return false;
-		}
 		if (Double.doubleToLongBits(remise) != Double
 				.doubleToLongBits(other.remise)) {
 			return false;
@@ -452,6 +412,42 @@ public class FactureModifiees extends Entity {
 			return false;
 		}
 		return true;
+	}
+
+	@Override
+	protected FactureModifiees createEntity() {
+		return new FactureModifiees();
+	}
+
+	@Override
+	public void updateWith(FactureModifiees entity) {
+		numFact = entity.getNumFact();
+		dateFact = entity.getDateFact();
+		totalHT = entity.getTotalHT();
+		remise = entity.getRemise();
+		majoration = entity.getMajoration();
+		avance = entity.getAvance();
+		netApayer = entity.getNetApayer();
+		statut = entity.getStatut();
+		operateur = entity.getOperateur();
+		dateModification = entity.getDateModification();
+		totalTva = entity.getTotalTva();
+		qpc = entity.getQpc();
+		tauxRemise = entity.getTauxRemise();
+		isException = entity.getIsException();
+		typePc = entity.getTypePc();
+		totalReglementPc = entity.getTotalReglementPc();
+		EntityCopier<Badge> bCopier = new EntityCopier<Badge>();
+		badge = bCopier.copy(entity.getBadge());
+		EntityCopier<PriseEnCharge> pCopier = new EntityCopier<PriseEnCharge>();
+		priseEnCharge = pCopier.copy(entity.getPriseEnCharge());
+		isHospitalisation = entity.getIsHospitalisation();
+		EntityCopier<Patient> paCopier = new EntityCopier<Patient>();
+		patient = paCopier.copy(entity.getPatient());
+		EntityCopier<Facture> fCopier = new EntityCopier<Facture>();
+		facture = fCopier.copy(entity.getFacture());
+		EntityCopier<PriseEnChargeModifiee> pmCopier = new EntityCopier<PriseEnChargeModifiee>();
+		priseEnChargeM = pmCopier.copy(entity.getPriseEnChargeM());
 	}
 
 }

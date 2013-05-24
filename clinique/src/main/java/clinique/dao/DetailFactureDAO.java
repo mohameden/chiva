@@ -3,10 +3,12 @@ package clinique.dao;
 import java.util.List;
 
 import org.apache.log4j.Logger;
+import org.hibernate.Query;
 import org.hibernate.Session;
 import org.springframework.stereotype.Repository;
 
 import clinique.mapping.DetailFacture;
+import clinique.mapping.Facture;
 
 @Repository
 public class DetailFactureDAO extends
@@ -113,6 +115,15 @@ public class DetailFactureDAO extends
 		} finally {
 			log.debug("********** Fin listDetailFacturesSupprimes DetailFactureDAO **********");
 		}
+	}
+
+	@SuppressWarnings("unchecked")
+	public List<DetailFacture> findDetailFactureByFacture(final Facture facture) {
+		String queryString = "from DetailFacture where facture = :facture";
+		Session session = getSession();
+		Query query = session.createQuery(queryString);
+		query.setParameter("facture", facture);
+		return query.list();
 	}
 
 	@Override

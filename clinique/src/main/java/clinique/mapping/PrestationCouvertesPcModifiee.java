@@ -1,6 +1,7 @@
 package clinique.mapping;
 
-public class PrestationCouvertesPcModifiee extends Entity {
+public class PrestationCouvertesPcModifiee extends
+		Entity<PrestationCouvertesPcModifiee> {
 
 	/**
 	 * 
@@ -227,6 +228,31 @@ public class PrestationCouvertesPcModifiee extends Entity {
 			return false;
 		}
 		return true;
+	}
+
+	@Override
+	protected PrestationCouvertesPcModifiee createEntity() {
+		return new PrestationCouvertesPcModifiee();
+	}
+
+	@Override
+	public void updateWith(PrestationCouvertesPcModifiee entity) {
+		presCouvId = entity.getPresCouvId();
+		statut = entity.getStatut();
+		operateur = entity.getOperateur();
+		type = entity.getType();
+		libelle = entity.getLibelle();
+		limite = entity.getLimite();
+		nbreActes = entity.getNbreActes();
+		nbreActesRestant = entity.getNbreActesRestant();
+		EntityCopier<Acte> aCopier = new EntityCopier<Acte>();
+		acte = aCopier.copy(entity.getActe());
+		EntityCopier<Classe> cCopier = new EntityCopier<Classe>();
+		classe = cCopier.copy(entity.getClasse());
+		EntityCopier<FamillePrestation> fCopier = new EntityCopier<FamillePrestation>();
+		famille = fCopier.copy(entity.getFamille());
+		EntityCopier<PriseEnChargeModifiee> pCopier = new EntityCopier<PriseEnChargeModifiee>();
+		priseEnCharge = pCopier.copy(entity.getPriseEnCharge());
 	}
 
 }

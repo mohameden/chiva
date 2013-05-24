@@ -1,6 +1,6 @@
 package clinique.mapping;
 
-public class Menu extends Entity {
+public class Menu extends Entity<Menu> {
 
 	/**
 	 * 
@@ -128,6 +128,21 @@ public class Menu extends Entity {
 			return false;
 		}
 		return true;
+	}
+
+	@Override
+	protected Menu createEntity() {
+		return new Menu();
+	}
+
+	@Override
+	public void updateWith(Menu entity) {
+		menuId = entity.getMenuId();
+		nomMenu = entity.getNomMenu();
+		fonctionnalite = entity.getFonctionnalite();
+		statut = entity.getStatut();
+		operateur = entity.getOperateur();
+		module = entity.getModule();
 	}
 
 }

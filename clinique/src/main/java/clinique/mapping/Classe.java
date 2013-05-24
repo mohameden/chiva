@@ -1,9 +1,6 @@
 package clinique.mapping;
 
-import java.util.ArrayList;
-import java.util.List;
-
-public class Classe extends Entity {
+public class Classe extends Entity<Classe> {
 
 	/**
 	 * 
@@ -14,9 +11,6 @@ public class Classe extends Entity {
 	private int qpc;
 	private String statut;
 	private String operateur;
-
-	private List<Acte> actes = new ArrayList<Acte>();
-	private List<PrestationCouvertesPc> prestationCouvertesPcs = new ArrayList<PrestationCouvertesPc>();
 
 	public int getClasseId() {
 		return classeId;
@@ -58,37 +52,15 @@ public class Classe extends Entity {
 		this.operateur = operateur;
 	}
 
-	public List<Acte> getActes() {
-		return actes;
-	}
-
-	public void setActes(List<Acte> actes) {
-		this.actes = actes;
-	}
-
-	public List<PrestationCouvertesPc> getPrestationCouvertesPcs() {
-		return prestationCouvertesPcs;
-	}
-
-	public void setPrestationCouvertesPcs(
-			List<PrestationCouvertesPc> prestationCouvertesPcs) {
-		this.prestationCouvertesPcs = prestationCouvertesPcs;
-	}
-
 	@Override
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;
-		result = prime * result + (actes == null ? 0 : actes.hashCode());
 		result = prime * result + classeId;
 		result = prime * result
 				+ (nomClasse == null ? 0 : nomClasse.hashCode());
 		result = prime * result
 				+ (operateur == null ? 0 : operateur.hashCode());
-		result = prime
-				* result
-				+ (prestationCouvertesPcs == null ? 0 : prestationCouvertesPcs
-						.hashCode());
 		result = prime * result + qpc;
 		result = prime * result + (statut == null ? 0 : statut.hashCode());
 		return result;
@@ -106,13 +78,6 @@ public class Classe extends Entity {
 			return false;
 		}
 		Classe other = (Classe) obj;
-		if (actes == null) {
-			if (other.actes != null) {
-				return false;
-			}
-		} else if (!actes.equals(other.actes)) {
-			return false;
-		}
 		if (classeId != other.classeId) {
 			return false;
 		}
@@ -130,13 +95,6 @@ public class Classe extends Entity {
 		} else if (!operateur.equals(other.operateur)) {
 			return false;
 		}
-		if (prestationCouvertesPcs == null) {
-			if (other.prestationCouvertesPcs != null) {
-				return false;
-			}
-		} else if (!prestationCouvertesPcs.equals(other.prestationCouvertesPcs)) {
-			return false;
-		}
 		if (qpc != other.qpc) {
 			return false;
 		}
@@ -148,6 +106,20 @@ public class Classe extends Entity {
 			return false;
 		}
 		return true;
+	}
+
+	@Override
+	protected Classe createEntity() {
+		return new Classe();
+	}
+
+	@Override
+	public void updateWith(Classe entity) {
+		classeId = entity.getClasseId();
+		nomClasse = entity.getNomClasse();
+		qpc = entity.getQpc();
+		statut = entity.getStatut();
+		operateur = entity.getOperateur();
 	}
 
 }

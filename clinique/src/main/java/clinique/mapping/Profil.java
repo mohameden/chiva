@@ -1,6 +1,6 @@
 package clinique.mapping;
 
-public class Profil extends Entity {
+public class Profil extends Entity<Profil> {
 
 	/**
 	 * 
@@ -93,6 +93,19 @@ public class Profil extends Entity {
 			return false;
 		}
 		return true;
+	}
+
+	@Override
+	protected Profil createEntity() {
+		return new Profil();
+	}
+
+	@Override
+	public void updateWith(Profil entity) {
+		profilId = entity.getProfilId();
+		nomProfil = entity.getNomProfil();
+		statut = entity.getStatut();
+		operateur = entity.getOperateur();
 	}
 
 }

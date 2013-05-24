@@ -2,7 +2,7 @@ package clinique.mapping;
 
 import java.util.Date;
 
-public class ActeAssureur extends Entity {
+public class ActeAssureur extends Entity<ActeAssureur> {
 
 	/**
 	 * 
@@ -247,6 +247,30 @@ public class ActeAssureur extends Entity {
 			return false;
 		}
 		return true;
+	}
+
+	@Override
+	protected ActeAssureur createEntity() {
+		return new ActeAssureur();
+	}
+
+	@Override
+	public void updateWith(ActeAssureur entity) {
+		acteAssureurId = entity.getActeAssureurId();
+		nomActe = entity.getNomActe();
+		prix = entity.getPrix();
+		prixUrg = entity.getPrixUrg();
+		prixDepl = entity.getPrixDepl();
+		pck = entity.getPck();
+		coef = entity.getCoef();
+		statut = entity.getStatut();
+		operateur = entity.getOperateur();
+		dateDebut = entity.getDateDebut();
+		dateFin = entity.getDateFin();
+		EntityCopier<Categorie> cCopier = new EntityCopier<Categorie>();
+		categorie = cCopier.copy(entity.getCategorie());
+		EntityCopier<Acte> aCopier = new EntityCopier<Acte>();
+		acte = aCopier.copy(entity.getActe());
 	}
 
 }

@@ -1,10 +1,8 @@
 package clinique.mapping;
 
-import java.util.ArrayList;
 import java.util.Date;
-import java.util.List;
 
-public class Chambre extends Entity {
+public class Chambre extends Entity<Chambre> {
 
 	private static final long serialVersionUID = -3233278741088924234L;
 	private int chambreId;
@@ -15,17 +13,6 @@ public class Chambre extends Entity {
 	private String statut;
 	private Date dateDebut;
 	private Date dateFin;
-
-	private List<Hospitalisation> hospitalisations = new ArrayList<Hospitalisation>();
-	private List<ChambresHospitalisation> chambresHospitalisation = new ArrayList<ChambresHospitalisation>();
-
-	public List<Hospitalisation> getHospitalisations() {
-		return hospitalisations;
-	}
-
-	public void setHospitalisations(List<Hospitalisation> hospitalisations) {
-		this.hospitalisations = hospitalisations;
-	}
 
 	public int getChambreId() {
 		return chambreId;
@@ -75,15 +62,6 @@ public class Chambre extends Entity {
 		this.statut = statut;
 	}
 
-	public List<ChambresHospitalisation> getChambresHospitalisation() {
-		return chambresHospitalisation;
-	}
-
-	public void setChambresHospitalisation(
-			List<ChambresHospitalisation> chambresHospitalisation) {
-		this.chambresHospitalisation = chambresHospitalisation;
-	}
-
 	public Date getDateDebut() {
 		return dateDebut;
 	}
@@ -109,16 +87,10 @@ public class Chambre extends Entity {
 				+ (chambreLibelle == null ? 0 : chambreLibelle.hashCode());
 		result = prime * result
 				+ (chambreNum == null ? 0 : chambreNum.hashCode());
-		result = prime
-				* result
-				+ (chambresHospitalisation == null ? 0
-						: chambresHospitalisation.hashCode());
 		result = prime * result
 				+ (dateDebut == null ? 0 : dateDebut.hashCode());
 		result = prime * result + (dateFin == null ? 0 : dateFin.hashCode());
 		result = prime * result + (etat == null ? 0 : etat.hashCode());
-		result = prime * result
-				+ (hospitalisations == null ? 0 : hospitalisations.hashCode());
 		result = prime * result + (statut == null ? 0 : statut.hashCode());
 		long temp;
 		temp = Double.doubleToLongBits(tarif);
@@ -155,14 +127,6 @@ public class Chambre extends Entity {
 		} else if (!chambreNum.equals(other.chambreNum)) {
 			return false;
 		}
-		if (chambresHospitalisation == null) {
-			if (other.chambresHospitalisation != null) {
-				return false;
-			}
-		} else if (!chambresHospitalisation
-				.equals(other.chambresHospitalisation)) {
-			return false;
-		}
 		if (dateDebut == null) {
 			if (other.dateDebut != null) {
 				return false;
@@ -184,13 +148,6 @@ public class Chambre extends Entity {
 		} else if (!etat.equals(other.etat)) {
 			return false;
 		}
-		if (hospitalisations == null) {
-			if (other.hospitalisations != null) {
-				return false;
-			}
-		} else if (!hospitalisations.equals(other.hospitalisations)) {
-			return false;
-		}
 		if (statut == null) {
 			if (other.statut != null) {
 				return false;
@@ -203,6 +160,23 @@ public class Chambre extends Entity {
 			return false;
 		}
 		return true;
+	}
+
+	@Override
+	protected Chambre createEntity() {
+		return new Chambre();
+	}
+
+	@Override
+	public void updateWith(Chambre entity) {
+		chambreId = entity.getChambreId();
+		chambreNum = entity.getChambreNum();
+		chambreLibelle = entity.getChambreLibelle();
+		tarif = entity.getTarif();
+		etat = entity.getEtat();
+		statut = entity.getStatut();
+		dateDebut = entity.getDateDebut();
+		dateFin = entity.getDateFin();
 	}
 
 }

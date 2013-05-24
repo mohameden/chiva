@@ -1,9 +1,7 @@
 package clinique.mapping;
 
-import java.util.ArrayList;
-import java.util.List;
 
-public class Acteur extends Entity {
+public class Acteur extends Entity<Acteur> {
 
 	/**
 	 * 
@@ -17,8 +15,6 @@ public class Acteur extends Entity {
 	private String email;
 	private String statut;
 	private String operateur;
-
-	private List<ActeurActe> acteurActes = new ArrayList<ActeurActe>();
 
 	public int getActeurId() {
 		return acteurId;
@@ -76,14 +72,6 @@ public class Acteur extends Entity {
 		this.operateur = operateur;
 	}
 
-	public List<ActeurActe> getActeurActes() {
-		return acteurActes;
-	}
-
-	public void setActeurActes(List<ActeurActe> acteurActes) {
-		this.acteurActes = acteurActes;
-	}
-
 	public String getAssistant() {
 		return assistant;
 	}
@@ -96,8 +84,6 @@ public class Acteur extends Entity {
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;
-		result = prime * result
-				+ (acteurActes == null ? 0 : acteurActes.hashCode());
 		result = prime * result + acteurId;
 		result = prime * result
 				+ (assistant == null ? 0 : assistant.hashCode());
@@ -125,13 +111,6 @@ public class Acteur extends Entity {
 			return false;
 		}
 		Acteur other = (Acteur) obj;
-		if (acteurActes == null) {
-			if (other.acteurActes != null) {
-				return false;
-			}
-		} else if (!acteurActes.equals(other.acteurActes)) {
-			return false;
-		}
 		if (acteurId != other.acteurId) {
 			return false;
 		}
@@ -185,6 +164,23 @@ public class Acteur extends Entity {
 			return false;
 		}
 		return true;
+	}
+
+	@Override
+	protected Acteur createEntity() {
+		return new Acteur();
+	}
+
+	@Override
+	public void updateWith(Acteur entity) {
+		acteurId = entity.getActeurId();
+		nom = entity.getNom();
+		designation = entity.getDesignation();
+		assistant = entity.getAssistant();
+		telephone = entity.getTelephone();
+		email = entity.getEmail();
+		statut = entity.getStatut();
+		operateur = entity.getOperateur();
 	}
 
 }

@@ -2,7 +2,7 @@ package clinique.mapping;
 
 import java.util.Date;
 
-public class Badge extends Entity {
+public class Badge extends Entity<Badge> {
 
 	/**
 	 * 
@@ -171,6 +171,25 @@ public class Badge extends Entity {
 			return false;
 		}
 		return true;
+	}
+
+	@Override
+	protected Badge createEntity() {
+		return new Badge();
+	}
+
+	@Override
+	public void updateWith(Badge entity) {
+		badgeId = entity.getBadgeId();
+		numeroBadge = entity.getNumeroBadge();
+		dateDebut = entity.getDateDebut();
+		dateFin = entity.getDateFin();
+		statut = entity.getStatut();
+		operateur = entity.getOperateur();
+		EntityCopier<Categorie> cCopier = new EntityCopier<Categorie>();
+		categorie = cCopier.copy(entity.getCategorie());
+		EntityCopier<Patient> pCopier = new EntityCopier<Patient>();
+		patient = pCopier.copy(entity.getPatient());
 	}
 
 }

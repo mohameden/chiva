@@ -4,10 +4,13 @@ import java.util.Date;
 import java.util.List;
 
 import org.apache.log4j.Logger;
+import org.hibernate.Query;
 import org.hibernate.Session;
 import org.springframework.stereotype.Repository;
 
 import clinique.mapping.Acte;
+import clinique.mapping.Classe;
+import clinique.mapping.FamillePrestation;
 import clinique.utils.UtilDate;
 
 @Repository
@@ -160,6 +163,25 @@ public class ActeDAO extends CliniqueHibernateDaoSupport<Acte> {
 		} finally {
 			log.debug("********** Fin getActeByDate ActeDAO **********");
 		}
+	}
+
+	@SuppressWarnings("unchecked")
+	public List<Acte> findActesByClasse(final Classe classe) {
+		String queryString = "from Acte where classe = :classe";
+		Session session = getSession();
+		Query query = session.createQuery(queryString);
+		query.setParameter("classe", classe);
+		return query.list();
+	}
+
+	@SuppressWarnings("unchecked")
+	public List<Acte> findActesByFamillePrestation(
+			final FamillePrestation famillePrestation) {
+		String queryString = "from Acte where famillePrestation = :famillePrestation";
+		Session session = getSession();
+		Query query = session.createQuery(queryString);
+		query.setParameter("famillePrestation", famillePrestation);
+		return query.list();
 	}
 
 	@Override

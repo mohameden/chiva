@@ -2,7 +2,7 @@ package clinique.mapping;
 
 import java.util.Date;
 
-public class ParametresClinique extends Entity {
+public class ParametresClinique extends Entity<ParametresClinique> {
 
 	/**
 	 * 
@@ -153,6 +153,22 @@ public class ParametresClinique extends Entity {
 			return false;
 		}
 		return true;
+	}
+
+	@Override
+	protected ParametresClinique createEntity() {
+		return new ParametresClinique();
+	}
+
+	@Override
+	public void updateWith(ParametresClinique entity) {
+		parametreId = entity.getParametreId();
+		parametre = entity.getParametre();
+		valeur = entity.getValeur();
+		operateur = entity.getOperateur();
+		statut = entity.getStatut();
+		dateDebut = entity.getDateDebut();
+		dateFin = entity.getDateFin();
 	}
 
 }

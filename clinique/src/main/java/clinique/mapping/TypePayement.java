@@ -1,9 +1,7 @@
 package clinique.mapping;
 
-import java.util.ArrayList;
-import java.util.List;
 
-public class TypePayement extends Entity {
+public class TypePayement extends Entity<TypePayement> {
 
 	/**
 	 * 
@@ -13,8 +11,6 @@ public class TypePayement extends Entity {
 	private String typePayement;
 	private String statut;
 	private String operateur;
-
-	private List<Reglement> reglements = new ArrayList<Reglement>();
 
 	public int getTypePayementId() {
 		return typePayementId;
@@ -48,22 +44,12 @@ public class TypePayement extends Entity {
 		this.operateur = operateur;
 	}
 
-	public List<Reglement> getReglements() {
-		return reglements;
-	}
-
-	public void setReglements(List<Reglement> reglements) {
-		this.reglements = reglements;
-	}
-
 	@Override
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;
 		result = prime * result
 				+ (operateur == null ? 0 : operateur.hashCode());
-		result = prime * result
-				+ (reglements == null ? 0 : reglements.hashCode());
 		result = prime * result + (statut == null ? 0 : statut.hashCode());
 		result = prime * result
 				+ (typePayement == null ? 0 : typePayement.hashCode());
@@ -90,13 +76,6 @@ public class TypePayement extends Entity {
 		} else if (!operateur.equals(other.operateur)) {
 			return false;
 		}
-		if (reglements == null) {
-			if (other.reglements != null) {
-				return false;
-			}
-		} else if (!reglements.equals(other.reglements)) {
-			return false;
-		}
 		if (statut == null) {
 			if (other.statut != null) {
 				return false;
@@ -115,6 +94,19 @@ public class TypePayement extends Entity {
 			return false;
 		}
 		return true;
+	}
+
+	@Override
+	protected TypePayement createEntity() {
+		return new TypePayement();
+	}
+
+	@Override
+	public void updateWith(TypePayement entity) {
+		typePayementId = entity.getTypePayementId();
+		typePayement = entity.getTypePayement();
+		statut = entity.getStatut();
+		operateur = entity.getOperateur();
 	}
 
 }

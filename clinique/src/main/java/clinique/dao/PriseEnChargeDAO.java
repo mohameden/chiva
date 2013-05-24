@@ -3,9 +3,11 @@ package clinique.dao;
 import java.util.List;
 
 import org.apache.log4j.Logger;
+import org.hibernate.Query;
 import org.hibernate.Session;
 import org.springframework.stereotype.Repository;
 
+import clinique.mapping.Patient;
 import clinique.mapping.PriseEnCharge;
 
 @Repository
@@ -137,6 +139,15 @@ public class PriseEnChargeDAO extends
 		} finally {
 			log.debug("********** Fin listPriseEnChargesSupprimees PriseEnChargeDAO **********");
 		}
+	}
+
+	@SuppressWarnings("unchecked")
+	public List<PriseEnCharge> findPriseEnChargeByPatient(final Patient patient) {
+		String queryString = "from PriseEnCharge where patient = :patient";
+		Session session = getSession();
+		Query query = session.createQuery(queryString);
+		query.setParameter("patient", patient);
+		return query.list();
 	}
 
 	@Override

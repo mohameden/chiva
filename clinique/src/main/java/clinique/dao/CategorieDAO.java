@@ -3,10 +3,12 @@ package clinique.dao;
 import java.util.List;
 
 import org.apache.log4j.Logger;
+import org.hibernate.Query;
 import org.hibernate.Session;
 import org.springframework.stereotype.Repository;
 
 import clinique.mapping.Categorie;
+import clinique.mapping.Entreprise;
 
 @Repository
 public class CategorieDAO extends CliniqueHibernateDaoSupport<Categorie> {
@@ -112,6 +114,16 @@ public class CategorieDAO extends CliniqueHibernateDaoSupport<Categorie> {
 		} finally {
 			log.debug("********** Fin listCategoriesSupprimees CategorieDAO **********");
 		}
+	}
+
+	@SuppressWarnings("unchecked")
+	public List<Categorie> findCategoriesByEntreprise(
+			final Entreprise entreprise) {
+		String queryString = "from Categorie where entreprise = :entreprise";
+		Session session = getSession();
+		Query query = session.createQuery(queryString);
+		query.setParameter("entreprise", entreprise);
+		return query.list();
 	}
 
 	@Override

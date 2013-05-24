@@ -25,18 +25,6 @@
 <property name="isHospitalisation" column="isHospitalisation"  />
 
 
-
-<bag name="reglements" lazy="true" inverse="true" cascade="all-delete-orphan" >
-    <key column="factureModifiee_id"/>
-    <one-to-many class="ReglementFactureModifiees"/>
-</bag>
-
-
-<bag name="detailFactures" lazy="true" inverse="true" cascade="all-delete-orphan" >
-    <key column="factureModifiee_id"/>
-    <one-to-many class="DetailFactureModifiees"/>
-</bag>
-
 <many-to-one name="facture" class="Facture" cascade="none" column="facture_id"/>
 <many-to-one name="patient" class="Patient" cascade="none" column="patient_id"/>
 <many-to-one name="badge" class="Badge" cascade="none" column="badge_id"/>

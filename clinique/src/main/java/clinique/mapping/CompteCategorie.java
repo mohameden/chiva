@@ -1,10 +1,8 @@
 package clinique.mapping;
 
-import java.util.ArrayList;
 import java.util.Date;
-import java.util.List;
 
-public class CompteCategorie extends Entity {
+public class CompteCategorie extends Entity<CompteCategorie> {
 
 	/**
 	 * 
@@ -20,8 +18,6 @@ public class CompteCategorie extends Entity {
 	private String statut;
 	private String operateur;
 	private Date dateTransaction;
-
-	private List<TransactionCompteCategorie> transactionsCompte = new ArrayList<TransactionCompteCategorie>();
 
 	public String getCompteId() {
 		return compteId;
@@ -95,15 +91,6 @@ public class CompteCategorie extends Entity {
 		this.dateTransaction = dateTransaction;
 	}
 
-	public List<TransactionCompteCategorie> getTransactionsCompte() {
-		return transactionsCompte;
-	}
-
-	public void setTransactionsCompte(
-			List<TransactionCompteCategorie> transactionsCompte) {
-		this.transactionsCompte = transactionsCompte;
-	}
-
 	@Override
 	public int hashCode() {
 		final int prime = 31;
@@ -124,10 +111,6 @@ public class CompteCategorie extends Entity {
 		temp = Double.doubleToLongBits(soldeAvant);
 		result = prime * result + (int) (temp ^ temp >>> 32);
 		result = prime * result + (statut == null ? 0 : statut.hashCode());
-		result = prime
-				* result
-				+ (transactionsCompte == null ? 0 : transactionsCompte
-						.hashCode());
 		return result;
 	}
 
@@ -200,14 +183,27 @@ public class CompteCategorie extends Entity {
 		} else if (!statut.equals(other.statut)) {
 			return false;
 		}
-		if (transactionsCompte == null) {
-			if (other.transactionsCompte != null) {
-				return false;
-			}
-		} else if (!transactionsCompte.equals(other.transactionsCompte)) {
-			return false;
-		}
 		return true;
+	}
+
+	@Override
+	protected CompteCategorie createEntity() {
+		return new CompteCategorie();
+	}
+
+	@Override
+	public void updateWith(CompteCategorie entity) {
+		compteId = entity.getCompteId();
+		numeroCompte = entity.getNumeroCompte();
+		soldeAvant = entity.getSoldeAvant();
+		solde = entity.getSolde();
+		EntityCopier<Categorie> cCopier = new EntityCopier<Categorie>();
+		categorie = cCopier.copy(entity.getCategorie());
+		etat = entity.getEtat();
+		statut = entity.getStatut();
+		operateur = entity.getOperateur();
+		dateTransaction = entity.getDateTransaction();
+
 	}
 
 }

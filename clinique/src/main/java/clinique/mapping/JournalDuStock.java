@@ -2,7 +2,7 @@ package clinique.mapping;
 
 import java.util.Date;
 
-public class JournalDuStock extends Entity {
+public class JournalDuStock extends Entity<JournalDuStock> {
 
 	/**
 	 * 
@@ -140,6 +140,22 @@ public class JournalDuStock extends Entity {
 			return false;
 		}
 		return true;
+	}
+
+	@Override
+	protected JournalDuStock createEntity() {
+		return new JournalDuStock();
+	}
+
+	@Override
+	public void updateWith(JournalDuStock entity) {
+		operateur = entity.getOperateur();
+		dateStockEntree = entity.getDateStockEntree();
+		dateStockSortie = entity.getDateStockSortie();
+		nomProduit = entity.getNomProduit();
+		quantiteStockEntrante = entity.getQuantiteStockEntrante();
+		quantiteStockSortie = entity.getQuantiteStockSortie();
+		quantiteDisponible = entity.getQuantiteDisponible();
 	}
 
 }

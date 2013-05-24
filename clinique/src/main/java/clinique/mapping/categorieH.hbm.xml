@@ -20,15 +20,5 @@
 
 <many-to-one name="entreprise" class="Entreprise" cascade="none" column="entreprise_id"/>
 
-<bag name="blackListes" lazy="true" inverse="true" cascade="all-delete-orphan" >
-    <key column="categorie_id"/>
-    <one-to-many class="BlackListe"/>
-</bag>
-
-<bag name="reglements" lazy="true" inverse="true" cascade="all-delete-orphan" >
-    <key column="categorie_id"/>
-    <one-to-many class="Reglement"/>
-</bag>
-
  </class>
 </hibernate-mapping>

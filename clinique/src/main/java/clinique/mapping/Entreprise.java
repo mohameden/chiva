@@ -1,9 +1,7 @@
 package clinique.mapping;
 
-import java.util.ArrayList;
-import java.util.List;
 
-public class Entreprise extends Entity {
+public class Entreprise extends Entity<Entreprise> {
 
 	/**
 	 * 
@@ -17,7 +15,6 @@ public class Entreprise extends Entity {
 	private String operateur;
 
 	private Assureur assureur;
-	private List<Categorie> categories = new ArrayList<Categorie>();
 
 	public int getEntrepriseId() {
 		return entrepriseId;
@@ -67,22 +64,12 @@ public class Entreprise extends Entity {
 		this.assureur = assureur;
 	}
 
-	public List<Categorie> getCategories() {
-		return categories;
-	}
-
-	public void setCategories(List<Categorie> categories) {
-		this.categories = categories;
-	}
-
 	@Override
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;
 		result = prime * result + (adresse == null ? 0 : adresse.hashCode());
 		result = prime * result + (assureur == null ? 0 : assureur.hashCode());
-		result = prime * result
-				+ (categories == null ? 0 : categories.hashCode());
 		result = prime * result + entrepriseId;
 		result = prime * result
 				+ (nomEntreprise == null ? 0 : nomEntreprise.hashCode());
@@ -118,13 +105,6 @@ public class Entreprise extends Entity {
 		} else if (!assureur.equals(other.assureur)) {
 			return false;
 		}
-		if (categories == null) {
-			if (other.categories != null) {
-				return false;
-			}
-		} else if (!categories.equals(other.categories)) {
-			return false;
-		}
 		if (entrepriseId != other.entrepriseId) {
 			return false;
 		}
@@ -150,6 +130,22 @@ public class Entreprise extends Entity {
 			return false;
 		}
 		return true;
+	}
+
+	@Override
+	protected Entreprise createEntity() {
+		return new Entreprise();
+	}
+
+	@Override
+	public void updateWith(Entreprise entity) {
+		entrepriseId = entity.getEntrepriseId();
+		nomEntreprise = entity.getNomEntreprise();
+		adresse = entity.getAdresse();
+		statut = entity.getStatut();
+		operateur = entity.getOperateur();
+		EntityCopier<Assureur> aCopier = new EntityCopier<Assureur>();
+		assureur = aCopier.copy(entity.getAssureur());
 	}
 
 }

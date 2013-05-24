@@ -14,18 +14,6 @@
 <property name="dateFacture" column="date_facture"  />
 
 
-<bag name="factureGlobalFactures" lazy="true" inverse="true" cascade="all-delete-orphan" >
-    <key column="facture_global_id"/>
-    <one-to-many class="FactureGlobalFacture"/>
-</bag>
-
-<!--  
-<bag name="detailFactures" lazy="true" inverse="true" cascade="all-delete-orphan" >
-    <key column="facture_id"/>
-    <one-to-many class="DetailFacture"/>
-</bag>
--->
-
 <many-to-one name="categorie" class="Categorie" cascade="none" column="categorie_id"/>
 
 

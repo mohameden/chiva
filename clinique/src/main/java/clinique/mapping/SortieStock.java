@@ -2,7 +2,7 @@ package clinique.mapping;
 
 import java.util.Date;
 
-public class SortieStock extends Entity {
+public class SortieStock extends Entity<SortieStock> {
 
 	/**
 	 * 
@@ -152,6 +152,24 @@ public class SortieStock extends Entity {
 			return false;
 		}
 		return true;
+	}
+
+	@Override
+	protected SortieStock createEntity() {
+		return new SortieStock();
+	}
+
+	@Override
+	public void updateWith(SortieStock entity) {
+		sortieStockId = entity.getSortieStockId();
+		dateSortie = entity.getDateSortie();
+		quantite = entity.getQuantite();
+		prixUnitaire = entity.getPrixUnitaire();
+		numeroSource = entity.getNumeroSource();
+		statut = entity.getStatut();
+		operateur = entity.getOperateur();
+		EntityCopier<Produit> pCopier = new EntityCopier<Produit>();
+		produit = pCopier.copy(entity.getProduit());
 	}
 
 }

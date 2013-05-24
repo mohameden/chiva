@@ -18,10 +18,5 @@
 <many-to-one name="acteur" class="Acteur" cascade="none" column="acteur_id"/>
 
 
-<bag name="comptes" lazy="true" inverse="true" cascade="all-delete-orphan" >
-    <key column="personnel_id"/>
-    <one-to-many class="Compte"/>
-</bag>
-
  </class>
 </hibernate-mapping>
