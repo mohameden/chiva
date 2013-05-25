@@ -547,6 +547,16 @@
 			
 		
 			});
+		
+		function selectPatient2(IdPatient)
+    	{
+
+			    document.forms[0].patientId.value = IdPatient;
+			    document.forms[0].dispatch.value = "ajouterPrestationsFormulaireDevisAncien";
+	        	document.forms[0].submit();
+				
+				
+    	}
 
 		function selectPatient(IdPatient)
     	{
@@ -988,6 +998,12 @@
 		<display:setProperty name="css.tr.even" value="even"></display:setProperty>
 		   
 				<display:column style=" text-decoration: underline;" title="Choisir">
+					<a id="dialog_link" style="cursor: pointer" onclick="selectPatient2('<bean:write name="row" property="patientId"/>');">
+					<img align="middle" width="30"   src="<%=request.getContextPath()%>/<bean:message key="image.fin" />" />
+					</a>
+				</display:column>
+				
+				<display:column style=" text-decoration: underline;" title="Voir infos">
 					<a id="dialog_link" style="cursor: pointer" onclick="selectPatient('<bean:write name="row" property="patientId"/>');">
 					<img align="middle" width="30"   src="<%=request.getContextPath()%>/<bean:message key="image.search" />" />
 					</a>
