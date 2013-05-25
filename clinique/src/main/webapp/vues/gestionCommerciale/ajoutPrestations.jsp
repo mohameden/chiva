@@ -25,8 +25,18 @@
 <link type="text/css" href="<%=request.getContextPath()%>/js/jquery-ui-1.8.18.custom/development-bundle/demos/demos.css" rel="stylesheet" />	
 <script type="text/javascript" src="<%=request.getContextPath()%>/js/jquery-ui-1.8.18.custom/development-bundle/ui/i18n/jquery.ui.datepicker-fr.js"></script>	
 
-
+   
+    
 <script type="text/javascript">
+
+
+
+// debut 
+
+
+
+
+// fin
 
 $.fx.speeds._default = 1000;
 $(function() {
@@ -508,26 +518,52 @@ function supprimerDrg(var1)
           </tr>
           <tr>
 	          <td colspan="3" align="center">
-	          Choisir par :  
+	          Choisir par : 
+	                <logic:empty name="formInfosPatient" property="detailsFactureList">
 			      <html:radio property="choixActePar" name="formInfosPatient" onclick="choixActeParFamille();" value="famille"/>Famille prestations
 			      <html:radio property="choixActePar" name="formInfosPatient" onclick="choixActeParClasse();" value="classe"/>Classe
+	              </logic:empty> 
+	              
+	               <logic:notEmpty name="formInfosPatient" property="detailsFactureList">
+			      <html:radio property="choixActePar" name="formInfosPatient" onclick="choixActeParFamille();" disabled="true"  value="famille"/>Famille prestations
+			      <html:radio property="choixActePar" name="formInfosPatient" onclick="choixActeParClasse();" disabled="true"  value="classe"/>Classe
+	              </logic:notEmpty>
 	          </td>
           </tr>
           <tr id="selectFamille" style="display: block;">
 			<td >Familles prestations</td>
 			 <td>
+			 <logic:empty name="formInfosPatient" property="detailsFactureList">
+			 
 			 <html:select  styleClass="champText"  property="famillePrestationId" onchange="chargerActesParFamille(this);">
 				<html:optionsCollection name="formInfosPatient" property="famillesPrestList"  label="label" value="value" />
 			 </html:select>
+		
+			 </logic:empty>
+			 
+			 <logic:notEmpty name="formInfosPatient" property="detailsFactureList">
+			 <html:select  styleClass="champText"  property="famillePrestationId" disabled="true" onchange="chargerActesParFamille(this);">
+				<html:optionsCollection name="formInfosPatient" property="famillesPrestList"  label="label" value="value" />
+			 </html:select>
+			 </logic:notEmpty>
 			</td>
 			<td></td>
 			</tr>
 			<tr id="selectClasse" style="display: none;">
 			 <td >Classes prestations</td>
 			 <td>
+			 <logic:empty name="formInfosPatient" property="detailsFactureList">
 			  <html:select styleClass="champText" property="classeId"  onchange="chargerActes(this);">
 				<html:optionsCollection name="formInfosPatient" property="classesListe" label="label" value="value" />
 			  </html:select>
+			  </logic:empty>
+			  
+			  <logic:notEmpty name="formInfosPatient" property="detailsFactureList">
+			  <html:select styleClass="champText" property="classeId" disabled="true"  onchange="chargerActes(this);">
+				<html:optionsCollection name="formInfosPatient" property="classesListe" label="label" value="value" />
+			  </html:select>
+			  </logic:notEmpty>
+			  
 			 </td>
 			 <td></td>
 			</tr>
@@ -535,7 +571,8 @@ function supprimerDrg(var1)
 			 <tr>
 			  <td >Actes</td>
 			  <td>
-				<html:select styleClass="champText" property="acteId" onchange="chargerActeursInf(this); chargerActeursMed(this);" >
+			  
+				<html:select styleClass="champText"  property="acteId" onchange="chargerActeursInf(this); chargerActeursMed(this);" >
 				 <html:optionsCollection name="formInfosPatient" property="actesListe" label="label" value="value" />
 				</html:select>
 			  </td>
@@ -544,7 +581,7 @@ function supprimerDrg(var1)
 			 <tr>
 			  <td >Nombre</td>
 			  <td>
-				<html:text styleClass="champText" property="nombreActe" value="0" maxlength="2" onkeypress="Numerique();" onfocus="couleurBlanc(this,'ErrNombre');"/>
+				<html:text styleClass="champText" property="nombreActe" value="1" maxlength="2" onkeypress="Numerique();" onfocus="couleurBlanc(this,'ErrNombre');"/>
 			  </td>
 			  <td></td>
 			 </tr>

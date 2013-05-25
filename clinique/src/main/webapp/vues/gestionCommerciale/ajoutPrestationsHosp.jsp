@@ -438,7 +438,7 @@ function target_popup(form) {
 		  <td width="22%">Numéro patient</td>
 		  <td width="25%" style="color: #FF6600;"><bean:write name="formInfosPatient" property="patientId" /></td>
 		  </tr>  
-		  <tr id="btnAddActe" style="display:block">
+		  <tr id="btnAddActe" style="display:none">
 		  <td colspan="5" align="center">
 		  <input type="button" onclick="OuvrirDivPrestation();" value="Ajouter un acte" size ="50" style="display:none; font-weight:bold; background-color:#00253E; color:#FFFFFF; cursor:hand; border:solid 2px #FF6600;"  />
 		  </td>
@@ -459,25 +459,50 @@ function target_popup(form) {
           <tr>
 	          <td colspan="3" align="center">
 	          Choisir par :  
+			      <logic:empty name="formInfosPatient" property="detailsFactureList">
 			      <html:radio property="choixActePar" name="formInfosPatient" onclick="choixActeParFamille();" value="famille"/>Famille prestations
 			      <html:radio property="choixActePar" name="formInfosPatient" onclick="choixActeParClasse();" value="classe"/>Classe
-	          </td>
+	              </logic:empty> 
+	              
+	               <logic:notEmpty name="formInfosPatient" property="detailsFactureList">
+			      <html:radio property="choixActePar" name="formInfosPatient" onclick="choixActeParFamille();" disabled="true"  value="famille"/>Famille prestations
+			      <html:radio property="choixActePar" name="formInfosPatient" onclick="choixActeParClasse();" disabled="true"  value="classe"/>Classe
+	              </logic:notEmpty>	       
+	              	          </td>
           </tr>
           <tr id="selectFamille" style="display: block;">
 			<td >Familles prestations</td>
 			 <td>
+			 <logic:empty name="formInfosPatient" property="detailsFactureList">
+			 
 			 <html:select  styleClass="champText"  property="famillePrestationId" onchange="chargerActesParFamille(this);">
 				<html:optionsCollection name="formInfosPatient" property="famillesPrestList"  label="label" value="value" />
 			 </html:select>
+		
+			 </logic:empty>
+			 
+			 <logic:notEmpty name="formInfosPatient" property="detailsFactureList">
+			 <html:select  styleClass="champText"  property="famillePrestationId" disabled="true" onchange="chargerActesParFamille(this);">
+				<html:optionsCollection name="formInfosPatient" property="famillesPrestList"  label="label" value="value" />
+			 </html:select>
+			 </logic:notEmpty>
 			</td>
 			<td></td>
 			</tr>
 			<tr id="selectClasse" style="display: none;">
 			 <td >Classes prestations</td>
 			 <td>
+			 <logic:empty name="formInfosPatient" property="detailsFactureList">
 			  <html:select styleClass="champText" property="classeId"  onchange="chargerActes(this);">
 				<html:optionsCollection name="formInfosPatient" property="classesListe" label="label" value="value" />
 			  </html:select>
+			  </logic:empty>
+			  
+			  <logic:notEmpty name="formInfosPatient" property="detailsFactureList">
+			  <html:select styleClass="champText" property="classeId" disabled="true"  onchange="chargerActes(this);">
+				<html:optionsCollection name="formInfosPatient" property="classesListe" label="label" value="value" />
+			  </html:select>
+			  </logic:notEmpty>
 			 </td>
 			 <td></td>
 			</tr>
@@ -494,7 +519,7 @@ function target_popup(form) {
 			 <tr>
 			  <td >Nombre</td>
 			  <td>
-				<html:text styleClass="champText" property="nombreActe" value="0" maxlength="2" onkeypress="Numerique();" onfocus="couleurBlanc(this,'ErrNombre');"/>
+				<html:text styleClass="champText" property="nombreActe" value="1" maxlength="2" onkeypress="Numerique();" onfocus="couleurBlanc(this,'ErrNombre');"/>
 			  </td>
 			  <td></td>
 			 </tr>
