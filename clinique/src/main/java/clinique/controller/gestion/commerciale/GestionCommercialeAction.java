@@ -297,8 +297,7 @@ public class GestionCommercialeAction extends DispatchActionSupport {
 			if (errors.isEmpty()) {
 				if (gestionCommercialeBO.ajouterActe(formulaire)) {
 
-					gestionCommercialeBO
-							.initialiserCombosPrestations(formulaire);
+					//gestionCommercialeBO.initialiserCombosPrestations(formulaire);
 					gestionCommercialeBO
 							.initialiserChampsAjouterPrestations(formulaire);
 					gestionCommercialeBO.initialiserCombosDrgCnam(formulaire);
@@ -400,7 +399,7 @@ public class GestionCommercialeAction extends DispatchActionSupport {
 
 			if (gestionCommercialeBO.ajouterActeDevis(formulaire)) {
 
-				gestionCommercialeBO.initialiserCombosPrestations(formulaire);
+				//gestionCommercialeBO.initialiserCombosPrestations(formulaire);
 				gestionCommercialeBO
 						.initialiserChampsAjouterPrestations(formulaire);
 
@@ -435,8 +434,7 @@ public class GestionCommercialeAction extends DispatchActionSupport {
 			if (errors.isEmpty()) {
 				if (gestionCommercialeBO.ajouterActeForHosp(formulaire)) {
 
-					gestionCommercialeBO
-							.initialiserCombosPrestations(formulaire);
+					//gestionCommercialeBO.initialiserCombosPrestations(formulaire);
 					gestionCommercialeBO
 							.initialiserChampsAjouterPrestations(formulaire);
 

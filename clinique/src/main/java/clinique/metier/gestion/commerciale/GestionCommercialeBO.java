@@ -3512,6 +3512,7 @@ public class GestionCommercialeBO extends TransactionalBO implements
 	 * clinique.metier.gestion.commerciale.IGestionCommercialeBO#checkAddActePc
 	 * (clinique.model.gestion.commerciale.GestionCommercialeForm)
 	 */
+	@SuppressWarnings({ "rawtypes", "deprecation" })
 	@Override
 	public ActionMessages checkAddActePc(GestionCommercialeForm formulaire) {
 		ActionMessages errors2 = new ActionMessages();
