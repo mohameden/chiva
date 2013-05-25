@@ -335,12 +335,14 @@ function afficherDivPay(var1)
     {
 	divCash.style.display = 'block';
 	divMajoration.style.display = 'none';
+	document.forms[0].typePayementValeur.value=document.forms[0].resteApayer.value;
     }
     
     else
     {
     	divCash.style.display = 'none';
     	divMajoration.style.display = 'block';
+    	document.forms[0].typePayementValeur.value=document.forms[0].resteApayerMajoration.value;
     }
 }
 
@@ -381,7 +383,7 @@ function masquerTypePayement()
 
 </head>
 
-<body>
+<body onload="afficherTypePayement();">
 <div class=demos>
 <table bordercolor="#FF6600;" height="100%"  width="100%" align="center" style="border-right-style:solid; border-left-style:solid; border-top-style:solid; border-bottom-style:solid;">
 <jsp:include page="/template/header.jsp" />
@@ -621,7 +623,7 @@ function masquerTypePayement()
           
           <tr>
           <td align="center" width="100%"><logic:equal name="formInfosPatient" property="recuRegle" value="0">
-          <input type="button" id="btnAddTypePay"  onclick="afficherTypePayement();" value="Ajouter type payement" size ="50" style="font-weight:bold; background-color:#00253E; color:#FFFFFF; cursor:hand; border:solid 2px #FF6600;"  />
+          <input type="button" id="btnAddTypePay"  onclick="afficherTypePayement();" value="Ajouter type payement" size ="50" style=" display:none; font-weight:bold; background-color:#00253E; color:#FFFFFF; cursor:hand; border:solid 2px #FF6600;"  />
           </logic:equal></td>
           </tr>
       
@@ -636,7 +638,9 @@ function masquerTypePayement()
 		  </table>
 		  </td>
 		  </tr>
-		  <tr id="divReglement" style="display:none;">
+		  
+		  <logic:equal name="formInfosPatient" property="recuRegle" value="0">
+		  <tr id="divReglement" style="display:block;">
 			  <td colspan="2">
 			  <table width="100%"   align="center" style="background:#0B415F; ">
 		  		  <tr>
@@ -696,7 +700,7 @@ function masquerTypePayement()
           <tr>
           <td colspan="2" align="center">
           <input type="button"   value="Valider" onclick="checkReglement();" size ="50" style="font-weight:bold; background-color:#00253E; color:#FFFFFF; cursor:hand; border:solid 2px #FF6600;"  />
-          <input type="button"   value="Annuler" onclick="cacherDivErr(); masquerTypePayement();" size ="50" style="font-weight:bold; background-color:#00253E; color:#FFFFFF; cursor:hand; border:solid 2px #FF6600;"  />
+          <input type="button"   value="Annuler" onclick="cacherDivErr(); masquerTypePayement();" size ="50" style="display:none;  font-weight:bold; background-color:#00253E; color:#FFFFFF; cursor:hand; border:solid 2px #FF6600;"  />
 
           </td>
           </tr>
@@ -706,6 +710,7 @@ function masquerTypePayement()
 		  </table>
 		  </td>
 		  </tr>
+		  </logic:equal>
 		  
 		  <tr>
 			  <td colspan="2" align="center" width="100%">
