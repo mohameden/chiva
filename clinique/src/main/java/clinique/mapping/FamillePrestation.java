@@ -1,6 +1,5 @@
 package clinique.mapping;
 
-
 public class FamillePrestation extends Entity<FamillePrestation> {
 
 	/**
@@ -106,8 +105,6 @@ public class FamillePrestation extends Entity<FamillePrestation> {
 		libelle = entity.getLibelle();
 		statut = entity.getStatut();
 		operateur = entity.getOperateur();
-		EntityCopier<Acte> aCopier = new EntityCopier<Acte>();
-		EntityCopier<PrestationCouvertesPc> pCopier = new EntityCopier<PrestationCouvertesPc>();
 	}
 
 }

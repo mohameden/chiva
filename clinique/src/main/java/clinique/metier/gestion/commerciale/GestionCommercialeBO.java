@@ -79,6 +79,7 @@ import clinique.mapping.DetailFactureModifiees;
 import clinique.mapping.DevisActes;
 import clinique.mapping.DevisAssureur;
 import clinique.mapping.DrgCnam;
+import clinique.mapping.Entity.EntityCopier;
 import clinique.mapping.Entreprise;
 import clinique.mapping.Facture;
 import clinique.mapping.FactureModifiees;
@@ -5049,7 +5050,8 @@ public class GestionCommercialeBO extends TransactionalBO implements
 					}
 
 					if (i == 0) {
-						formulaire.getPatients().add(patient);
+						EntityCopier<Patient> copier = new EntityCopier<Patient>();
+						formulaire.getPatients().add(copier.copy(patient));
 					}
 
 				}

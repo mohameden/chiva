@@ -4,6 +4,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
 
+import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -15,6 +16,7 @@ import org.apache.struts.action.ActionMessages;
 import org.springframework.web.struts.DispatchActionSupport;
 
 import clinique.impression.IImpressionBO;
+import clinique.impression.pdf.IFactureImpressionBO;
 import clinique.metier.gestion.commerciale.IGestionCommercialeBO;
 import clinique.model.gestion.commerciale.GestionCommercialeForm;
 
@@ -38,6 +40,11 @@ public class GestionCommercialeAction extends DispatchActionSupport {
 	private IImpressionBO getImpressionBO() {
 		return (IImpressionBO) getWebApplicationContext().getBean(
 				IImpressionBO.NAME);
+	}
+
+	private IFactureImpressionBO getInvoiceBO() {
+		return (IFactureImpressionBO) getWebApplicationContext().getBean(
+				IFactureImpressionBO.NAME);
 	}
 
 	@SuppressWarnings("unchecked")
@@ -1275,26 +1282,17 @@ public class GestionCommercialeAction extends DispatchActionSupport {
 	public ActionForward imprimerRecu(ActionMapping mapping, ActionForm form,
 			HttpServletRequest request, HttpServletResponse response)
 			throws Exception {
-
 		log.debug("********** Debut imprimerRecu GestionCommercialeAction **********");
 		try {
 			GestionCommercialeForm formulaire = (GestionCommercialeForm) form;
-			// User
-			// user=(User)request.getSession().getAttribute("userConnected");
-			// formulaire.setOperateur(user.getLogin());
-
-			IImpressionBO impressionBO = getImpressionBO();
-			byte[] bytes = impressionBO.genererFacture(
-					formulaire.getFactureId(), "ORIGINAL");
-
-			ByteArrayOutputStream bos = new ByteArrayOutputStream(bytes.length);
-			bos.write(bytes);
-
-			response.setContentType("application/pdf");
-			response.setContentLength(bos.size());
-
+			String user = formulaire.getLogin();
+			formulaire.setOperateur(user);
 			OutputStream os = response.getOutputStream();
-			os.write(bos.toByteArray(), 0, bos.size());
+			response.setContentType("application/pdf");
+
+			IFactureImpressionBO impressionBO = getInvoiceBO();
+			impressionBO.imprimerPDF(formulaire.getFactureId(),
+					"ORIGINAL", user, os);
 			os.flush();
 			os.close();
 
@@ -2640,22 +2638,14 @@ public class GestionCommercialeAction extends DispatchActionSupport {
 		log.debug("********** Debut imprimerFacture GestionCommercialeAction **********");
 		try {
 			GestionCommercialeForm formulaire = (GestionCommercialeForm) form;
-			// User
-			// user=(User)request.getSession().getAttribute("userConnected");
-			// formulaire.setOperateur(user.getLogin());
+			String user = formulaire.getLogin();
+			formulaire.setOperateur(user);
 
-			IImpressionBO impressionBO = getImpressionBO();
-			byte[] bytes = impressionBO.genererFacture(
-					formulaire.getFactureId(), "ORIGINAL");
-
-			ByteArrayOutputStream bos = new ByteArrayOutputStream(bytes.length);
-			bos.write(bytes);
-
+			IFactureImpressionBO impressionBO = getInvoiceBO();
 			response.setContentType("application/pdf");
-			response.setContentLength(bos.size());
-
-			OutputStream os = response.getOutputStream();
-			os.write(bos.toByteArray(), 0, bos.size());
+			ServletOutputStream os = response.getOutputStream();
+			impressionBO.imprimerPDF(formulaire.getFactureId(),
+					"ORIGINAL", user, os);
 			os.flush();
 			os.close();
 

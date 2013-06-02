@@ -34,7 +34,7 @@ public class Facture extends Entity<Facture> {
 
 	private Patient patient;
 
-	private FactureFlagType factureFlagType;
+	private FactureFlagType factureFlagType = FactureFlagType.ORIGINAL;
 
 	public String getNumFact() {
 		return numFact;
@@ -396,17 +396,6 @@ public class Facture extends Entity<Facture> {
 
 	public void setFactureFlagType(FactureFlagType factureFlagType) {
 		this.factureFlagType = factureFlagType;
-	}
-
-	public int getNbrOfLineToPrint() {
-
-		// Set<FamillePrestation> set = new HashSet<FamillePrestation>();
-		// for (DetailFacture detail : detailFactures) {
-		// set.add(detail.getActe().getFamillePrestation());
-		// }
-		//
-		// return detailFactures.size() + set.size();
-		return 0;
 	}
 
 	@Override

@@ -8,7 +8,7 @@
            http://www.springframework.org/schema/context/spring-context-3.0.xsd">
                
      <context:component-scan base-package="clinique.dao"/>
-     <context:component-scan base-package="clinique.impression"/>
+     <context:component-scan base-package="clinique.impression.*"/>
      <context:component-scan base-package="clinique.metier.*"/>
      <context:component-scan base-package="clinique.servlets"/>
      

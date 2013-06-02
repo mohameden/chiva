@@ -3,9 +3,11 @@ package clinique.dao;
 import java.util.List;
 
 import org.apache.log4j.Logger;
+import org.hibernate.Query;
 import org.hibernate.Session;
 import org.springframework.stereotype.Repository;
 
+import clinique.mapping.Facture;
 import clinique.mapping.Reglement;
 
 @Repository
@@ -118,5 +120,14 @@ public class ReglementDAO extends CliniqueHibernateDaoSupport<Reglement> {
 	@Override
 	protected Class<?> getEntityClass() {
 		return Reglement.class;
+	}
+
+	@SuppressWarnings("unchecked")
+	public List<Reglement> findReglementsByFacture(Facture facture) {
+		String queryString = "from Reglement d where d.facture = :fac";
+		Session session = getSession();
+		Query query = session.createQuery(queryString);
+		query.setEntity("fac", facture);
+		return query.list();
 	}
 }

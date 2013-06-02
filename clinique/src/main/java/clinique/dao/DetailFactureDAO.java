@@ -119,10 +119,10 @@ public class DetailFactureDAO extends
 
 	@SuppressWarnings("unchecked")
 	public List<DetailFacture> findDetailFactureByFacture(final Facture facture) {
-		String queryString = "from DetailFacture where facture = :facture";
+		String queryString = "from DetailFacture d where d.facture = :fac";
 		Session session = getSession();
 		Query query = session.createQuery(queryString);
-		query.setParameter("facture", facture);
+		query.setEntity("fac", facture);
 		return query.list();
 	}
 
