@@ -22,7 +22,7 @@ public abstract class AbstractPdfImpressionBO extends TransactionalBO {
 
 	protected BaseFont bfBold;
 	protected BaseFont bf;
-	protected int pageNumber = 1;
+	private int pageNumber = 0;
 
 	protected void updatedDocMetaInfos(Document doc) {
 		doc.addAuthor("User");
@@ -71,13 +71,12 @@ public abstract class AbstractPdfImpressionBO extends TransactionalBO {
 
 	private void printPageNumber(PdfContentByte cb, int totalPages) {
 
+		pageNumber++;
 		cb.beginText();
 		cb.setFontAndSize(bfBold, 8);
 		cb.showTextAligned(PdfContentByte.ALIGN_RIGHT, "Page " + pageNumber
 				+ "/" + totalPages, 523, 65, 0);
 		cb.endText();
-
-		pageNumber++;
 
 	}
 

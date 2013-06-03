@@ -40,6 +40,9 @@ public class FactureHospitalisationImpressionBO extends FactureImpressionBO
 		float y = 390;
 		float h = 100;
 		cb.rectangle(x0, y, w, h);
+		cb.moveTo(x0, 470);
+		cb.lineTo(x0 + w, 470);
+
 		cb.moveTo(x0, 250);
 		cb.lineTo(x0 + w, 250);
 		cb.moveTo(x0 + 251, y);

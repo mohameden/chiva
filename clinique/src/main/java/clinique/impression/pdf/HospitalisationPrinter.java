@@ -7,6 +7,7 @@ import java.util.Date;
 import java.util.List;
 
 import clinique.mapping.DetailFacture;
+import clinique.mapping.Hospitalisation;
 
 public class HospitalisationPrinter {
 	private String chambre;
@@ -52,10 +53,12 @@ public class HospitalisationPrinter {
 	}
 
 	public HospitalisationPrinter(DetailFacture detailFacture) {
-		chambre = detailFacture.getHospitalisation().getChambre()
-				.getChambreLibelle();
-		dateEntree = detailFacture.getHospitalisation().getDateEntree();
-		dateSortie = detailFacture.getHospitalisation().getDateSortie();
+		Hospitalisation hospitalisation = detailFacture.getHospitalisation();
+		if (hospitalisation != null) {
+			chambre = hospitalisation.getChambre().getChambreLibelle();
+			dateEntree = hospitalisation.getDateEntree();
+			dateSortie = hospitalisation.getDateSortie();
+		}
 	}
 
 	public String getChambre() {
