@@ -7,6 +7,8 @@ public class Test {
 	/**
 	 * @param args
 	 */
+	
+	// test classe
 	private String result = "";
 	private final String case1 = "AXXXXXXX";
 	private final String case2 = "XXXXXXXY";
