@@ -24,7 +24,7 @@ public abstract class AbstractPdfImpressionBO extends TransactionalBO {
 	protected BaseFont bf;
 	private int pageNumber = 0;
 
-	protected void updatedDocMetaInfos(Document doc) {
+	protected void updateDocMetaInfos(Document doc) {
 		doc.addAuthor("User");
 		doc.addCreationDate();
 		doc.addProducer();
@@ -33,8 +33,8 @@ public abstract class AbstractPdfImpressionBO extends TransactionalBO {
 	}
 
 	protected void generateFooter(PdfContentByte cb, int totalPages) {
-		cb.moveTo(72, 72);
-		cb.lineTo(523, 72);
+		cb.moveTo(72 - getA5XMargin(), 72 - getA5XMargin());
+		cb.lineTo(523 + getA5XMargin(), 72 - getA5XMargin());
 		cb.stroke();
 		printFooterName(cb);
 		printFooterDate(cb);
@@ -47,15 +47,28 @@ public abstract class AbstractPdfImpressionBO extends TransactionalBO {
 		cb.setLineWidth(1f);
 		// add the images
 		String logoPath = InitServlet.CHEMIN_ROOT + "\\images\\logopdf.jpg";
+		// String logoPath = "d:/logopdf.jpg";
 		Image companyLogo = Image.getInstance(logoPath);
-		companyLogo.setAbsolutePosition(462, 720);
+		companyLogo.setAbsolutePosition(462 + getA5XMargin(), 720
+				- getA5YAdjustement() + getA5XMargin());
 		companyLogo.scalePercent(10);
 		doc.add(companyLogo);
 
 		// Invoice Header box Text Headings
-		createHeadings(cb, 72, 768, "CLINIQUE CHIVA");
-		createHeadings(cb, 82, 753, "ZRA N° 54");
-		createHeadings(cb, 72, 738, "Tel: 525 80 80 Fax: 525 34 35");
+		createHeadings(cb, 72 - getA5XMargin(), 768 - getA5YAdjustement()
+				+ getA5XMargin(), "CLINIQUE CHIVA");
+		createHeadings(cb, 82 - getA5XMargin(), 753 - getA5YAdjustement()
+				+ getA5XMargin(), "ZRA N° 54");
+		createHeadings(cb, 72 - getA5XMargin(), 738 - getA5YAdjustement()
+				+ getA5XMargin(), "Tel: 525 80 80 Fax: 525 34 35");
+	}
+
+	protected int getA5YAdjustement() {
+		return 0;
+	}
+
+	protected int getA5XMargin() {
+		return 0;
 	}
 
 	protected void createHeadings(PdfContentByte cb, float x, float y,
@@ -69,13 +82,34 @@ public abstract class AbstractPdfImpressionBO extends TransactionalBO {
 
 	}
 
+	protected void createTitle(PdfContentByte cb, float x, float y, String text) {
+
+		cb.beginText();
+		cb.setFontAndSize(bfBold, 12);
+		cb.setTextMatrix(x, y);
+		cb.showText(text.trim());
+		cb.endText();
+
+	}
+
+	protected void createSmall(PdfContentByte cb, float x, float y, String text) {
+
+		cb.beginText();
+		cb.setFontAndSize(bfBold, 6);
+		cb.setTextMatrix(x, y);
+		cb.showText(text.trim());
+		cb.endText();
+
+	}
+
 	private void printPageNumber(PdfContentByte cb, int totalPages) {
 
 		pageNumber++;
 		cb.beginText();
 		cb.setFontAndSize(bfBold, 8);
 		cb.showTextAligned(PdfContentByte.ALIGN_RIGHT, "Page " + pageNumber
-				+ "/" + totalPages, 523, 65, 0);
+				+ "/" + totalPages, 523 + getA5XMargin(), 65 - getA5XMargin(),
+				0);
 		cb.endText();
 
 	}
@@ -85,7 +119,8 @@ public abstract class AbstractPdfImpressionBO extends TransactionalBO {
 		cb.beginText();
 		cb.setFontAndSize(bfBold, 8);
 		String dateFacture = UtilDate.getFormatDateFacture(new Date());
-		cb.showTextAligned(PdfContentByte.ALIGN_CENTER, dateFacture, 298, 65, 0);
+		cb.showTextAligned(PdfContentByte.ALIGN_CENTER, dateFacture, 298,
+				65 - getA5XMargin(), 0);
 		cb.endText();
 	}
 
@@ -93,8 +128,8 @@ public abstract class AbstractPdfImpressionBO extends TransactionalBO {
 
 		cb.beginText();
 		cb.setFontAndSize(bfBold, 8);
-		cb.showTextAligned(PdfContentByte.ALIGN_LEFT, "CLINIQUE CHIVA", 72, 65,
-				0);
+		cb.showTextAligned(PdfContentByte.ALIGN_LEFT, "CLINIQUE CHIVA",
+				72 - getA5XMargin(), 65 - getA5XMargin(), 0);
 		cb.endText();
 
 	}

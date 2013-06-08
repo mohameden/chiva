@@ -11,6 +11,7 @@ public class ReglementPrinter {
 	private String description;
 	private Date dateReglement;
 	private double montant;
+	private String drg;
 
 	public static List<ReglementPrinter> toReglementPrinter(List<Reglement> list) {
 		List<ReglementPrinter> result = new ArrayList<ReglementPrinter>();
@@ -28,6 +29,8 @@ public class ReglementPrinter {
 		description = reglement.getDescription();
 		dateReglement = reglement.getDateReglement();
 		montant = reglement.getMontant();
+		drg = reglement.getDrgCnam() != null ? reglement.getDrgCnam()
+				.getNomDrg() : "";
 	}
 
 	public String getModeReglement() {
@@ -60,6 +63,14 @@ public class ReglementPrinter {
 
 	public void setMontant(double montant) {
 		this.montant = montant;
+	}
+
+	public String getDrg() {
+		return drg;
+	}
+
+	public void setDrg(String drg) {
+		this.drg = drg;
 	}
 
 }

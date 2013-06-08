@@ -6,6 +6,7 @@ import java.util.List;
 
 import org.apache.commons.collections.MultiHashMap;
 import org.apache.commons.collections.MultiMap;
+import org.apache.commons.lang.StringUtils;
 
 import clinique.mapping.DetailFacture;
 
@@ -14,6 +15,8 @@ public class DetailFacturePrinter {
 	private int nbr;
 	private double tarif;
 	private boolean acte;
+	private String medecin;
+	private String infirmier;
 
 	public static MultiMap groupDetailFatures(List<DetailFacture> list) {
 		MultiMap multimap = new MultiHashMap();
@@ -53,12 +56,33 @@ public class DetailFacturePrinter {
 		acteName = detailFacture.getActe().getNomActe();
 		nbr = detailFacture.getNbrActes();
 		tarif = detailFacture.getMontantTotal();
+		medecin = detailFacture.getMedecin() != null ? detailFacture
+				.getMedecin().getNom() : "";
+		infirmier = detailFacture.getInfirmier() != null ? detailFacture
+				.getInfirmier().getNom() : "";
 		acte = true;
 	}
 
 	public DetailFacturePrinter(String famillePrestation) {
 		acteName = famillePrestation;
 		acte = false;
+	}
+
+	public String toRecuString() {
+		if (acte) {
+			StringBuilder sb = new StringBuilder();
+			sb.append(acteName);
+			if (StringUtils.isNotEmpty(medecin)) {
+				sb.append(" / ");
+				sb.append(medecin);
+			}
+			if (StringUtils.isNotEmpty(infirmier)) {
+				sb.append(" + ");
+				sb.append(infirmier);
+			}
+			return sb.toString();
+		}
+		return acteName;
 	}
 
 	public String getActeName() {
@@ -91,6 +115,22 @@ public class DetailFacturePrinter {
 
 	public void setActe(boolean acte) {
 		this.acte = acte;
+	}
+
+	public String getMedecin() {
+		return medecin;
+	}
+
+	public void setMedecin(String medecin) {
+		this.medecin = medecin;
+	}
+
+	public String getInfirmier() {
+		return infirmier;
+	}
+
+	public void setInfirmier(String infirmier) {
+		this.infirmier = infirmier;
 	}
 
 }

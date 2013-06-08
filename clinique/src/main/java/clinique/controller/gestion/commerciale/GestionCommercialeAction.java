@@ -16,7 +16,9 @@ import org.apache.struts.action.ActionMessages;
 import org.springframework.web.struts.DispatchActionSupport;
 
 import clinique.impression.IImpressionBO;
+import clinique.impression.pdf.IFactureHospitalisationImpressionBO;
 import clinique.impression.pdf.IFactureImpressionBO;
+import clinique.impression.pdf.IRecuImpressionBO;
 import clinique.metier.gestion.commerciale.IGestionCommercialeBO;
 import clinique.model.gestion.commerciale.GestionCommercialeForm;
 
@@ -28,10 +30,6 @@ public class GestionCommercialeAction extends DispatchActionSupport {
 	private static final String FORWARD = "succes";
 	private static final String FORWARD_ERR = "erreur";
 
-	// private final String CONTENT_PDF = "application/pdf";
-	// private final String RECU_FR =
-	// InitServlet.CHEMIN_ROOT+"/reports/Recu_Saisie_Acte_fr.jrxml";
-
 	private IGestionCommercialeBO getGestionCommercialeBO() {
 		return (IGestionCommercialeBO) getWebApplicationContext().getBean(
 				IGestionCommercialeBO.NAME);
@@ -42,9 +40,19 @@ public class GestionCommercialeAction extends DispatchActionSupport {
 				IImpressionBO.NAME);
 	}
 
-	private IFactureImpressionBO getInvoiceBO() {
+	private IRecuImpressionBO getRecuImpressionBO() {
+		return (IRecuImpressionBO) getWebApplicationContext().getBean(
+				IRecuImpressionBO.NAME);
+	}
+
+	private IFactureImpressionBO getFactureImpressionBO() {
 		return (IFactureImpressionBO) getWebApplicationContext().getBean(
 				IFactureImpressionBO.NAME);
+	}
+
+	private IFactureHospitalisationImpressionBO getFactureHospitalisationImpressionBO() {
+		return (IFactureHospitalisationImpressionBO) getWebApplicationContext()
+				.getBean(IFactureHospitalisationImpressionBO.NAME);
 	}
 
 	@SuppressWarnings("unchecked")
@@ -304,7 +312,7 @@ public class GestionCommercialeAction extends DispatchActionSupport {
 			if (errors.isEmpty()) {
 				if (gestionCommercialeBO.ajouterActe(formulaire)) {
 
-					//gestionCommercialeBO.initialiserCombosPrestations(formulaire);
+					// gestionCommercialeBO.initialiserCombosPrestations(formulaire);
 					gestionCommercialeBO
 							.initialiserChampsAjouterPrestations(formulaire);
 					gestionCommercialeBO.initialiserCombosDrgCnam(formulaire);
@@ -406,7 +414,7 @@ public class GestionCommercialeAction extends DispatchActionSupport {
 
 			if (gestionCommercialeBO.ajouterActeDevis(formulaire)) {
 
-				//gestionCommercialeBO.initialiserCombosPrestations(formulaire);
+				// gestionCommercialeBO.initialiserCombosPrestations(formulaire);
 				gestionCommercialeBO
 						.initialiserChampsAjouterPrestations(formulaire);
 
@@ -441,7 +449,7 @@ public class GestionCommercialeAction extends DispatchActionSupport {
 			if (errors.isEmpty()) {
 				if (gestionCommercialeBO.ajouterActeForHosp(formulaire)) {
 
-					//gestionCommercialeBO.initialiserCombosPrestations(formulaire);
+					// gestionCommercialeBO.initialiserCombosPrestations(formulaire);
 					gestionCommercialeBO
 							.initialiserChampsAjouterPrestations(formulaire);
 
@@ -1290,9 +1298,9 @@ public class GestionCommercialeAction extends DispatchActionSupport {
 			OutputStream os = response.getOutputStream();
 			response.setContentType("application/pdf");
 
-			IFactureImpressionBO impressionBO = getInvoiceBO();
-			impressionBO.imprimerPDF(formulaire.getFactureId(),
-					"ORIGINAL", user, os);
+			IRecuImpressionBO impressionBO = getRecuImpressionBO();
+			impressionBO.imprimerPDF(formulaire.getFactureId(), "ORIGINAL",
+					user, os);
 			os.flush();
 			os.close();
 
@@ -2641,11 +2649,11 @@ public class GestionCommercialeAction extends DispatchActionSupport {
 			String user = formulaire.getLogin();
 			formulaire.setOperateur(user);
 
-			IFactureImpressionBO impressionBO = getInvoiceBO();
+			IRecuImpressionBO impressionBO = getRecuImpressionBO();
 			response.setContentType("application/pdf");
 			ServletOutputStream os = response.getOutputStream();
-			impressionBO.imprimerPDF(formulaire.getFactureId(),
-					"ORIGINAL", user, os);
+			impressionBO.imprimerPDF(formulaire.getFactureId(), "ORIGINAL",
+					user, os);
 			os.flush();
 			os.close();
 
