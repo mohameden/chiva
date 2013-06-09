@@ -239,6 +239,34 @@ public class InitServlet implements HttpRequestHandler, ConstantesMetier {
 		log.debug("********** Fin convertirNombrePatientsToXml InitServlet **********");
 		return strXmlEntities;
 	}
+	
+	
+	@SuppressWarnings("unused")
+	private String convertirNombreActeurs(int nbre) throws Exception {
+		log.debug("********** Debut convertirNombreActeurs InitServlet **********");
+		String strXmlEntities = null;
+		StringBuffer sb = new StringBuffer();
+		try {
+			// sb.append("<?xml version=\"1.0\" encoding=\"ISO-8859-1\"?>\n");
+			sb.append("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n");
+			sb.append("<entities>\n");
+
+			sb.append("<entity>\n");
+			sb.append("<nbre><![CDATA[");
+			sb.append(nbre);
+			sb.append("]]></nbre>\n");
+			sb.append("</entity>\n");
+
+			sb.append("</entities>");
+		} catch (Exception e) {
+			e.printStackTrace();
+			log.fatal(e.getMessage());
+		}
+		strXmlEntities = sb.toString();
+
+		log.debug("********** Fin convertirNombreActeurs InitServlet **********");
+		return strXmlEntities;
+	}
 
 	private String convertirPatientToXml(Patient p) {
 		if (p == null) {
@@ -761,6 +789,20 @@ public class InitServlet implements HttpRequestHandler, ConstantesMetier {
 					String param1 = request.getParameter("id_acte");
 					int idActe = Integer.parseInt(param1.trim());
 					repXML = convertirListEntitiesToXml(getListActeursMedFromActe(idActe));
+				}
+				if (actionXML.trim().equalsIgnoreCase("checkActeursMed")) {
+					String param1 = request.getParameter("id_acte");
+					int idActe = Integer.parseInt(param1.trim());
+					int nbre=0;
+					if (getListActeursMedFromActe(idActe) != null) nbre=getListActeursMedFromActe(idActe).size();
+					repXML = convertirNombreActeurs(nbre);
+				}
+				if (actionXML.trim().equalsIgnoreCase("checkActeursInf")) {
+					String param1 = request.getParameter("id_acte");
+					int idActe = Integer.parseInt(param1.trim());
+					int nbre=0;
+					if (getListActeursInfFromActe(idActe) != null) nbre=getListActeursInfFromActe(idActe).size();
+					repXML = convertirNombreActeurs(nbre);
 				}
 				if (actionXML.trim().equalsIgnoreCase("selectPatient")) {
 					String idPatient = request

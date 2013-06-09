@@ -25,9 +25,9 @@
 <script type="text/javascript" src="<%=request.getContextPath()%>/js/jquery-ui-1.8.18.custom/development-bundle/ui/i18n/jquery.ui.datepicker-fr.js"></script>	
 
 
+
 <script type="text/javascript">
 
-  
 
   function chargerActesParFamille(var1)
   {

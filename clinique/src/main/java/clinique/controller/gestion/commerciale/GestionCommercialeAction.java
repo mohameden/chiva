@@ -171,6 +171,31 @@ public class GestionCommercialeAction extends DispatchActionSupport {
 		}
 
 	}
+	
+	
+	@SuppressWarnings("unchecked")
+	public ActionForward reinitialsierPrestationsFormulaire(ActionMapping mapping,
+			ActionForm form, HttpServletRequest request,
+			HttpServletResponse response) throws Exception {
+
+		log.debug("********** Debut reinitialsierPrestationsFormulaire GestionCommercialeAction **********");
+		try {
+			GestionCommercialeForm formulaire = (GestionCommercialeForm) form;
+			
+			IGestionCommercialeBO gestionCommercialeBO = getGestionCommercialeBO();
+			
+				gestionCommercialeBO.reinitialiserCombosPrestations(formulaire);
+
+				return mapping.findForward(FORWARD);
+			
+		} catch (Exception e) {
+			log.fatal(e.getMessage());
+			return mapping.findForward("error");
+		} finally {
+			log.debug("********** Fin reinitialsierPrestationsFormulaire GestionCommercialeAction **********");
+		}
+
+	}
 
 	@SuppressWarnings("unchecked")
 	public ActionForward ajouterPrestationsFormulaireAncien(
@@ -1441,6 +1466,7 @@ public class GestionCommercialeAction extends DispatchActionSupport {
 
 		} catch (Exception e) {
 			log.fatal(e.getMessage());
+			e.printStackTrace();
 			return mapping.findForward("error");
 		} finally {
 			log.debug("********** Fin savePatientForActes GestionCommercialeAction **********");

@@ -233,6 +233,9 @@ public interface IGestionCommercialeBO {
 
 	void initialiserCombosPrestations(GestionCommercialeForm formulaire)
 			throws Exception;
+	
+	void reinitialiserCombosPrestations(GestionCommercialeForm formulaire)
+			throws Exception;
 
 	void initialiserCombosTypePyement(GestionCommercialeForm formulaire);
 

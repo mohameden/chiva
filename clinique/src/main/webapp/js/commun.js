@@ -737,6 +737,29 @@ function getNombrePatients (objXml)
 	
 }
 
+function getNombreActeurs (objXml)
+{
+	
+	if (objXml == null)
+	{
+		return 0;
+	}
+	var noeudUnites = objXml.selectNodes ("/entities/entity");
+	//var noeudErreurs = objXml.selectNodes ("/errors/error");
+	/*if (noeudErreurs.length > 0)
+	{
+		alert('babs');
+		//alert (noeudErreurs[0].selectSingleNode ("msg").text);
+		return 0;
+	}*/
+	
+		return noeudUnites[0].selectSingleNode ("nbre").text;
+
+	
+}
+
+
+
 
 
 function getInfoArrayFromAjaxRequest (objXml)

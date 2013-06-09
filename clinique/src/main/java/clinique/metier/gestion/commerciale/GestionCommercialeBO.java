@@ -5448,6 +5448,139 @@ public class GestionCommercialeBO extends TransactionalBO implements
 	 * (non-Javadoc)
 	 * 
 	 * @see clinique.metier.gestion.commerciale.IGestionCommercialeBO#
+	 * reinitialiserCombosPrestations
+	 * (clinique.model.gestion.commerciale.GestionCommercialeForm)
+	 */
+	@Override
+	@SuppressWarnings("unchecked")
+	public void reinitialiserCombosPrestations(GestionCommercialeForm formulaire)
+			throws Exception {
+		log.debug("********** Debut reinitialiserCombosPrestations GestionCommercialeBO **********");
+		try {
+
+			Date date = new Date();
+			int heure = date.getHours();
+
+			if (heure > 20 && heure < 8) {
+				formulaire.setTypeActe("urgence");
+			} else {
+				formulaire.setTypeActe("normal");
+			}
+
+			ArrayList famillePrestList = new ArrayList();
+			ArrayList classeList = new ArrayList();
+			ArrayList actesListe = new ArrayList();
+
+			ArrayList acteursListe = new ArrayList();
+			ArrayList acteursInfListe = new ArrayList();
+
+			FamillePrestationDAO famillePrestDAO = getFamillePrestationDAO();
+			ClasseDAO classeDAO = getClasseDAO();
+			ActeDAO acteDAO = getActeDAO();
+
+			FamillePrestation FirstSelectedFamillePrest = null;
+			Classe FirstSelectedClasse = null;
+
+			Acte FirstSelectedActe = null;
+
+			int i = 0;
+
+			// charger combo FamillePrest
+			for (Object element2 : famillePrestDAO.listFamillePrestations()) {
+				FamillePrestation element = (FamillePrestation) element2;
+				if (checkFamillePres(element)) {
+					if (element.getFamillePrestationId()==Integer.parseInt(formulaire.getFamillePrestationId())) {
+						FirstSelectedFamillePrest = element;
+						
+					}
+					famillePrestList.add(new LabelValueBean(element
+							.getLibelle(), String.valueOf(element
+							.getFamillePrestationId())));
+				}
+			}
+
+			i = 0;
+			// charger combo Classes
+			for (Object element2 : classeDAO.listClasses()) {
+				Classe element = (Classe) element2;
+				if (checkClasse(element)) {
+					if (element.getClasseId()==Integer.parseInt(formulaire.getClasseId())) {
+						
+						FirstSelectedClasse = element;
+						i++;
+
+					}
+					classeList.add(new LabelValueBean(element.getNomClasse(),
+							String.valueOf(element.getClasseId())));
+				}
+			}
+
+			i = 0;
+			// charger combo Actes
+			List actes = null;
+			if (formulaire.getChoixActePar().equals("famille")) {
+				actes = acteDAO
+						.findActesByFamillePrestation(FirstSelectedFamillePrest);
+			} else if (formulaire.getChoixActePar().equals("classe")) {
+				actes = acteDAO.findActesByClasse(FirstSelectedClasse);
+			}
+			for (Iterator iter = actes.iterator(); iter.hasNext();) {
+				Acte element = (Acte) iter.next();
+				if (checkActe(element)) {
+					if (i == 0) {
+						FirstSelectedActe = element;
+						i++;
+
+					}
+					actesListe.add(new LabelValueBean(element.getNomActe(),
+							String.valueOf(element.getActeId())));
+				}
+			}
+
+			// charger combo ActeurActes
+			for (Object element2 : acteurActeDAO
+					.findActeurActesByActe(FirstSelectedActe)) {
+				ActeurActe element = (ActeurActe) element2;
+				if (checkActeur(element)) {
+					if (element.getActeur().getAssistant().equals("0")) {
+						acteursListe.add(new LabelValueBean(element.getActeur()
+								.getNom(), String.valueOf(element
+								.getActeurActeId())));
+					} else {
+						acteursInfListe.add(new LabelValueBean(element
+								.getActeur().getNom(), String.valueOf(element
+								.getActeurActeId())));
+					}
+
+				}
+			}
+
+			formulaire
+					.setFamillePrestationId(String
+							.valueOf(FirstSelectedFamillePrest
+									.getFamillePrestationId()));
+			formulaire.setFamillesPrestList(famillePrestList);
+			formulaire.setClassesListe(classeList);
+			formulaire.setActesListe(actesListe);
+			formulaire.setActeurActeList(acteursListe);
+			formulaire.setActeurActeInfList(acteursInfListe);
+		} catch (Exception e) {
+			e.printStackTrace();
+			log.fatal(e.getMessage());
+		}
+
+		finally {
+			// session.close();
+			log.debug("********** Fin reinitialiserCombosPrestations GestionCommercialeBO **********");
+		}
+
+	}
+
+	
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see clinique.metier.gestion.commerciale.IGestionCommercialeBO#
 	 * initialiserCombosPrestations
 	 * (clinique.model.gestion.commerciale.GestionCommercialeForm)
 	 */
@@ -5575,6 +5708,8 @@ public class GestionCommercialeBO extends TransactionalBO implements
 
 	}
 
+	
+	
 	/*
 	 * (non-Javadoc)
 	 * 

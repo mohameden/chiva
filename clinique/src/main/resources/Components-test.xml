@@ -12,3 +12,5 @@
      <context:component-scan base-package="clinique.metier.*"/>
      
 </beans>
+
+

@@ -25,9 +25,12 @@
 <link type="text/css" href="<%=request.getContextPath()%>/js/jquery-ui-1.8.18.custom/development-bundle/demos/demos.css" rel="stylesheet" />	
 <script type="text/javascript" src="<%=request.getContextPath()%>/js/jquery-ui-1.8.18.custom/development-bundle/ui/i18n/jquery.ui.datepicker-fr.js"></script>	
 
-   
+<link rel="STYLESHEET" type="text/css" href="<%=request.getContextPath()%>/js/dhtmlxCombo/dhtmlxCombo/codebase/dhtmlxcombo.css">
+<script  src="<%=request.getContextPath()%>/js/dhtmlxCombo/dhtmlxCombo/codebase/dhtmlxcommon.js"></script>
+<script  src="<%=request.getContextPath()%>/js/dhtmlxCombo/dhtmlxCombo/codebase/dhtmlxcombo.js"></script>   
     
 <script type="text/javascript">
+
 
 
 
@@ -60,7 +63,7 @@ function choixActeParFamille()
 {
     	var idDivPC = document.getElementById ("selectFamille");
     	idDivPC.style.display = 'block';
-		
+
 		var idDivPC = document.getElementById ("selectClasse");
     	idDivPC.style.display = 'none';
 
@@ -71,7 +74,7 @@ function choixActeParClasse()
 {
     	var idDivPC = document.getElementById ("selectClasse");
     	idDivPC.style.display = 'block';
-		
+
 		var idDivPC = document.getElementById ("selectFamille");
     	idDivPC.style.display = 'none';
 
@@ -84,7 +87,7 @@ function imprimer(var1)
 	document.forms[0].recuId.value=var1;
 	document.forms[0].dispatch.value = "imprimer";
 	document.forms[0].submit();
-	
+
 }
 
 function regler()
@@ -94,7 +97,7 @@ function regler()
 	document.forms[0].dispatch.value = "reglementRecu";
 	document.forms[0].submit();
 	}
-	
+
 }
 
 function reglerCnamWithDrg()
@@ -113,7 +116,7 @@ function reglerCnamWithDrg()
 function couleurBlanc(obj,var1) {
 	obj.style.border= "solid 1px white";
 	document.getElementById(var1).style.display='none';  
-	 
+
 }
 
 function couleurRouge(obj) {
@@ -124,12 +127,12 @@ function checkMontant()
 {
 	var montantDrg=document.forms[0].resteApayerMajoration;
 	var totalApayer=document.forms[0].totalMontantDrg;
-	
+
 
     	if (parseInt(montantDrg.value) > (parseInt(totalApayer)+999))
 		{
     		document.getElementById("dialog").innerHTML = "<font style=\"oblique\" color=\"#FFFFFF\"  size=\"4\">La différence entre le total DRG et le total a payer ne dois pas dépasser 1000UM<\/font>";
-			   
+
  		   $('#dialog').dialog('open');
 		   return true;
 		}
@@ -137,7 +140,7 @@ function checkMontant()
 		{
 		 return false;
 		}
-	
+
  }
 
 function checkValeurRemise()
@@ -146,9 +149,9 @@ function checkValeurRemise()
 	{
 	   if (document.forms[0].remiseValeur.value=="")
 	     {
-	    	 
+
 		   document.getElementById("dialog").innerHTML = "<font style=\"oblique\" color=\"#FFFFFF\"  size=\"4\">Veuillez saisir la valeur remise<\/font>";
-			   
+
 		   $('#dialog').dialog('open');
 	    	 return true;
 	     }
@@ -183,11 +186,18 @@ function checkNombre()
 
 function chargerActesParFamille(var1)
 {
-	 var url="<%=request.getContextPath()%>/InitServlet?actionXML=chargerActesParFamille&id_famille_prestation="+var1.value;
-	 remplirHtmlSelectFromAjaxRequest(url,document.forms[0].acteId);
-	 chargerActeursInf(document.forms[0].acteId);
-	 chargerActeursMed(document.forms[0].acteId);
+	
 	  
+	 // var url="<%=request.getContextPath()%>/InitServlet?actionXML=chargerActesParFamille&id_famille_prestation="+var1.value;
+	 //remplirHtmlSelectFromAjaxRequest(url,document.forms[0].acteId);
+	 //chargerActeursInf(document.forms[0].acteId);
+	 //chargerActeursMed(document.forms[0].acteId);
+	 
+	 document.forms[0].dispatch.value = "reinitialsierPrestationsFormulaire";
+	document.forms[0].submit();
+	
+	 
+
 }
 
 
@@ -195,8 +205,8 @@ function chargerActes(var1)
 {
 	var url="<%=request.getContextPath()%>/InitServlet?actionXML=chargerActes&id_classe="+var1.value;
 	 remplirHtmlSelectFromAjaxRequest(url,document.forms[0].acteId);
-	 chargerActeursInf(document.forms[0].acteId);
-	 chargerActeursMed(document.forms[0].acteId);
+	 //chargerActeursInf(document.forms[0].acteId);
+	 //chargerActeursMed(document.forms[0].acteId);
 }
 
 
@@ -224,7 +234,7 @@ function afficherActes()
 {
 	if (document.forms[0].choixActePar[0].checked)
 	{
-		
+
 		choixActeParFamille();
 	}	
 	else
@@ -237,9 +247,9 @@ function afficherActes()
 
 		$(window).load(function(){
 
-		
-			afficherActes();
-			
+
+			//afficherActes();
+
 			});
 
 function OuvrirDivPrestation()
@@ -261,7 +271,7 @@ function fermerDivRemiseValeur()
 	var idDiv = document.getElementById ("remiseValeur");
 	idDiv.style.display = 'none';
 
-	
+
 }
 
 function ouvrirDivRemise()
@@ -281,17 +291,19 @@ function ouvrirDivRemise()
 
 function FermerDivPrestation()
 {
-	
+
 	if (!checkNombre())
 	{
-	var idDiv = document.getElementById ("formulPrest");
-	idDiv.style.display = 'none';
-	
+	//var idDiv = document.getElementById ("formulPrest");
+	//idDiv.style.display = 'none';
+
 	document.forms[0].dispatch.value = "ajouterActe";
+	//document.getElementById('nombreActe').focus();
+	
 	document.forms[0].submit();
-	
+	//document.getElementById('btnValider').onclick();
 	}
-	
+
 }
 
 function CacherDivPrestation()
@@ -307,8 +319,8 @@ function activerMedecinChoix()
 
 	var url="<%=request.getContextPath()%>/InitServlet?actionXML=chargerActeursMed&id_acte="+document.forms[0].acteId.value;
 	 remplirHtmlSelectFromAjaxRequest(url,document.forms[0].acteurActeId);
-	 
-	
+
+
 }
 
 function desactiverMedecinChoix()
@@ -316,7 +328,7 @@ function desactiverMedecinChoix()
 	var idDiv = document.getElementById ("divMedecin");
 	idDiv.style.display = 'none';
 
-	
+
 }
 
 function activerInfirmierChoix()
@@ -351,13 +363,83 @@ function supprimerDrg(var1)
 
 }
 
-
+function onBlurFunc() {
+	//FermerDivPrestation();
+	alert('tttt');
+	//onchange="chargerActeursInf(this); chargerActeursMed(this);"
+	  alert(document.forms[0].famillePrestationId.value);
+	  var url="<%=request.getContextPath()%>/InitServlet?actionXML=checkActeursMed&id_acte="+document.forms[0].acteId.value;
+	  var objXML=getXMLResponse(url);
 	
+	 if (getNombreActeurs(objXML)>0)
+		  {
+		 
+		 	document.forms[0].medecinChoix[0].checked=true;
+			  
+		  }
+	 else document.forms[0].medecinChoix[0].checked=false;
+}
+
+function test()
+{
+	 
+	window.dhx_globalImgPath = "<%=request.getContextPath()%>/js/dhtmlxCombo/dhtmlxCombo/codebase/imgs/";
+
+	var z = dhtmlXComboFromSelect("combo_zone1");
+	z.enableFilteringMode(true);
+	
+	z.attachEvent("onChange", function(){
+        var value = z.getActualValue();
+        var existeActeurs=0;
+        var url="<%=request.getContextPath()%>/InitServlet?actionXML=checkActeursMed&id_acte="+value;
+  	  var objXML=getXMLResponse(url);
+  	
+  	 if (getNombreActeurs(objXML)>0)
+  		  {
+  		 
+  		 	document.forms[0].medecinChoix[0].checked=true;
+  		 	activerMedecinChoix();
+  		 	existeActeurs=existeActeurs+1;
+  		  }
+  	 else 
+  		 {
+  		 document.forms[0].medecinChoix[0].checked=false;
+  		 desactiverMedecinChoix();
+  		 }
+  	 
+  	var url1="<%=request.getContextPath()%>/InitServlet?actionXML=checkActeursInf&id_acte="+value;
+	  var objXML1=getXMLResponse(url1);
+	
+	 if (getNombreActeurs(objXML1)>0)
+		  {
+		
+		 	document.forms[0].infirmierChoix[0].checked=true;
+		 activerInfirmierChoix();
+		 existeActeurs=existeActeurs+1;
+		  }
+	 else 
+		 {
+		 document.forms[0].infirmierChoix[0].checked=false;
+		 desactiverInfirmierChoix();
+		 }
+	 
+	 
+	 if (existeActeurs == 0) FermerDivPrestation();
+	 else document.getElementById('nombreActe').focus();
+           });
+	
+	
+	
+	
+	}
+
+
+
 </script>
 
 </head>
 
-<body>
+<body onload="test()">
 <div class=demos>
 <table bordercolor="#FF6600;" height="100%"  width="100%" align="center" style="border-right-style:solid; border-left-style:solid; border-top-style:solid; border-bottom-style:solid;">
 <jsp:include page="/template/header.jsp" />
@@ -424,16 +506,16 @@ function supprimerDrg(var1)
 	<td> Le nombre  doit etre superieur ou egal a 0 </td>
 	</tr>
 	</table>
-	
-	
+
+
 
 <table width="100%"   align="center" style="background:#00253E; ">
            
           
 		 <tr><td>
-		  
+
 		  <table width="80%" align="center" bgcolor="#00253E">
-		 
+
 		  <tr> 
 		  <td colspan="2" >
 		  <table cellspacing="0" width="100%" align="center"  align="left"  style=" border-color:#FF6600; border-width:1px; border-style:solid; border-left:none;   border-right:none; border-top:none;">
@@ -444,12 +526,12 @@ function supprimerDrg(var1)
 		  </table>
 		  </td>
 		  </tr>
-		  
+
 		  <tr><td colspan="2"></td></tr>
-		  
+
 		  <tr>
 		  <td colspan="2" style="background:#0B415F;">	  
-		  
+
 		  <table width="100%"   align="center" style="background:#00253E; font-size:14; font-weight:bold; color: white;">
 		  <tr><td>
 		  <table width="100%" align="left" style="background:#00253E; font-size:14; font-weight:bold; color: white;">
@@ -506,7 +588,7 @@ function supprimerDrg(var1)
 		  </table>
 		   </td></tr>
 		  </table>
-		  
+
 		  </td>
 		  </tr>
 		  <tr>
@@ -523,7 +605,7 @@ function supprimerDrg(var1)
 			      <html:radio property="choixActePar" name="formInfosPatient" onclick="choixActeParFamille();" value="famille"/>Famille prestations
 			      <html:radio property="choixActePar" name="formInfosPatient" onclick="choixActeParClasse();" value="classe"/>Classe
 	              </logic:empty> 
-	              
+
 	               <logic:notEmpty name="formInfosPatient" property="detailsFactureList">
 			      <html:radio property="choixActePar" name="formInfosPatient" onclick="choixActeParFamille();" disabled="true"  value="famille"/>Famille prestations
 			      <html:radio property="choixActePar" name="formInfosPatient" onclick="choixActeParClasse();" disabled="true"  value="classe"/>Classe
@@ -534,13 +616,13 @@ function supprimerDrg(var1)
 			<td >Familles prestations</td>
 			 <td>
 			 <logic:empty name="formInfosPatient" property="detailsFactureList">
-			 
+
 			 <html:select  styleClass="champText"  property="famillePrestationId" onchange="chargerActesParFamille(this);">
 				<html:optionsCollection name="formInfosPatient" property="famillesPrestList"  label="label" value="value" />
 			 </html:select>
-		
+
 			 </logic:empty>
-			 
+
 			 <logic:notEmpty name="formInfosPatient" property="detailsFactureList">
 			 <html:select  styleClass="champText"  property="famillePrestationId" disabled="true" onchange="chargerActesParFamille(this);">
 				<html:optionsCollection name="formInfosPatient" property="famillesPrestList"  label="label" value="value" />
@@ -557,22 +639,23 @@ function supprimerDrg(var1)
 				<html:optionsCollection name="formInfosPatient" property="classesListe" label="label" value="value" />
 			  </html:select>
 			  </logic:empty>
-			  
+
 			  <logic:notEmpty name="formInfosPatient" property="detailsFactureList">
 			  <html:select styleClass="champText" property="classeId" disabled="true"  onchange="chargerActes(this);">
 				<html:optionsCollection name="formInfosPatient" property="classesListe" label="label" value="value" />
 			  </html:select>
 			  </logic:notEmpty>
-			  
+
 			 </td>
 			 <td></td>
 			</tr>
-			 
+
 			 <tr>
 			  <td >Actes</td>
 			  <td>
 			  
-				<html:select styleClass="champText"  property="acteId" onchange="chargerActeursInf(this); chargerActeursMed(this);" >
+			     
+				<html:select styleId="combo_zone1"  property="acteId"  >
 				 <html:optionsCollection name="formInfosPatient" property="actesListe" label="label" value="value" />
 				</html:select>
 			  </td>
@@ -594,12 +677,12 @@ function supprimerDrg(var1)
 			  </td>
 			  <td></td>
 			 </tr>
-			 
+
 			 <tr >
 			  <td  colspan="3" style="background:#0B415F;">
 			  </td>
 		     </tr>
-		     
+
 			 <tr>
 			  <td >Medecin/praticien</td>
 			  <td>
@@ -619,10 +702,10 @@ function supprimerDrg(var1)
 				  </table>
 			  </td>
 			  <td>
-			   
+
 			  </td>
 			 </tr>
-			 
+
 			  <tr>
 			  <td >Infirmier/assistant</td>
 			  <td>
@@ -631,7 +714,7 @@ function supprimerDrg(var1)
 					    <td width="20%" align="left">
 					      <html:radio property="infirmierChoix" name="formInfosPatient" onclick="activerInfirmierChoix();" value="oui"/> Oui
 				            <html:radio property="infirmierChoix" name="formInfosPatient" onclick="desactiverInfirmierChoix();" value="non"/> Non
-				
+
 					    </td>
 					    <td width="20%" align="left">
 					       <html:select styleClass="champText" property="acteurActeIdInf" styleId="divInfirmier" style="display: none;">
@@ -647,27 +730,27 @@ function supprimerDrg(var1)
 			  <td> 
 			  </td>
 			 </tr>
-			 
+
 			 <tr >
 			  <td  colspan="3" style="background:#0B415F;">
 			  </td>
 		  </tr>
-		
+
 		  <tr><td align="center" colspan="4">
-		  <input type="button" onclick="FermerDivPrestation();" value="Valider" size ="50" style="font-weight:bold; background-color:#00253E; color:#FFFFFF; cursor:hand; border:solid 2px #FF6600;"  />
+		  <input id="btnValider" type="button" onclick="FermerDivPrestation();" value="Valider" size ="50" style="font-weight:bold; background-color:#00253E; color:#FFFFFF; cursor:hand; border:solid 2px #FF6600;"  />
 		  <input type="button" onclick="CacherDivPrestation();" value="Annuler" size ="50" style="display:none; font-weight:bold; background-color:#00253E; color:#FFFFFF; cursor:hand; border:solid 2px #FF6600;"  />
 		  </td></tr>
-		  
+
 		  </table>
 		 </div>
-		
+
 		  </td>
 		  </tr>
 		  <tr>
 		  <td colspan="2" style="background:#0B415F;">
-		  
+
 		  <table width="100%"   align="center" style="background:#00253E; font-size:14; font-weight:bold; color: white;">
-		  		  
+
 		  		  <tr>
 		  		  <td>
 		  		  <table width="100%" align="left" style="background:#00253E; font-size:14; font-weight:bold; color: white;">
@@ -678,54 +761,54 @@ function supprimerDrg(var1)
   <display:table id="row"  name="sessionScope.formInfosPatient.detailsFactureList"  class="mars" pagesize="5" defaultsort="1" defaultorder="descending" >
 		<display:setProperty name="paging.banner.placement" value="bottom"></display:setProperty>
 		<display:setProperty name="css.tr.even" value="even"></display:setProperty>
-		   
 
-		 	
+
+
 			<display:column  property="nomActe" title="Acte" />
-				
+
 			<display:column  property="nbrActes" title="Nombre Actes" />
 			<display:column  property="montantTotal" title="Prix" />
-			
-			
+
+
 					</display:table>
 		  		  </td>
 		  		  </tr>
-		  
+
 
 		  </table>
 		  		  </td>
 		  		  </tr>
-		  		
+
 		  </table>
-		  
+
 		  </td>
 		  </tr>
-		 
-		  
+
+
 		  <tr>
 		  <td >
-		  
+
 		  <logic:notEmpty name="formInfosPatient" property="detailsFactureList">
 		   <table width="100%"   align="center" style="background:#00253E; font-size:14; font-weight:bold; color: white;">
-		  		  
+
 		  		  <tr>
 		  		  <td style="background:#0B415F;">
 		  		  <table width="100%" align="left" style="background:#00253E; font-size:14; font-weight:bold; color: white;">
-		  		 
-		  		  
+
+
 		  	        <tr id="btnRegler" style="display:block">
 		  		  <td colspan="4" align="center">
-		  		  
+
 		  		   <logic:notEqual name="formInfosPatient" property="libeleAssureur" value="CNAM">
 		  		     <input type="button" onclick="ouvrirDivRemise();" value="Régler" size ="50" style="font-weight:bold; background-color:#00253E; color:#FFFFFF; cursor:hand; border:solid 2px #FF6600;"  />
 		  		  </logic:notEqual>
-		  		  
+
 		  		  <logic:equal name="formInfosPatient" property="libeleAssureur" value="CNAM">
 
 		  		     <input type="button" onclick="ajouterDrg();" value="Ajout des DRG" size ="50" style="font-weight:bold; background-color:#00253E; color:#FFFFFF; cursor:hand; border:solid 2px #FF6600;"  />
 
 		  		  </logic:equal>
-		  		  
+
 		  		  </td>
 		  		  </tr>
 		  		  <tr id="divRemise" style="display: none">
@@ -738,19 +821,19 @@ function supprimerDrg(var1)
 			  		  <html:radio property="remiseFlag" name="formInfosPatient" onclick="fermerDivRemiseValeur();" value="non"/> Non
 			  		  </td>
 			  		  <td colspan="2">
-			  		  
+
 			  		  </td>
 			  		  </tr>
 			  		  <tr id="remiseValeur" style="display: none">
 			  		  <td colspan="4" align="center">
 			  		  <html:text styleClass="champText" maxlength="2" property="remiseValeur" onkeypress="Numerique();" />
-			  		  
+
 			  		  </td>
 			  		  </tr>
 			  		  <tr>
 			  		  <td colspan="4" align="center">
 		  		     <input type="button" onclick="regler();" value="Valider" size ="50" style="font-weight:bold; background-color:#00253E; color:#FFFFFF; cursor:hand; border:solid 2px #FF6600;"  />
-		  		    
+
 			  	      </td>
 			  		 </tr>
 			  		 </table>
@@ -759,10 +842,10 @@ function supprimerDrg(var1)
 		  		  </table>
 		  		  </td>
 		  		  </tr>
-		  		
+
 		  </table>
 		  </logic:notEmpty>
-		  
+
 		  <!-- ui-dialog -->
 		  <div id="dialog" title="Information"  style="background:#00253E;" >
          </div>
