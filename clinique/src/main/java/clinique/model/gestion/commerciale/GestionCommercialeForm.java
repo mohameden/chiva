@@ -3,12 +3,16 @@ package clinique.model.gestion.commerciale;
 import java.util.ArrayList;
 import java.util.List;
 
+import net.sf.jasperreports.engine.xml.JRSectionFactory.DetailSectionFactory;
+
 import org.apache.struts.action.ActionForm;
 
 import clinique.mapping.Badge;
 import clinique.mapping.ChambresHospitalisation;
 import clinique.mapping.DetailFacture;
+import clinique.mapping.DetailFactureChirurgie;
 import clinique.mapping.DetailFactureModifiees;
+import clinique.mapping.DetailFactureServices;
 import clinique.mapping.DevisActes;
 import clinique.mapping.DevisAssureur;
 import clinique.mapping.DrgCnam;
@@ -232,6 +236,39 @@ public class GestionCommercialeForm extends ActionForm {
 	private String typeSortie;
 
 	private int urgenceActe;
+	
+	private String idDetailFactAsupprimer;
+	
+	private List chirurgiens = new ArrayList();
+	
+	private List anesthesistes = new ArrayList();
+	
+	private List assistantsBloc = new ArrayList();
+	
+	private List assistantsAnesthesiste = new ArrayList();
+	
+	
+    private String chirurgienId;
+	
+	private String anesthesisteId;
+	
+	private String assistantBlocId ;
+	
+	private String assistantAnesthesisteId;
+	
+	
+	private String assistantBlocExiste = "non";
+	
+	private String assistantAnesthesisteExiste = "non";
+	
+	private String typePC="tout";
+	
+	
+	@SuppressWarnings("unchecked")
+	private List detailsFactureChirurgieList = new ArrayList();
+	
+	@SuppressWarnings("unchecked")
+	private List detailsFactureServicesList = new ArrayList();
 
 	public String getActeId() {
 		return acteId;
@@ -1429,6 +1466,126 @@ public class GestionCommercialeForm extends ActionForm {
 
 	public void setUrgenceActe(int urgenceActe) {
 		this.urgenceActe = urgenceActe;
+	}
+
+	public String getIdDetailFactAsupprimer() {
+		return idDetailFactAsupprimer;
+	}
+
+	public void setIdDetailFactAsupprimer(String idDetailFactAsupprimer) {
+		this.idDetailFactAsupprimer = idDetailFactAsupprimer;
+	}
+
+	public List getChirurgiens() {
+		return chirurgiens;
+	}
+
+	public void setChirurgiens(List chirurgiens) {
+		this.chirurgiens = chirurgiens;
+	}
+
+	public List getAnesthesistes() {
+		return anesthesistes;
+	}
+
+	public void setAnesthesistes(List anesthesistes) {
+		this.anesthesistes = anesthesistes;
+	}
+
+	
+
+	public String getAssistantBlocExiste() {
+		return assistantBlocExiste;
+	}
+
+	public void setAssistantBlocExiste(String assistantBlocExiste) {
+		this.assistantBlocExiste = assistantBlocExiste;
+	}
+
+	public String getAssistantAnesthesisteExiste() {
+		return assistantAnesthesisteExiste;
+	}
+
+	public void setAssistantAnesthesisteExiste(String assistantAnesthesisteExiste) {
+		this.assistantAnesthesisteExiste = assistantAnesthesisteExiste;
+	}
+
+	public List getAssistantsBloc() {
+		return assistantsBloc;
+	}
+
+	public void setAssistantsBloc(List assistantsBloc) {
+		this.assistantsBloc = assistantsBloc;
+	}
+
+	public List getAssistantsAnesthesiste() {
+		return assistantsAnesthesiste;
+	}
+
+	public void setAssistantsAnesthesiste(List assistantsAnesthesiste) {
+		this.assistantsAnesthesiste = assistantsAnesthesiste;
+	}
+
+	public String getChirurgienId() {
+		return chirurgienId;
+	}
+
+	public void setChirurgienId(String chirurgienId) {
+		this.chirurgienId = chirurgienId;
+	}
+
+	public String getAnesthesisteId() {
+		return anesthesisteId;
+	}
+
+	public void setAnesthesisteId(String anesthesisteId) {
+		this.anesthesisteId = anesthesisteId;
+	}
+
+	public String getAssistantBlocId() {
+		return assistantBlocId;
+	}
+
+	public void setAssistantBlocId(String assistantBlocId) {
+		this.assistantBlocId = assistantBlocId;
+	}
+
+	public String getAssistantAnesthesisteId() {
+		return assistantAnesthesisteId;
+	}
+
+	public void setAssistantAnesthesisteId(String assistantAnesthesisteId) {
+		this.assistantAnesthesisteId = assistantAnesthesisteId;
+	}
+
+	public List getDetailsFactureChirurgieList() {
+		
+		return detailsFactureChirurgieList;
+	}
+
+	public void setDetailsFactureChirurgieList(List detailsFactureChirurgieList) {
+		EntityCopier<DetailFactureChirurgie> copier = new EntityCopier<DetailFactureChirurgie>();
+		this.detailsFactureChirurgieList = copier.copyList(detailsFactureChirurgieList);
+
+	}
+
+	public List getDetailsFactureServicesList() {
+		return detailsFactureServicesList;
+	}
+
+	public void setDetailsFactureServicesList(List detailsFactureServicesList) {
+		EntityCopier<DetailFactureServices> copier = new EntityCopier<DetailFactureServices>();
+		this.detailsFactureServicesList = copier.copyList(detailsFactureServicesList);
+		
+
+	}
+
+	public String getTypePC() {
+		return typePC;
+	}
+
+	public void setTypePC(String typePC) {
+		this.typePC = typePC;
 	}
 
 }

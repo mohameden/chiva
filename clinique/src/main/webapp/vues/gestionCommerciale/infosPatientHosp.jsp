@@ -58,6 +58,9 @@
 	{ 
 		 var url="<%=request.getContextPath()%>/InitServlet?actionXML=chargerCategories&id_entreprise="+var1.value;
 		 remplirHtmlSelectFromAjaxRequest(url,document.forms[0].categorieId);
+		 
+		 if (document.forms[0].priseEnChargeFlag[1].checked) afficherPourcentage();
+		 //alert(document.forms[0].categorieId.value);
 	}
 
    function checkDateNaiss()
@@ -95,6 +98,18 @@
 		  }
          
 		     }
+	}
+   
+   function afficherPourcentage()
+	{ 
+		  var var1=document.forms[0].categorieId.value; 
+		  var url="<%=request.getContextPath()%>/InitServlet?actionXML=getPourcentage&categorieId="+var1;
+		  var objXML=getXMLResponse(url);
+		 
+
+			   document.forms[0].pourcentage.value=getNombre(objXML);
+		
+		   
 	}
 
   function checkDatesPC()
@@ -447,6 +462,8 @@
     	var idDivPC = document.getElementById ("divPriseEncharge");
     	idDivPC.style.display = 'block';
     	
+    	if (document.forms[0].priseEnChargeFlag[1].checked) afficherPourcentage();
+    	
     }
     
     function activerBadge()
@@ -489,6 +506,34 @@
     	desactiverAssureur();
     	desactiverBadge();
     }
+    
+    function desactiverBtnAdd()
+    {
+    	var idDiv = document.getElementById ("btnAdd");
+    	var idDiv1 = document.getElementById ("divListPc");
+    	var idDiv2 = document.getElementById ("divListPc1");
+    	
+    	
+    	idDiv.style.display = 'none';
+    	idDiv1.style.display = 'none';
+    	idDiv2.style.display = 'none';
+    	
+    }
+    
+    function activerBtnAdd()
+    {
+    	var idDiv = document.getElementById ("btnAdd");
+    	var idDiv1 = document.getElementById ("divListPc");
+    	var idDiv2 = document.getElementById ("divListPc1");
+    	
+    	
+    	idDiv.style.display = 'block';
+    	idDiv1.style.display = 'block';
+    	idDiv2.style.display = 'block';
+    	
+    }
+    
+    
 
     function supprimerPrest(var1)
     {
@@ -666,12 +711,14 @@
 
 		function afficherActesLimites()
 		{
+			
 			var idDivActesLimites = document.getElementById ("divActesLimites");
 			idDivActesLimites.style.display = 'block';
 		}
 
 		function cacherActesLimites()
 		{
+			
 			var idDivActesLimites = document.getElementById ("divActesLimites");
 			idDivActesLimites.style.display = 'none';
 		} 
@@ -679,12 +726,28 @@
 	function afficherAddPcPrestation()
 	{
 		var idDivPC = document.getElementById ("AddPrestation");
+		var idDivPC1 = document.getElementById ("AddFamille");
 		var idBtnAdd = document.getElementById ("btnAdd");
 		var idBtnNext = document.getElementById ("btnNext");
     	idDivPC.style.display = 'block';
+    	idDivPC1.style.display = 'none';
     	idBtnAdd.style.display = 'none';
     	idBtnNext.style.display = 'none';
 	}
+	
+	function afficherAddPcFamille()
+	{
+		var idDivPC = document.getElementById ("AddPrestation");
+		var idDivPC1 = document.getElementById ("AddFamille");
+		var idBtnAdd = document.getElementById ("btnAdd");
+		var idBtnNext = document.getElementById ("btnNext");
+    	idDivPC1.style.display = 'block';
+    	idDivPC.style.display = 'none';
+    	idBtnAdd.style.display = 'none';
+    	idBtnNext.style.display = 'none';
+	}
+	
+	
 
 	function cacherAddPcPrestation()
 	{
@@ -696,6 +759,19 @@
     	idBtnNext.style.display = 'block';
     	idDivPC.style.display = 'none';
 	}
+	
+	function cacherAddPcFamille()
+	{
+		var idDivPC = document.getElementById ("AddFamille");
+		var idBtnAdd = document.getElementById ("btnAdd");
+		var idBtnNext = document.getElementById ("btnNext");
+    	
+		idBtnAdd.style.display = 'block';
+    	idBtnNext.style.display = 'block';
+    	idDivPC.style.display = 'none';
+	}
+	
+	
 
 			
 
@@ -986,16 +1062,39 @@
 		                 <td><html:text styleClass="champText" property="plafond" onfocus="couleurBlanc(this,'ErrPlafond');" onkeypress="Numerique();" size ="23"/></td>
 		                 
 		                 </tr>
-		                <tr>
+		               
+		                 <tr>
 		                <td>Pourcentage</td>
 		                 <td><html:text styleClass="champText" property="pourcentage" maxlength="3" onfocus="couleurBlanc(this,'ErrPourcentage'); couleurBlanc(this,'ErrPourcentage2');" onkeypress="Numerique();"  size ="23"/></td>
 		               	<td colspan="2"></td>
 		                 </tr>
-		                <tr id="btnAdd" align="center">
+		                  <tr>
+		                <td colspan="4" align="center">
+		                   <html:radio property="typePC" name="formInfosPatient" onclick="desactiverBtnAdd();" value="tout"/>Tout
+		                   <html:radio property="typePC" name="formInfosPatient" onclick="activerBtnAdd();" value="familleOuActe"/>Familles ou actes
+		                   
+		                </td>
+		                 </tr>
+		                 <tr bgcolor="#0B415F" >
+						  <td width="100%" colspan="4"></td>
+						  </tr>
+						  
+						  
+		                 <tr id="btnAdd" align="center" style="display: none;">
 		                 <td colspan="4" align="center"> 
-		                <input type="button"  onclick="afficherAddPcPrestation();" value="Ajouter un acte" size ="50" style="font-weight:bold; background-color:#00253E; color:#FFFFFF; cursor:hand; border:solid 2px #FF6600;"  />
+		                <input type="button"  onclick="afficherAddPcFamille();" value="Familles prises en charge" size ="50" style="font-weight:bold; background-color:#00253E; color:#FFFFFF; cursor:hand; border:solid 2px #FF6600;"  />
+		                
+		                <input type="button"  onclick="afficherAddPcPrestation();" value="Actes pris en charge" size ="50" style="font-weight:bold; background-color:#00253E; color:#FFFFFF; cursor:hand; border:solid 2px #FF6600;"  />
+		                
 		                </td>
 		                </tr>
+		                
+		                 
+		                
+		                <tr bgcolor="#0B415F" >
+						  <td width="100%" colspan="4"></td>
+						 </tr>
+		                
 		                <tr id="AddPrestation" style="display: none">
 		                 <td colspan="4"> 
 		                    <table  width="100%"  style="background:#00253E; font-size:14; font-weight:bold; color: white;">
@@ -1047,7 +1146,7 @@
 					          <td></td>
 				         </tr>
 				         <tr id="divActesLimites" style="display: block;">
-				         <td >Nombre actes</td>
+				         <td >Nombre </td>
 	                     <td ><html:text styleClass="champText" property="nombreActesPC" onfocus="couleurBlanc(this,'ErrNombreActes');" onkeypress="Numerique();" size ="23"/></td>
 				         <td></td>
 				         </tr>
@@ -1062,15 +1161,73 @@
 		                 </td>
 		                </tr>
 		                
+		                 <tr id="AddFamille" style="display: none">
+		                 <td colspan="4"> 
+		                    <table  width="100%"  style="background:#00253E; font-size:14; font-weight:bold; color: white;">
+		                    <tr align="center"><td colspan="4" bgcolor="#0B415F" > Ajouter prestation</td></tr>
+                                     <tr align="center">
+			       <td colspan="4">Choisir par :
+			      
+			      <html:radio property="choixActePar" name="formInfosPatient" onclick="choixActeParFamille();" value="famille"/>Famille prestations
+			      
+			       <html:radio property="choixActePar" name="formInfosPatient" onclick="choixActeParClasse();" value="classe"/>Classe
+			       </td>
+			       
+			       </tr>
+                           
+				         <tr id="selectFamille" style="display: block;">
+						  <td >Familles prestations</td>
+						  <td>
+						  <html:select  styleClass="champText"  property="famillePrestationId" >
+							<html:optionsCollection name="formInfosPatient" property="famillesPrestList"  label="label" value="value" />
+						  </html:select>
+						  </td>
+						  <td></td>
+				         </tr>
+				         <tr id="selectClasse" style="display: none;">
+				            <td >Classes prestations</td>
+						  <td>
+						  <html:select styleClass="champText" property="classeId"  >
+							<html:optionsCollection name="formInfosPatient" property="classesListe" label="label" value="value" />
+						  </html:select>
+						  </td>
+						  <td></td>
+				         </tr>
+				       
+				         <tr>
+				             <td>Nombre limité </td>
+				             <td>
+					           <html:radio property="actesLimite" name="formInfosPatient" onclick="afficherActesLimites();" value="oui"/> Oui
+					           <html:radio property="actesLimite" name="formInfosPatient" onclick="cacherActesLimites();" value="non"/> Non
+					         </td>
+					          
+					          <td></td>
+				         </tr>
+				         <tr id="divActesLimites" style="display: block;">
+				         <td >Nombre actes</td>
+	                     <td ><html:text styleClass="champText" property="nombreActesPC" onfocus="couleurBlanc(this,'ErrNombreActes');" onkeypress="Numerique();" size ="23"/></td>
+				         <td></td>
+				         </tr>
+				         <tr>
+				         <td colspan="3" align="center">
+				         <input type="button" onclick="ajouterPrestCouv();" value="Valider" size ="50" style="font-weight:bold; background-color:#00253E; color:#FFFFFF; cursor:hand; border:solid 2px #FF6600;"  />
+                         <input type="button" onclick="cacherAddPcFamille();" value="Annuler" size ="50" style="font-weight:bold; background-color:#00253E; color:#FFFFFF; cursor:hand; border:solid 2px #FF6600;"  />
+                         
+				         </td>
+				         </tr>
+				         </table>
+		                 </td>
+		                </tr>
 		                
 		                
-		  <tr  align="center" bgcolor="#0B415F">
+		                
+		  <tr id="divListPc"  align="center" bgcolor="#0B415F" style="display: none;">
             <td colspan="4" bgcolor="#0B415F" > Liste des prestations couvertes  
             
             </td>
             
           </tr>
-	      <tr>
+	      <tr id="divListPc1" style="display: none;">
 	      <td colspan="4" align="center" width="100%">
 		            <display:table id="row"  name="sessionScope.formInfosPatient.prestationCouvertesPcs"  class="mars" pagesize="5" defaultsort="1" defaultorder="descending" >
 								<display:setProperty name="paging.banner.placement" value="bottom"></display:setProperty>

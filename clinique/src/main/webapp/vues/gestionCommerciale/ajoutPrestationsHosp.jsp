@@ -164,9 +164,56 @@ function chargerActesParFamille(var1)
 {
 	 var url="<%=request.getContextPath()%>/InitServlet?actionXML=chargerActesParFamille&id_famille_prestation="+var1.value;
 	 remplirHtmlSelectFromAjaxRequest(url,document.forms[0].acteId);
-	 chargerActeursInf(document.forms[0].acteId);
-	 chargerActeursMed(document.forms[0].acteId);
+	 if (var1.value=='7') 
+     {
+		 activerChirurgie(); 
+		 
+		    chargerChirurgiens(document.forms[0].acteId);
+			chargerAnesthesistes(document.forms[0].acteId);
+			chargerAssistantsChirurgien(document.forms[0].acteId);
+			chargerAssistantsAnesthesiste(document.forms[0].acteId);
+     }
+	 else
+	 {
+		 desactiverChirurgie();
+		 
+		 chargerActeursInf(document.forms[0].acteId);
+		 chargerActeursMed(document.forms[0].acteId);
+	 }
+	 
 	  
+}
+
+function activerChirurgie()
+{
+	document.getElementById('trChirurgien').style.display='block';
+	document.getElementById('trAnesthesiste').style.display='block';
+	document.getElementById('trAssistantAnesthesiste').style.display='block';
+	document.getElementById('trAssistantChirurgien').style.display='block';
+	
+	document.getElementById('trMedecin').style.display='none';
+	document.getElementById('trInfirmier').style.display='none';
+	
+	document.getElementById('boutonChirurgie').style.display='block';
+	document.getElementById('boutonNoChirurgie').style.display='none';
+	
+	
+
+}
+
+function desactiverChirurgie()
+{
+	document.getElementById('trChirurgien').style.display='none';
+	document.getElementById('trAnesthesiste').style.display='none';
+	document.getElementById('trAssistantAnesthesiste').style.display='none';
+	document.getElementById('trAssistantChirurgien').style.display='none';
+	
+	document.getElementById('trMedecin').style.display='block';
+	document.getElementById('trInfirmier').style.display='block';
+	
+	document.getElementById('boutonChirurgie').style.display='none';
+	document.getElementById('boutonNoChirurgie').style.display='block';
+
 }
 
 
@@ -177,6 +224,54 @@ function chargerActes(var1)
 	 chargerActeursInf(document.forms[0].acteId);
 	 chargerActeursMed(document.forms[0].acteId);
 }
+
+function chargerChirurgiens(var1)
+{
+	
+	var url="<%=request.getContextPath()%>/InitServlet?actionXML=chargerChirurgiens&id_acte="+var1.value;
+	 remplirHtmlSelectFromAjaxRequest(url,document.forms[0].chirurgienId);
+	
+}
+
+function chargerAnesthesistes(var1)
+{
+	
+	var url="<%=request.getContextPath()%>/InitServlet?actionXML=chargerAnesthesistes&id_acte="+var1.value;
+	 remplirHtmlSelectFromAjaxRequest(url,document.forms[0].anesthesisteId);
+	
+}
+
+function chargerAssistantsChirurgien(var1)
+{
+	if(document.forms[0].assistantBlocExiste[0].checked)
+	{
+	var url="<%=request.getContextPath()%>/InitServlet?actionXML=chargerAssistantsChirurgien&id_acte="+var1.value;
+	 remplirHtmlSelectFromAjaxRequest(url,document.forms[0].assistantBlocId);
+	}
+}
+
+function chargerAssistantsAnesthesiste(var1)
+{
+	if(document.forms[0].assistantAnesthesisteExiste[0].checked)
+	{
+	var url="<%=request.getContextPath()%>/InitServlet?actionXML=chargerAssistantsChirurgien&id_acte="+var1.value;
+	 remplirHtmlSelectFromAjaxRequest(url,document.forms[0].assistantAnesthesisteId);
+	}
+}
+
+
+function chargerChirurgieCombos(var1)
+{
+	
+	chargerChirurgiens(var1);
+	chargerAnesthesistes(var1);
+	chargerAssistantsChirurgien(var1);  
+    chargerAssistantsAnesthesiste(var1);	
+
+}
+
+
+
 
 
 
@@ -264,11 +359,65 @@ function FermerDivPrestation()
 	
 }
 
+
+function FermerDivPrestationChirurgie()
+{
+	
+	if (!checkNombre())
+	{
+	var idDiv = document.getElementById ("formulPrest");
+	idDiv.style.display = 'block';
+	
+	document.forms[0].dispatch.value = "ajouterActeChirurgie";
+	document.forms[0].submit();
+	
+	}
+	
+}
+
 function CacherDivPrestation()
 {
 	var idDiv = document.getElementById ("formulPrest");
 	idDiv.style.display = 'block';
 }
+
+
+
+function activerAssistantChirurgien()
+{
+	var idDiv = document.getElementById ("divAssistantsBloc");
+	idDiv.style.display = 'block';
+	
+	chargerAssistantsChirurgien(document.forms[0].acteId);
+}
+
+
+function desactiverAssistantChirurgien()
+{
+	var idDiv = document.getElementById ("divAssistantsBloc");
+	idDiv.style.display = 'none';
+}
+
+
+function activerAssistantAnesthesiste()
+{
+	var idDiv = document.getElementById ("divAssistantsAnesthesiste");
+	idDiv.style.display = 'block';
+	
+	chargerAssistantsAnesthesiste(document.forms[0].acteId);
+	
+}
+
+
+function desactiverAssistantAnesthesiste()
+{
+	var idDiv = document.getElementById ("divAssistantsAnesthesiste");
+	idDiv.style.display = 'none';
+}
+
+
+
+
 
 function activerMedecinChoix()
 {
@@ -510,7 +659,7 @@ function target_popup(form) {
 			 <tr>
 			  <td >Actes</td>
 			  <td>
-				<html:select styleClass="champText" property="acteId" onchange="chargerActeursInf(this); chargerActeursMed(this);" >
+				<html:select styleClass="champText" property="acteId" onchange="chargerActeursInf(this); chargerActeursMed(this); chargerChirurgieCombos(this);" >
 				 <html:optionsCollection name="formInfosPatient" property="actesListe" label="label" value="value" />
 				</html:select>
 			  </td>
@@ -538,7 +687,7 @@ function target_popup(form) {
 			  </td>
 		     </tr>
 		     
-			 <tr>
+			 <tr id="trMedecin">
 			  <td >Medecin/praticien</td>
 			  <td>
 				  <table width="100%" align="left" style="background:#00253E; font-size:14; font-weight:bold; color: white;">
@@ -561,7 +710,7 @@ function target_popup(form) {
 			  </td>
 			 </tr>
 			 
-			  <tr>
+			  <tr id="trInfirmier">
 			  <td >Infirmier/assistant</td>
 			  <td>
 				       <table width="100%" align="left" style="background:#00253E; font-size:14; font-weight:bold; color: white;">
@@ -590,8 +739,109 @@ function target_popup(form) {
 			  <td  colspan="3" style="background:#0B415F;">
 			  </td>
 		     </tr>
+		     
+		     <tr id="trChirurgien">
+			  <td >Chirurgien</td>
+			  <td>
+				  <table width="100%" align="left" style="background:#00253E; font-size:14; font-weight:bold; color: white;">
+				  <tr>
+				    <td width="20%" align="left">
+				    </td>
+				    <td width="20%" align="left">
+				      <html:select styleClass="champText" property="chirurgienId" styleId="divChirurgiens" style="display: block;" >
+					     <html:optionsCollection name="formInfosPatient" property="chirurgiens" label="label" value="value" />
+			         </html:select>
+				    </td>
+				    <td></td>
+				  </tr>
+				  </table>
+			  </td>
+			  <td>
+			   
+			  </td>
+			 </tr>
+			 
+			 <tr id="trAnesthesiste">
+			  <td >Anesthesiste</td>
+			  <td>
+				  <table width="100%" align="left" style="background:#00253E; font-size:14; font-weight:bold; color: white;">
+				  <tr>
+				    <td width="20%" align="left">
+				    </td>
+				    <td width="20%" align="left">
+				      <html:select styleClass="champText" property="anesthesisteId" styleId="divAnesthesistes" style="display: block;" >
+					     <html:optionsCollection name="formInfosPatient" property="anesthesistes" label="label" value="value" />
+			         </html:select>
+				    </td>
+				    <td></td>
+				  </tr>
+				  </table>
+			  </td>
+			  <td>
+			   
+			  </td>
+			 </tr>
+			 
+			   <tr id="trAssistantChirurgien">
+			  <td >Assistant chirurgien</td>
+			  <td>
+				  <table width="100%" align="left" style="background:#00253E; font-size:14; font-weight:bold; color: white;">
+				  <tr>
+				    <td width="20%" align="left">
+					  <html:radio property="assistantBlocExiste" name="formInfosPatient" onclick="activerAssistantChirurgien();" value="oui"/> Oui
+				            <html:radio property="assistantBlocExiste" name="formInfosPatient" onclick="desactiverAssistantChirurgien();" value="non"/> Non
+
+				    </td>
+				    <td width="20%" align="left">
+				      <html:select styleClass="champText" property="assistantBlocId" styleId="divAssistantsBloc" style="display: none;" >
+					     <html:optionsCollection name="formInfosPatient" property="assistantsBloc" label="label" value="value" />
+			         </html:select>
+				    </td>
+				    <td></td>
+				  </tr>
+				  </table>
+			  </td>
+			  <td>
+			   
+			  </td>
+			 </tr>
+			 
+			  <tr id="trAssistantAnesthesiste">
+			  <td >Assistant anesthesiste</td>
+			  <td>
+				  <table width="100%" align="left" style="background:#00253E; font-size:14; font-weight:bold; color: white;">
+				  <tr>
+				    <td width="20%" align="left">
+					  <html:radio property="assistantAnesthesisteExiste" name="formInfosPatient" onclick="activerAssistantAnesthesiste();" value="oui"/> Oui
+				            <html:radio property="assistantAnesthesisteExiste" name="formInfosPatient" onclick="desactiverAssistantAnesthesiste();" value="non"/> Non
+
+				    </td>
+				    <td width="20%" align="left">
+				      <html:select styleClass="champText" property="assistantAnesthesisteId" styleId="divAssistantsAnesthesiste" style="display: none;" >
+					     <html:optionsCollection name="formInfosPatient" property="assistantsAnesthesiste" label="label" value="value" />
+			         </html:select>
+				    </td>
+				    <td></td>
+				  </tr>
+				  </table>
+			  </td>
+			  <td>
+			   
+			  </td>
+			 </tr>
+			 
+			 
+			  <tr >
+			  <td  colspan="3" style="background:#0B415F;">
+			  </td>
+		     </tr>
 		
-		  <tr><td align="center" colspan="4">
+		  <tr id="boutonChirurgie"><td align="center" colspan="4">
+		  <input type="button" onclick="FermerDivPrestationChirurgie();" value="Valider" size ="50" style="font-weight:bold; background-color:#00253E; color:#FFFFFF; cursor:hand; border:solid 2px #FF6600;"  />
+		  <input type="button" onclick="CacherDivPrestation();" value="Annuler" size ="50" style="display:none; font-weight:bold; background-color:#00253E; color:#FFFFFF; cursor:hand; border:solid 2px #FF6600;"  />
+		  </td></tr>
+		  
+		  <tr id="boutonNoChirurgie"><td align="center" colspan="4">
 		  <input type="button" onclick="FermerDivPrestation();" value="Valider" size ="50" style="font-weight:bold; background-color:#00253E; color:#FFFFFF; cursor:hand; border:solid 2px #FF6600;"  />
 		  <input type="button" onclick="CacherDivPrestation();" value="Annuler" size ="50" style="display:none; font-weight:bold; background-color:#00253E; color:#FFFFFF; cursor:hand; border:solid 2px #FF6600;"  />
 		  </td></tr>
@@ -625,6 +875,37 @@ function target_popup(form) {
 			
 			
 					</display:table>
+					
+					
+					<display:table id="row"  name="sessionScope.formInfosPatient.detailsFactureChirurgieList"  class="mars" pagesize="5" defaultsort="1" defaultorder="descending" >
+		<display:setProperty name="paging.banner.placement" value="bottom"></display:setProperty>
+		<display:setProperty name="css.tr.even" value="even"></display:setProperty>
+		   
+
+		 	
+			<display:column  property="nomActe" title="Acte" />
+			<display:column  property="medecin.nom" title="Medecin" />
+			<display:column  property="pourcentage" title="pourcentage" />
+			<display:column  property="nbrActes" title="Nombre Actes" />
+			<display:column  property="montantTotal" title="Prix" />
+			
+			
+					</display:table>
+					
+					<display:table id="row"  name="sessionScope.formInfosPatient.detailsFactureServicesList"  class="mars" pagesize="5" defaultsort="1" defaultorder="descending" >
+		<display:setProperty name="paging.banner.placement" value="bottom"></display:setProperty>
+		<display:setProperty name="css.tr.even" value="even"></display:setProperty>
+		   
+
+		 	
+			<display:column  property="nomActe" title="Acte" />
+			<display:column  property="infirmier.nom" title="Assistant" />
+			<display:column  property="nbrActes" title="Nombre Actes" />
+			<display:column  property="montantTotal" title="Prix" />
+			
+			
+					</display:table>
+					
 		  		  </td>
 		  		  </tr>
 		  		    <tr id="btnRegler" style="display:block">

@@ -109,6 +109,8 @@
 				<value>clinique/mapping/compteCategorie.hbm.xml</value>
 				<value>clinique/mapping/transactionCompteCategorie.hbm.xml</value>
 				<value>clinique/mapping/detailDgrCnamFacture.hbm.xml</value>
+				<value>clinique/mapping/detailFactureChirurgie.hbm.xml</value>
+				<value>clinique/mapping/detailFactureServices.hbm.xml</value>
 			</list>
 		</property>
 	</bean>

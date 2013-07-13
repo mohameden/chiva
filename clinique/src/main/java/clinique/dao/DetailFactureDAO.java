@@ -9,18 +9,19 @@ import org.springframework.stereotype.Repository;
 
 import clinique.mapping.DetailFacture;
 import clinique.mapping.Facture;
+import clinique.mapping.HasDetailFactureInfo;
 
 @Repository
 public class DetailFactureDAO extends
 		CliniqueHibernateDaoSupport<DetailFacture> {
 	private static Logger log = Logger.getLogger(DetailFactureDAO.class);
 
-	public DetailFacture getDetailFacture(int detailFactureId) {
+	public HasDetailFactureInfo getDetailFacture(int detailFactureId) {
 		log.debug("********** Debut getDetailFacture DetailFactureDAO **********");
 		try {
-			DetailFacture detailFacture = null;
+			HasDetailFactureInfo detailFacture = null;
 			Session session = getSession();
-			detailFacture = (DetailFacture) session.get(DetailFacture.class,
+			detailFacture = (HasDetailFactureInfo) session.get(DetailFacture.class,
 					detailFactureId);
 			return detailFacture;
 		} catch (Exception e) {
@@ -46,7 +47,7 @@ public class DetailFactureDAO extends
 		}
 	}
 
-	public void updateDetailFacture(DetailFacture detailFacture) {
+	public void updateDetailFacture(HasDetailFactureInfo detailFacture) {
 		log.debug("********** Debut updateDetailFacture DetailFactureDAO **********");
 		try {
 			Session session = getSession();

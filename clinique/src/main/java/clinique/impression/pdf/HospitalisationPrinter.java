@@ -7,6 +7,7 @@ import java.util.Date;
 import java.util.List;
 
 import clinique.mapping.DetailFacture;
+import clinique.mapping.HasDetailFactureInfo;
 import clinique.mapping.Hospitalisation;
 
 public class HospitalisationPrinter {
@@ -42,7 +43,7 @@ public class HospitalisationPrinter {
 			List<DetailFacture> list) {
 
 		List<HospitalisationPrinter> result = new ArrayList<HospitalisationPrinter>();
-		for (DetailFacture detailFacture : list) {
+		for (HasDetailFactureInfo detailFacture : list) {
 			result.add(new HospitalisationPrinter(detailFacture));
 		}
 		Collections.sort(result, new PrinterComparator());
@@ -52,7 +53,7 @@ public class HospitalisationPrinter {
 	public HospitalisationPrinter() {
 	}
 
-	public HospitalisationPrinter(DetailFacture detailFacture) {
+	public HospitalisationPrinter(HasDetailFactureInfo detailFacture) {
 		Hospitalisation hospitalisation = detailFacture.getHospitalisation();
 		if (hospitalisation != null) {
 			chambre = hospitalisation.getChambre().getChambreLibelle();

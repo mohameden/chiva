@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN" "http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd" >
+
+<hibernate-mapping package="clinique.mapping">
+
+		
+		<class name="DetailFactureServices" table="tbl_detail_facture_services">
+		<id name="detailFactServiceId" column="detail_fact_service_id">
+			<generator class="assigned" />
+		</id>
+
+		<property name="nomActe" column="nom_acte" />
+		<property name="nbrActes" column="nbr_actes" />
+		<property name="urgenceActe" column="urgence_acte" />
+		<property name="depl" column="depl" />
+		<property name="prix" column="prix" />
+		<property name="prixUrg" column="prix_urg" />
+		<property name="prixDepl" column="prix_depl" />
+		<property name="statut" column="statut" />
+		<property name="operateur" column="operateur" />
+		<property name="montantTotal" column="montant_total" />
+		<property name="type" column="type" />
+		<property name="medecinExiste" column="medecin_existe" />
+		<property name="infirmierExiste" column="infirmier_existe" />
+		<property name="qpActeur" column="qpacteur" />
+		<property name="qpAssistant" column="qpassistant" />
+		<property name="prixReel" column="prix_reel" />
+		<property name="coteClinique" column="cote_clinique" />
+		<property name="coteCliniqueMajore" column="cote_clinique_majore" />
+		<property name="dateDetail" column="date_detail" />
+		<property name="pourcentage" column="pourcentage" />
+		
+		
+
+		<many-to-one name="recu" class="Recu" cascade="none"
+			column="recu_id" />
+		<many-to-one name="acte" class="Acte" cascade="none"
+			column="acte_id" />
+		<many-to-one name="facture" class="Facture" cascade="none"
+			column="facture_id" />
+		<many-to-one name="medecin" class="Acteur" cascade="none"
+			column="medecin_id" />
+		<many-to-one name="infirmier" class="Acteur" cascade="none"
+			column="infirmier_id" />
+		<many-to-one name="detailFacture" class="DetailFacture"
+			cascade="none" column="detail_fact_id" />
+
+	</class>
+</hibernate-mapping>

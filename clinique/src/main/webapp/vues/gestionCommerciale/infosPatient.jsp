@@ -258,7 +258,7 @@
 				   if (checkPourcentagePC()) result=true;
 				   if (checkPlafond()) result=true;
 				   //if (checkNombreActes()) result=true;
-				   if (checkAssureur()) result=true;
+				   //if (checkAssureur()) result=true;
 				   if (checkDatesPC()) result=true;
 				  
 				   return result;
@@ -273,20 +273,15 @@
 		    	 return true;
 		   
 		   }
-		   else if(checkAssureur()) result=true;
+		   //else if(checkAssureur()) result=true;
 		   else return result;
 	   }
    }
 
    function checkAssureur()
    {
-	   result=false;
-	   if (document.forms[0].assureurId.value=="1")
-	   { 
-		   document.getElementById("dialogPC").innerHTML = "<font style=\"oblique\" color=\"#FFFFFF\"  size=\"4\">Veuillez choisir un assureur<\/font>";
-		   $('#dialogPC').dialog('open');
-		   result=true;
-	   }
+	   result=true;
+	  
 
 	   return result;
    }
@@ -373,23 +368,28 @@
      var msg=false;
      if (checkNom())
      {
+    	
     	 msg=true;
      }
      if (checkPrenom())
      {
+    	 
     	 msg=true;
      }
      if (checkDateNaiss())
      {
+    	 
     	 msg=true;
      }
    
      if (checkTelephone())
      {
+    	 
     	 msg=true;
      }
      if (checkPC())
      {
+    	
     	 msg=true;
      }
     

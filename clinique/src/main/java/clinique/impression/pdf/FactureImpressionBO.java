@@ -2,6 +2,7 @@ package clinique.impression.pdf;
 
 import java.io.OutputStream;
 import java.text.DecimalFormat;
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
@@ -15,6 +16,7 @@ import clinique.dao.RecuDAO;
 import clinique.dao.ReglementDAO;
 import clinique.mapping.DetailFacture;
 import clinique.mapping.Facture;
+import clinique.mapping.HasDetailFactureInfo;
 import clinique.mapping.Reglement;
 import clinique.utils.UtilDate;
 
@@ -69,8 +71,10 @@ public class FactureImpressionBO extends AbstractPdfImpressionBO implements
 					.findReglementsByFacture(facture);
 			List<ReglementPrinter> rList = ReglementPrinter
 					.toReglementPrinter(regList);
+			List<HasDetailFactureInfo> details = new ArrayList<HasDetailFactureInfo>();
+			details.addAll(detailList);
 			List<DetailFacturePrinter> dList = DetailFacturePrinter
-					.toDetailPrinter(detailList);
+					.toDetailPrinter(details);
 			List<HospitalisationPrinter> hList = initHospitalisations(detailList);
 			int nbrOfLineToPrint = dList.size();
 			int nbrPage = nbrOfLineToPrint / NBR_OF_LINE_BY_COMPLETE_PAGE;

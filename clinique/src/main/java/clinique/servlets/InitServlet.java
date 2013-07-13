@@ -550,6 +550,152 @@ public class InitServlet implements HttpRequestHandler, ConstantesMetier {
 		return listEntities;
 	}
 
+
+	@SuppressWarnings("unused")
+	private Collection<LabelValueBean> getListChirurgiensFromActe(int idActe)
+			throws Exception {
+		log.debug("********** Debut getListChirurgiensFromActe InitServlet **********");
+		Collection<LabelValueBean> listEntities = new ArrayList<LabelValueBean>();
+		Acte acte = getActeDAO().getActe(idActe);
+		if (acte == null) {
+			return null;
+		}
+		try {
+			
+			for (ActeurActe acteurActe : acteurActeDAO
+					.findActeurActesByActe(acte)) {
+				if (acteurActe.getStatut().equals(STATUT_VALIDE)) {
+					
+					Acteur acteur = acteurActe.getActeur();
+					System.out.println(acteur.getActeurId()+"nnnnnnnnnnn"+acteur.getChirurgie());
+					if (acteur != null
+							&& acteur.getStatut().equals(STATUT_VALIDE)
+							&& acteur.getAssistant().equals("0") && acteur.getChirurgie().equals("1")) {
+						System.out.println("test");
+						listEntities.add(new LabelValueBean(acteur.getNom(),
+								String.valueOf(acteur.getActeurId())));
+					}
+				}
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+			log.fatal(e.getMessage());
+		}
+
+		if (listEntities.isEmpty()) {
+			listEntities = null;
+		}
+		log.debug("********** Fin getListChirurgiensFromActe InitServlet **********");
+		return listEntities;
+	}
+
+	
+	
+	private Collection<LabelValueBean> getListAnesthesistesFromActe(int idActe)
+			throws Exception {
+		log.debug("********** Debut getListAnesthesistesFromActe InitServlet **********");
+		Collection<LabelValueBean> listEntities = new ArrayList<LabelValueBean>();
+		Acte acte = getActeDAO().getActe(idActe);
+		if (acte == null) {
+			return null;
+		}
+		try {
+			for (ActeurActe acteurActe : acteurActeDAO
+					.findActeurActesByActe(acte)) {
+				if (acteurActe.getStatut().equals(STATUT_VALIDE)) {
+					Acteur acteur = acteurActe.getActeur();
+					if (acteur != null
+							&& acteur.getStatut().equals(STATUT_VALIDE)
+							&& acteur.getAssistant().equals("0") && acteur.getAnesthesie().equals("1")) {
+						listEntities.add(new LabelValueBean(acteur.getNom(),
+								String.valueOf(acteur.getActeurId())));
+					}
+				}
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+			log.fatal(e.getMessage());
+		}
+
+		if (listEntities.isEmpty()) {
+			listEntities = null;
+		}
+		log.debug("********** Fin getListAnesthesistesFromActe InitServlet **********");
+		return listEntities;
+	}
+
+	
+	private Collection<LabelValueBean> getListAssistantsChirurgienFromActe(int idActe)
+			throws Exception {
+		log.debug("********** Debut getListAssistantsChirurgienFromActe InitServlet **********");
+		Collection<LabelValueBean> listEntities = new ArrayList<LabelValueBean>();
+		Acte acte = getActeDAO().getActe(idActe);
+		if (acte == null) {
+			return null;
+		}
+		try {
+			for (ActeurActe acteurActe : acteurActeDAO
+					.findActeurActesByActe(acte)) {
+				if (acteurActe.getStatut().equals(STATUT_VALIDE)) {
+					Acteur acteur = acteurActe.getActeur();
+					if (acteur != null
+							&& acteur.getStatut().equals(STATUT_VALIDE)
+							&& acteur.getAssistant().equals("1") && acteur.getChirurgie().equals("1")) {
+						listEntities.add(new LabelValueBean(acteur.getNom(),
+								String.valueOf(acteur.getActeurId())));
+					}
+				}
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+			log.fatal(e.getMessage());
+		}
+
+		if (listEntities.isEmpty()) {
+			listEntities = null;
+		}
+		log.debug("********** Fin getListAssistantsChirurgienFromActe InitServlet **********");
+		return listEntities;
+	}
+
+
+	private Collection<LabelValueBean> getListAssistantsAnesthesisteFromActe(int idActe)
+			throws Exception {
+		log.debug("********** Debut getListAssistantsAnesthesisteFromActe InitServlet **********");
+		Collection<LabelValueBean> listEntities = new ArrayList<LabelValueBean>();
+		Acte acte = getActeDAO().getActe(idActe);
+		System.out.println("acteid "+acte.getActeId());
+		if (acte == null) {
+			return null;
+		}
+		try {
+			for (ActeurActe acteurActe : acteurActeDAO
+					.findActeurActesByActe(acte)) {
+				if (acteurActe.getStatut().equals(STATUT_VALIDE)) {
+					Acteur acteur = acteurActe.getActeur();
+					if (acteur != null
+							&& acteur.getStatut().equals(STATUT_VALIDE)
+							&& acteur.getAssistant().equals("1") && acteur.getAnesthesie().equals("1")) {
+						listEntities.add(new LabelValueBean(acteur.getNom(),
+								String.valueOf(acteur.getActeurId())));
+					}
+				}
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+			log.fatal(e.getMessage());
+		}
+
+		if (listEntities.isEmpty()) {
+			listEntities = null;
+		}
+		log.debug("********** Fin getListAssistantsAnesthesisteFromActe InitServlet **********");
+		return listEntities;
+	}
+
+
+	
+	
 	private Collection<LabelValueBean> getListCategoriesFromEntreprise(
 			int idEntreprise) throws Exception {
 		log.debug("********** Debut getListCategoriesFromEntreprise InitServlet **********");
@@ -692,6 +838,25 @@ public class InitServlet implements HttpRequestHandler, ConstantesMetier {
 		log.debug("********** Fin getPatientsNombre InitServlet **********");
 		return nbre;
 	}
+	
+	@SuppressWarnings("unused")
+	private int getPourcentageCategorie(int id) throws Exception {
+		log.debug("********** Debut getPourcentageCategorie InitServlet **********");
+		int nbre = 0;
+
+		try {
+			Categorie cat=categorieDAO.getCategorie(id);
+			if (cat!=null)
+			nbre = cat.getPourcentage();
+
+		} catch (Exception e) {
+			e.printStackTrace();
+			log.fatal(e.getMessage());
+		}
+
+		log.debug("********** Fin getPourcentageCategorie InitServlet **********");
+		return nbre;
+	}
 
 	private Produit getProduitFromProduitId(int idProduit) throws Exception {
 		log.debug("********** Debut getProduit InitServlet **********");
@@ -790,6 +955,33 @@ public class InitServlet implements HttpRequestHandler, ConstantesMetier {
 					int idActe = Integer.parseInt(param1.trim());
 					repXML = convertirListEntitiesToXml(getListActeursMedFromActe(idActe));
 				}
+				
+				
+				if (actionXML.trim().equalsIgnoreCase("chargerChirurgiens")) {
+					String param1 = request.getParameter("id_acte");
+					int idActe = Integer.parseInt(param1.trim());
+					repXML = convertirListEntitiesToXml(getListChirurgiensFromActe(idActe));
+				}
+				
+				if (actionXML.trim().equalsIgnoreCase("chargerAnesthesistes")) {
+					String param1 = request.getParameter("id_acte");
+					int idActe = Integer.parseInt(param1.trim());
+					repXML = convertirListEntitiesToXml(getListAnesthesistesFromActe(idActe));
+				}
+				
+				if (actionXML.trim().equalsIgnoreCase("chargerAssistantsChirurgien")) {
+					String param1 = request.getParameter("id_acte");
+					int idActe = Integer.parseInt(param1.trim());
+					repXML = convertirListEntitiesToXml(getListAssistantsChirurgienFromActe(idActe));
+				}
+				
+				if (actionXML.trim().equalsIgnoreCase("chargerAssistantsAnesthesiste")) {
+					String param1 = request.getParameter("id_acte");
+					int idActe = Integer.parseInt(param1.trim());
+					repXML = convertirListEntitiesToXml(getListAssistantsAnesthesisteFromActe(idActe));
+				}
+				
+				
 				if (actionXML.trim().equalsIgnoreCase("checkActeursMed")) {
 					String param1 = request.getParameter("id_acte");
 					int idActe = Integer.parseInt(param1.trim());
@@ -842,6 +1034,15 @@ public class InitServlet implements HttpRequestHandler, ConstantesMetier {
 					repXML = convertirNombrePatientsToXml(getPatientsNombre(telephone));
 
 				}
+				
+				if (actionXML.trim().equalsIgnoreCase("getPourcentage")) {
+					String param1 = request.getParameter("categorieId");
+					int categorieId = Integer.parseInt(param1.trim());
+					repXML = convertirNombrePatientsToXml(getPourcentageCategorie(categorieId));
+
+				}
+				
+				
 
 			} catch (Exception e) {
 				repXML = convertirExceptionToXml(e);

@@ -8,7 +8,7 @@ import org.apache.commons.collections.MultiHashMap;
 import org.apache.commons.collections.MultiMap;
 import org.apache.commons.lang.StringUtils;
 
-import clinique.mapping.DetailFacture;
+import clinique.mapping.HasDetailFactureInfo;
 
 public class DetailFacturePrinter {
 	private String acteName;
@@ -18,9 +18,9 @@ public class DetailFacturePrinter {
 	private String medecin;
 	private String infirmier;
 
-	public static MultiMap groupDetailFatures(List<DetailFacture> list) {
+	public static MultiMap groupDetailFatures(List<HasDetailFactureInfo> list) {
 		MultiMap multimap = new MultiHashMap();
-		for (DetailFacture detailFacture : list) {
+		for (HasDetailFactureInfo detailFacture : list) {
 			multimap.put(detailFacture.getActe().getFamillePrestation()
 					.getLibelle(), detailFacture);
 		}
@@ -28,7 +28,7 @@ public class DetailFacturePrinter {
 	}
 
 	public static List<DetailFacturePrinter> toDetailPrinter(
-			List<DetailFacture> list) {
+			List<HasDetailFactureInfo> list) {
 		MultiMap groupDetailFatures = groupDetailFatures(list);
 		return toDetailPrinter(groupDetailFatures);
 	}
@@ -40,8 +40,8 @@ public class DetailFacturePrinter {
 			Object value = multiMap.get(o);
 			String s = (String) o;
 			list.add(new DetailFacturePrinter(s));
-			Collection<DetailFacture> c = (Collection) value;
-			for (DetailFacture detailFacture : c) {
+			Collection<HasDetailFactureInfo> c = (Collection) value;
+			for (HasDetailFactureInfo detailFacture : c) {
 				list.add(new DetailFacturePrinter(detailFacture));
 			}
 
@@ -52,7 +52,7 @@ public class DetailFacturePrinter {
 	public DetailFacturePrinter() {
 	}
 
-	public DetailFacturePrinter(DetailFacture detailFacture) {
+	public DetailFacturePrinter(HasDetailFactureInfo detailFacture) {
 		acteName = detailFacture.getActe().getNomActe();
 		nbr = detailFacture.getNbrActes();
 		tarif = detailFacture.getMontantTotal();

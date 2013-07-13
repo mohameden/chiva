@@ -9,11 +9,15 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import clinique.dao.DetailFactureChirurgieDAO;
 import clinique.dao.DetailFactureDAO;
+import clinique.dao.DetailFactureServicesDAO;
 import clinique.dao.FactureDAO;
 import clinique.dao.RecuDAO;
 import clinique.dao.ReglementDAO;
 import clinique.mapping.DetailFacture;
+import clinique.mapping.DetailFactureChirurgie;
+import clinique.mapping.DetailFactureServices;
 import clinique.mapping.Facture;
 import clinique.mapping.HasDetailFactureInfo;
 import clinique.mapping.Reglement;
@@ -24,12 +28,11 @@ import com.itextpdf.text.RectangleReadOnly;
 import com.itextpdf.text.pdf.PdfContentByte;
 import com.itextpdf.text.pdf.PdfWriter;
 
-@Service(IRecuImpressionBO.NAME)
-public class RecuImpressionBO extends AbstractPdfImpressionBO implements
-		IRecuImpressionBO {
+@Service(IRecuHospitalisationImpressionBO.NAME)
+public class RecuHospitalisationImpressionBO extends AbstractPdfImpressionBO implements
+		IRecuHospitalisationImpressionBO {
 	private static final int DETAIL_ORDONATE = 190;
-	private static final int TOTAL_ORDONATE = 173;
-	private static final int REGLEMENT_ORDONATE = 113;
+	private static final int REGLEMENT_ORDONATE = 190-20;
 	private static final int NBR_OF_LINE_BY_FINAL_PAGE = 17;
 	private static final int NBR_OF_LINE_BY_COMPLETE_PAGE = 34;
 
@@ -39,6 +42,10 @@ public class RecuImpressionBO extends AbstractPdfImpressionBO implements
 	private FactureDAO factureDAO;
 	@Autowired
 	private DetailFactureDAO detailFactureDAO;
+	@Autowired
+	private DetailFactureChirurgieDAO detailFactureChirurgieDAO;
+	@Autowired
+	private DetailFactureServicesDAO detailFactureServicesDAO;
 	@Autowired
 	private ReglementDAO reglementDAO;
 
@@ -65,6 +72,14 @@ public class RecuImpressionBO extends AbstractPdfImpressionBO implements
 			Facture facture = factureDAO.getFacture(numFacture);
 			List<DetailFacture> detailList = detailFactureDAO
 					.findDetailFactureByFacture(facture);
+			List<DetailFactureChirurgie> detailFCList = detailFactureChirurgieDAO
+					.findDetailFactureChirurgieByFacture(facture);
+			List<DetailFactureServices> detailFSList = detailFactureServicesDAO
+					.findDetailFactureServicesByFacture(facture);
+			List<HasDetailFactureInfo> details = new ArrayList<HasDetailFactureInfo>();
+			details.addAll(detailList);
+			details.addAll(detailFCList);
+			details.addAll(detailFSList);
 			List<Reglement> regList = reglementDAO
 					.findReglementsByFacture(facture);
 
@@ -73,8 +88,6 @@ public class RecuImpressionBO extends AbstractPdfImpressionBO implements
 			List<ReglementPrinter> rList = ReglementPrinter
 					.toReglementPrinter(mention
 							.getFilteredReglementList(regList));
-			List<HasDetailFactureInfo> details = new ArrayList<HasDetailFactureInfo>();
-			details.addAll(detailList);
 			List<DetailFacturePrinter> dList = DetailFacturePrinter
 					.toDetailPrinter(details);
 			List<HospitalisationPrinter> hList = initHospitalisations(detailList);
@@ -122,9 +135,6 @@ public class RecuImpressionBO extends AbstractPdfImpressionBO implements
 		generateFinalLayout(doc, cb, facture, user, mention);
 		y = DETAIL_ORDONATE;
 		generateDetailList(doc, cb, it, y);
-		// start total
-		y = TOTAL_ORDONATE;
-		generateTotal(doc, cb, y, facture, mention, detailList);
 		// start reglement
 		y = REGLEMENT_ORDONATE;
 		generateReglement(doc, cb, y, rList, facture);
@@ -145,25 +155,6 @@ public class RecuImpressionBO extends AbstractPdfImpressionBO implements
 		}
 	}
 
-	private void generateTotal(Document doc, PdfContentByte cb, int y,
-			Facture facture, Mention mention, List<DetailFacture> detailList) {
-		DecimalFormat df = new DecimalFormat("0.00");
-
-		createContent(cb, 287 + 76 + 70 - 2, y,
-				df.format(mention.getFactureHT(facture, detailList)),
-				PdfContentByte.ALIGN_RIGHT);
-		double totalTTC = facture.getTotalHT() + facture.getTotalTva();
-		createContent(cb, 287 + 76 + 70 * 2 - 2, y, df.format(totalTTC),
-				PdfContentByte.ALIGN_RIGHT);
-		createContent(cb, 570, y, df.format(facture.getRemise()),
-				PdfContentByte.ALIGN_RIGHT);
-
-		// createContent(cb, 570, 160, df.format(facture.getAvance()),
-		// PdfContentByte.ALIGN_RIGHT);
-		// createContent(cb, 570, 148, df.format(facture.getNetApayer()),
-		// PdfContentByte.ALIGN_RIGHT);
-	}
-
 	protected void generateFinalLayout(Document doc, PdfContentByte cb,
 			Facture facture, String user, Mention mention) {
 
@@ -175,8 +166,6 @@ public class RecuImpressionBO extends AbstractPdfImpressionBO implements
 
 			generateLeftDetailTable(cb);
 
-			generateTotalTable(cb);
-			//
 			generateReglementTable(cb);
 			//
 			generatePrinterName(cb, user);
@@ -216,64 +205,22 @@ public class RecuImpressionBO extends AbstractPdfImpressionBO implements
 		createSmall(cb, 72 - getA5XMargin(), 30, "* Reçu imprimée par " + user);
 	}
 
-	private void generateTotalTable(PdfContentByte cb) {
-		float x0 = 287;
-		float w = 286;
-		float y1 = 145;
-		float h1 = 55;
-		cb.rectangle(x0, y1, w, h1);
-
-		cb.moveTo(x0 + 76, y1);
-		// cb.moveTo(x0 + 76, 170);
-		cb.lineTo(x0 + 76, 200);
-		cb.moveTo(x0 + 76 + 70, y1);
-		cb.lineTo(x0 + 76 + 70, 200);
-		cb.moveTo(x0 + 76 + 70 * 2, y1);
-		cb.lineTo(x0 + 76 + 70 * 2, 200);
-
-		cb.moveTo(x0, 185);
-		cb.lineTo(x0 + w, 185);
-		// cb.moveTo(x0, 170);
-		// cb.lineTo(x0 + w, 170);
-		cb.stroke();
-
-		createHeadings(cb, x0 + 2, 188, "LIBELLE");
-		createHeadings(cb, x0 + 2 + 76, 188, "TOTAL HT");
-		createHeadings(cb, x0 + 2 + 76 + 70, 188, "TOTAL TTC");
-		createHeadings(cb, x0 + 2 + 76 + 70 * 2, 188, "REMISE");
-		// createHeadings(cb, x0 + 2, 160, "AVANCE");
-		// createHeadings(cb, x0 + 2, 148, "NET A PAYER");
-	}
-
 	private void generateReglementTable(PdfContentByte cb) {
 		float x0 = 287;
 		float w = 286;
 		float y1 = 40;
-		float h1 = 100;
+		float h1 = 160;
 		cb.rectangle(x0, y1, w, h1);
-		cb.moveTo(x0, 125);
-		cb.lineTo(x0 + w, 125);
+		cb.moveTo(x0, 20+h1);
+		cb.lineTo(x0 + w, 20+h1);
 
-		cb.moveTo(x0 + 76, 85);
-		cb.lineTo(x0 + 76, 140);
-		cb.moveTo(x0 + 76 + 70, 85);
-		cb.lineTo(x0 + 76 + 70, 140);
-		cb.moveTo(x0 + 76 + 70 * 2, 85);
-		cb.lineTo(x0 + 76 + 70 * 2, 140);
+		cb.moveTo(x0 + 76 + 70 * 2, y1);
+		cb.lineTo(x0 + 76 + 70 * 2, y1+h1);
 
-		cb.moveTo(x0, 85);
-		cb.lineTo(x0 + w, 85);
-		cb.moveTo(x0, 55);
-		cb.lineTo(x0 + w, 55);
 		cb.stroke();
 
-		createHeadings(cb, x0 + 2, 128, "MODE");
-		createHeadings(cb, x0 + 2 + 76, 128, "DRG");
-		createHeadings(cb, x0 + 2 + 76 + 70, 128, "JUSTIF");
-		createHeadings(cb, x0 + 2 + 76 + 70 * 2, 128, "MONTANT");
-		createHeadings(cb, x0 + 2, 73, "TOTAL REGLEMENT");
-		createHeadings(cb, x0 + 2, 58, "RESTE A PAYER");
-		createHeadings(cb, x0 + 2, 43, "Le Caissier");
+		createHeadings(cb, x0 + 2, 23+h1, "REGLEMENT");
+		createHeadings(cb, x0 + 2 + 76 + 70 * 2, 23+h1, "TOTAL");
 	}
 
 	private float generateLeftDetailTable(PdfContentByte cb) {
@@ -334,27 +281,10 @@ public class RecuImpressionBO extends AbstractPdfImpressionBO implements
 	private void generateReglement(Document doc, PdfContentByte cb, int y,
 			List<ReglementPrinter> list, Facture facture) {
 		DecimalFormat df = new DecimalFormat("0.00");
-		double totalReglement = 0.0;
-		for (ReglementPrinter reglementPrinter : list) {
-			createContent(cb, 287 + 2, y, reglementPrinter.getModeReglement(),
-					PdfContentByte.ALIGN_LEFT);
-			createContent(cb, 287 + 2 + 76, y, reglementPrinter.getDrg(),
-					PdfContentByte.ALIGN_LEFT);
-			createContent(cb, 287 + 2 + 76 + 70, y,
-					reglementPrinter.getDescription(),
-					PdfContentByte.ALIGN_LEFT);
-			createContent(cb, 570, y, df.format(reglementPrinter.getMontant()),
-					PdfContentByte.ALIGN_RIGHT);
-			y = y - 15;
-			totalReglement += reglementPrinter.getMontant();
-		}
-
-		createContent(cb, 570, 73, df.format(totalReglement),
+		createContent(cb, 287 + 2, y, "PC",
+				PdfContentByte.ALIGN_LEFT);
+		createContent(cb, 570, y, df.format(1900),
 				PdfContentByte.ALIGN_RIGHT);
-		createContent(cb, 570, 58,
-				df.format(facture.getNetApayer() - totalReglement),
-				PdfContentByte.ALIGN_RIGHT);
-
 	}
 
 	private void generateDetailList(Document doc, PdfContentByte cb,

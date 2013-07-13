@@ -90,6 +90,16 @@ function imprimer(var1)
 
 }
 
+function supprimerDetailFact(var1)
+{
+	document.forms[0].idDetailFactAsupprimer.value=var1;
+	document.forms[0].dispatch.value = "supprimerDetailFacture";
+	document.forms[0].submit();
+
+}
+
+
+
 function regler()
 {
 	if (!checkValeurRemise())
@@ -380,6 +390,7 @@ function onBlurFunc() {
 	 else document.forms[0].medecinChoix[0].checked=false;
 }
 
+
 function test()
 {
 	 
@@ -387,6 +398,11 @@ function test()
 
 	var z = dhtmlXComboFromSelect("combo_zone1");
 	z.enableFilteringMode(true);
+	
+	z.attachEvent("onOpen",function(){
+	    z.unSelectOption();
+	  z.setComboText("");
+	});
 	
 	z.attachEvent("onChange", function(){
         var value = z.getActualValue();
@@ -498,6 +514,7 @@ function test()
 <input type="hidden" name="idDetailDrgAsupprimer"/>
 <input type="hidden" name="resteApayerMajoration" value="<bean:write name="formInfosPatient" property="resteApayerMajoration" />"/>
 <input type="hidden" name="totalMontantDrg"/>
+<input type="hidden" name="idDetailFactAsupprimer"/>
 
 
 
@@ -650,8 +667,22 @@ function test()
 			 <td></td>
 			</tr>
 
+			  <tr >
+			  <td  colspan="3" style="background:#0B415F;">
+			  </td>
+		     </tr>
+			
+			 
 			 <tr>
-			  <td >Actes</td>
+			  <td colspan="3">
+			  <table align="left" style="background:#00253E; font-size:14; font-weight:bold; color: white;">
+			  <tr>
+			  <td >Nombre</td>
+			  <td>
+				<html:text styleClass="champText" property="nombreActe" value="1" maxlength="2" onkeypress="Numerique();" onfocus="couleurBlanc(this,'ErrNombre');"/>
+			  </td>
+			  <td></td>
+			   <td >Actes</td>
 			  <td>
 			  
 			     
@@ -659,15 +690,21 @@ function test()
 				 <html:optionsCollection name="formInfosPatient" property="actesListe" label="label" value="value" />
 				</html:select>
 			  </td>
-			  <td></td>
 			 </tr>
-			 <tr>
-			  <td >Nombre</td>
-			  <td>
-				<html:text styleClass="champText" property="nombreActe" value="1" maxlength="2" onkeypress="Numerique();" onfocus="couleurBlanc(this,'ErrNombre');"/>
+			  </table>
+			  
 			  </td>
-			  <td></td>
+			  
+			  
+			 
+			  
 			 </tr>
+			 
+			  <tr >
+			  <td  colspan="3" style="background:#0B415F;">
+			  </td>
+		     </tr>
+			 
 			 <tr>
 			  <td >Type prestation</td>
 			  <td>
@@ -768,7 +805,12 @@ function test()
 
 			<display:column  property="nbrActes" title="Nombre Actes" />
 			<display:column  property="montantTotal" title="Prix" />
-
+            
+            <display:column style=" text-decoration: underline;" title="Supprimer">
+							 <a  style="cursor: pointer" onclick="supprimerDetailFact('<bean:write name="row" property="detailFactId"/>');">
+							   <img align="middle" height="10" width="10"   src="<%=request.getContextPath()%>/<bean:message key="image.delete" />" />
+							 </a> 
+			</display:column>
 
 					</display:table>
 		  		  </td>

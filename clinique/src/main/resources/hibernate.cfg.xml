@@ -85,5 +85,9 @@
 		<mapping resource="clinique/mapping/compteCategorie.hbm.xml" />
 		<mapping resource="clinique/mapping/transactionCompteCategorie.hbm.xml" />
 		<mapping resource="clinique/mapping/detailDgrCnamFacture.hbm.xml" />
+		<mapping resource="clinique/mapping/detailFactureChirurgie.hbm.xml" />
+		<mapping resource="clinique/mapping/detailFactureServices.hbm.xml" />
+		
+		
 	</session-factory>
 </hibernate-configuration>

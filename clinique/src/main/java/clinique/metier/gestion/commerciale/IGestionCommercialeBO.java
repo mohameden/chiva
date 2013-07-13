@@ -13,10 +13,12 @@ import clinique.mapping.Categorie;
 import clinique.mapping.ChambresHospitalisation;
 import clinique.mapping.Classe;
 import clinique.mapping.DetailFacture;
+import clinique.mapping.DetailFactureChirurgie;
 import clinique.mapping.DetailFactureModifiees;
 import clinique.mapping.DevisAssureur;
 import clinique.mapping.Entreprise;
 import clinique.mapping.FamillePrestation;
+import clinique.mapping.HasDetailFactureInfo;
 import clinique.mapping.Patient;
 import clinique.mapping.PrestationCouvertesPc;
 import clinique.mapping.PrestationCouvertesPcModifiee;
@@ -31,7 +33,7 @@ public interface IGestionCommercialeBO {
 	void addActeBadge(GestionCommercialeForm formulaire, double prixActe);
 
 	void addActeBadgeFromDetailFacture(GestionCommercialeForm formulaire,
-			double prixActe, DetailFacture df);
+			double prixActe, HasDetailFactureInfo df);
 
 	void addActeNombreActeLimiteAvecPlafond(GestionCommercialeForm formulaire,
 			int pourcentage, int nbreActe, PrestationCouvertesPc pcCouv,
@@ -44,13 +46,13 @@ public interface IGestionCommercialeBO {
 	void addActePC(GestionCommercialeForm formulaire, double prixActe);
 
 	void addActePCFromDetailFacture(GestionCommercialeForm formulaire,
-			double prixActe, DetailFacture df);
+			double prixActe, HasDetailFactureInfo df);
 
 	void addActePCWithoutPrestationCouv(GestionCommercialeForm formulaire,
 			double prixActe);
 
 	void addActePCWithoutPrestationCouvFromDetailFacture(
-			GestionCommercialeForm formulaire, double prixActe, DetailFacture df);
+			GestionCommercialeForm formulaire, double prixActe, HasDetailFactureInfo df);
 
 	boolean addAncienDevisPatientWithoutPCInfos(
 			GestionCommercialeForm formulaire) throws Exception;
@@ -73,6 +75,9 @@ public interface IGestionCommercialeBO {
 			throws Exception;
 
 	boolean ajouterActe(GestionCommercialeForm formulaire) throws Exception;
+	
+	boolean supprimerDeatilFacture(GestionCommercialeForm formulaire) throws Exception;
+	
 
 	boolean ajouterActeDevis(GestionCommercialeForm formulaire)
 			throws Exception;
@@ -182,6 +187,8 @@ public interface IGestionCommercialeBO {
 
 	double getChambreFrais(ChambresHospitalisation chambreHospitalisation);
 
+	double getChambreFraisAssureur(ChambresHospitalisation chambreHospitalisation); 
+	
 	void getInfosPC(GestionCommercialeForm formulaire);
 
 	boolean getListDevisAimprimer(GestionCommercialeForm formulaire)
@@ -335,5 +342,26 @@ public interface IGestionCommercialeBO {
 
 	boolean supprimerReglementHospFromListeReglement(
 			GestionCommercialeForm formulaire) throws Exception;
+	
+    boolean ajouterActeBloc(
+			GestionCommercialeForm formulaire,DetailFacture detail) throws Exception;
+    
+    boolean ajouterActeAssistantBloc(
+			GestionCommercialeForm formulaire,DetailFacture detail) throws Exception;
+    
+    boolean ajouterActeChirurgie(GestionCommercialeForm formulaire)
+			throws Exception ;
+    
+    int calculQPChirurgien(GestionCommercialeForm formulaire);
+    
+    int calculQPAssistantChirurgie(DetailFactureChirurgie df);
+    
+    boolean ajouterActeAnesthesie(GestionCommercialeForm formulaire,DetailFacture detail)
+			throws Exception;
+    
+    boolean ajouterActeAssistantAnesthesie(GestionCommercialeForm formulaire,DetailFacture detail)
+			throws Exception;
+    
+    int calculQPAnesthesiste(GestionCommercialeForm formulaire);
 
 }

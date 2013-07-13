@@ -14,6 +14,9 @@
 <property name="email" column="email" />
 <property name="statut" column="statut" />
 <property name="operateur" column="operateur" />
+<property name="anesthesie" column="anesthesie" />
+<property name="chirurgie" column="chirurgie" />
+
 
 </class>
 </hibernate-mapping>

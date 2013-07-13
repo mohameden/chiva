@@ -15,6 +15,8 @@ public class Acteur extends Entity<Acteur> {
 	private String email;
 	private String statut;
 	private String operateur;
+	private String chirurgie;
+	private String anesthesie;
 
 	public int getActeurId() {
 		return acteurId;
@@ -92,7 +94,14 @@ public class Acteur extends Entity<Acteur> {
 		result = prime * result + (email == null ? 0 : email.hashCode());
 		result = prime * result + (nom == null ? 0 : nom.hashCode());
 		result = prime * result
-				+ (operateur == null ? 0 : operateur.hashCode());
+				+ (operateur == null ? 0 : operateur.hashCode()); 
+		
+		result = prime * result
+		+ (chirurgie == null ? 0 : chirurgie.hashCode());
+		
+		result = prime * result
+				+ (anesthesie == null ? 0 : anesthesie.hashCode());
+		
 		result = prime * result + (statut == null ? 0 : statut.hashCode());
 		result = prime * result
 				+ (telephone == null ? 0 : telephone.hashCode());
@@ -163,6 +172,26 @@ public class Acteur extends Entity<Acteur> {
 		} else if (!telephone.equals(other.telephone)) {
 			return false;
 		}
+		
+		if (chirurgie == null) {
+			if (other.chirurgie != null) {
+				return false;
+			}
+		} else if (!chirurgie.equals(other.chirurgie)) {
+			return false;
+		}
+		
+		if (anesthesie == null) {
+			if (other.anesthesie != null) {
+				return false;
+			}
+		} else if (!anesthesie.equals(other.anesthesie)) {
+			return false;
+		}
+		
+		
+		
+		
 		return true;
 	}
 
@@ -181,6 +210,24 @@ public class Acteur extends Entity<Acteur> {
 		email = entity.getEmail();
 		statut = entity.getStatut();
 		operateur = entity.getOperateur();
+		chirurgie = entity.getChirurgie();
+		anesthesie = entity.getAnesthesie();
+	}
+
+	public String getChirurgie() {
+		return chirurgie;
+	}
+
+	public void setChirurgie(String chirurgie) {
+		this.chirurgie = chirurgie;
+	}
+
+	public String getAnesthesie() {
+		return anesthesie;
+	}
+
+	public void setAnesthesie(String anesthesie) {
+		this.anesthesie = anesthesie;
 	}
 
 }

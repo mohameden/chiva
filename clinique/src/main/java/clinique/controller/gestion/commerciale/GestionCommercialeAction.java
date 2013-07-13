@@ -456,7 +456,9 @@ public class GestionCommercialeAction extends DispatchActionSupport {
 		}
 
 	}
-
+	
+	
+	
 	public ActionForward ajouterActeForHosp(ActionMapping mapping,
 			ActionForm form, HttpServletRequest request,
 			HttpServletResponse response) throws Exception {
@@ -496,6 +498,49 @@ public class GestionCommercialeAction extends DispatchActionSupport {
 			return mapping.findForward(FORWARD);
 		} finally {
 			log.debug("********** Fin ajouterActe GestionCommercialeAction **********");
+		}
+
+	}
+
+
+	public ActionForward ajouterActeChirurgie(ActionMapping mapping,
+			ActionForm form, HttpServletRequest request,
+			HttpServletResponse response) throws Exception {
+
+		log.debug("********** Debut ajouterActeChirurgie GestionCommercialeAction **********");
+		try {
+			GestionCommercialeForm formulaire = (GestionCommercialeForm) form;
+			// User
+			// user=(User)request.getSession().getAttribute("userConnected");
+			// formulaire.setOperateur(user.getLogin());
+			IGestionCommercialeBO gestionCommercialeBO = getGestionCommercialeBO();
+			ActionMessages errors = new ActionMessages();
+
+			errors = gestionCommercialeBO.checkActeAdd(formulaire);
+			if (errors.isEmpty()) {
+				if (gestionCommercialeBO.ajouterActeChirurgie(formulaire)) {
+
+					// gestionCommercialeBO.initialiserCombosPrestations(formulaire);
+					//gestionCommercialeBO.initialiserChampsAjouterPrestations(formulaire);
+
+					return mapping.findForward("addPrestationHosp");
+				}
+
+				else {
+
+					return mapping.findForward("addPrestationHosp");
+				}
+			} else {
+				this.saveErrors(request, errors);
+
+				return mapping.findForward("addPrestationHosp");
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+			log.fatal(e.getMessage());
+			return mapping.findForward(FORWARD);
+		} finally {
+			log.debug("********** Fin ajouterActeChirurgie GestionCommercialeAction **********");
 		}
 
 	}
@@ -1236,6 +1281,7 @@ public class GestionCommercialeAction extends DispatchActionSupport {
 
 	}
 
+	/*
 	public ActionForward imprimerRecuHosp(ActionMapping mapping,
 			ActionForm form, HttpServletRequest request,
 			HttpServletResponse response) throws Exception {
@@ -1272,7 +1318,32 @@ public class GestionCommercialeAction extends DispatchActionSupport {
 		}
 
 	}
-
+    */
+	
+	    public ActionForward imprimerRecuHosp(ActionMapping mapping,
+			ActionForm form, HttpServletRequest request,
+			HttpServletResponse response) throws Exception {
+			log.debug("********** Debut imprimerRecuHosp GestionCommercialeAction **********");
+			try {
+			GestionCommercialeForm formulaire = (GestionCommercialeForm) form;
+			String user = formulaire.getLogin();
+			formulaire.setOperateur(user);
+			OutputStream os = response.getOutputStream();
+			response.setContentType("application/pdf");
+			IFactureHospitalisationImpressionBO impressionBO = getFactureHospitalisationImpressionBO();
+			impressionBO.imprimerPDF(formulaire.getRecu().getRecuId(), "ORIGINAL",
+			user, os);
+			os.flush();
+			os.close();
+			return mapping.findForward(null);
+			} catch (Exception e) {
+			log.fatal(e.getMessage());
+			return mapping.findForward("error");
+			} finally {
+			log.debug("********** Fin imprimerRecuHosp GestionCommercialeAction **********");
+			}
+			}
+	
 	public ActionForward imprimerRecuHospRegle(ActionMapping mapping,
 			ActionForm form, HttpServletRequest request,
 			HttpServletResponse response) throws Exception {
@@ -1324,7 +1395,9 @@ public class GestionCommercialeAction extends DispatchActionSupport {
 			response.setContentType("application/pdf");
 
 			IRecuImpressionBO impressionBO = getRecuImpressionBO();
-			impressionBO.imprimerPDF(formulaire.getFactureId(), "ORIGINAL",
+			
+			//IFactureImpressionBO impressionBO = getFactureImpressionBO();
+			impressionBO.imprimerPDF(formulaire.getFactureId(), "Original",
 					user, os);
 			os.flush();
 			os.close();
@@ -1474,6 +1547,44 @@ public class GestionCommercialeAction extends DispatchActionSupport {
 
 	}
 
+	
+
+	
+	@SuppressWarnings("rawtypes")
+	public ActionForward supprimerDetailFacture(ActionMapping mapping,
+			ActionForm form, HttpServletRequest request,
+			HttpServletResponse response) throws Exception {
+
+		log.debug("********** Debut supprimerDetailFacture GestionCommercialeAction **********");
+		try {
+			GestionCommercialeForm formulaire = (GestionCommercialeForm) form;
+			// User
+			// user=(User)request.getSession().getAttribute("userConnected");
+			// formulaire.setOperateur(user.getLogin());
+			formulaire.setPatients(new ArrayList());
+
+			IGestionCommercialeBO gestionCommercialeBO = getGestionCommercialeBO();
+			
+			gestionCommercialeBO
+			.supprimerDeatilFacture(formulaire);
+					
+						return mapping.findForward(FORWARD);
+				
+
+		} catch (Exception e) {
+			log.fatal(e.getMessage());
+			e.printStackTrace();
+			return mapping.findForward("error");
+		} finally {
+			log.debug("********** Fin supprimerDetailFacture GestionCommercialeAction **********");
+		}
+
+	}
+
+
+	
+	
+	
 	@SuppressWarnings("unchecked")
 	public ActionForward savePatientForActesDevis(ActionMapping mapping,
 			ActionForm form, HttpServletRequest request,

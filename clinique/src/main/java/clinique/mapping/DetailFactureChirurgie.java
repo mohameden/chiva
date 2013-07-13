@@ -2,13 +2,14 @@ package clinique.mapping;
 
 import java.util.Date;
 
-public class DetailFacture extends Entity<DetailFacture> implements HasDetailFactureInfo {
+public class DetailFactureChirurgie extends Entity<DetailFactureChirurgie> implements HasDetailFactureInfo {
 
 	/**
 	 * 
 	 */
 	private static final long serialVersionUID = -3866749798483225170L;
-	private String detailFactId;
+	private String detailFactChirurgieId;
+	
 	private String nomActe;
 	private int nbrActes;
 	private int urgenceActe;
@@ -23,7 +24,7 @@ public class DetailFacture extends Entity<DetailFacture> implements HasDetailFac
 	private Recu recu;
 	private Acte acte;
 	private Facture facture;
-	private Hospitalisation hospitalisation;
+	private DetailFacture detailFacture;
 	private Acteur medecin;
 	private Acteur infirmier;
 	private String medecinExiste;
@@ -34,6 +35,7 @@ public class DetailFacture extends Entity<DetailFacture> implements HasDetailFac
 	private double prixReel;
 	private double coteClinique;
 	private double coteCliniqueMajore;
+	private int pourcentage;
 
 	private Date dateDetail;
 
@@ -45,10 +47,6 @@ public class DetailFacture extends Entity<DetailFacture> implements HasDetailFac
 		this.nomActe = nomActe;
 	}
 
-	/* (non-Javadoc)
-	 * @see clinique.mapping.HasDeatilFactureInfo#getNbrActes()
-	 */
-	@Override
 	public int getNbrActes() {
 		return nbrActes;
 	}
@@ -121,10 +119,6 @@ public class DetailFacture extends Entity<DetailFacture> implements HasDetailFac
 		this.recu = recu;
 	}
 
-	/* (non-Javadoc)
-	 * @see clinique.mapping.HasDeatilFactureInfo#getActe()
-	 */
-	@Override
 	public Acte getActe() {
 		return acte;
 	}
@@ -133,22 +127,7 @@ public class DetailFacture extends Entity<DetailFacture> implements HasDetailFac
 		this.acte = acte;
 	}
 
-	/* (non-Javadoc)
-	 * @see clinique.mapping.HasDeatilFactureInfo#getHospitalisation()
-	 */
-	@Override
-	public Hospitalisation getHospitalisation() {
-		return hospitalisation;
-	}
-
-	public void setHospitalisation(Hospitalisation hospitalisation) {
-		this.hospitalisation = hospitalisation;
-	}
-
-	/* (non-Javadoc)
-	 * @see clinique.mapping.HasDeatilFactureInfo#getMontantTotal()
-	 */
-	@Override
+	
 	public double getMontantTotal() {
 		return montantTotal;
 	}
@@ -157,13 +136,7 @@ public class DetailFacture extends Entity<DetailFacture> implements HasDetailFac
 		this.montantTotal = montantTotal;
 	}
 
-	public String getDetailFactId() {
-		return detailFactId;
-	}
 
-	public void setDetailFactId(String detailFactId) {
-		this.detailFactId = detailFactId;
-	}
 
 	public String getType() {
 		return type;
@@ -173,10 +146,6 @@ public class DetailFacture extends Entity<DetailFacture> implements HasDetailFac
 		this.type = type;
 	}
 
-	/* (non-Javadoc)
-	 * @see clinique.mapping.HasDeatilFactureInfo#getFacture()
-	 */
-	@Override
 	public Facture getFacture() {
 		return facture;
 	}
@@ -279,10 +248,10 @@ public class DetailFacture extends Entity<DetailFacture> implements HasDetailFac
 				+ (dateDetail == null ? 0 : dateDetail.hashCode());
 		result = prime * result + depl;
 		result = prime * result
-				+ (detailFactId == null ? 0 : detailFactId.hashCode());
+				+ (detailFactChirurgieId == null ? 0 : detailFactChirurgieId.hashCode());
 		result = prime * result + (facture == null ? 0 : facture.hashCode());
 		result = prime * result
-				+ (hospitalisation == null ? 0 : hospitalisation.hashCode());
+				+ (detailFacture == null ? 0 : detailFacture.hashCode());
 		result = prime * result
 				+ (infirmier == null ? 0 : infirmier.hashCode());
 		result = prime * result
@@ -310,6 +279,7 @@ public class DetailFacture extends Entity<DetailFacture> implements HasDetailFac
 		result = prime * result + (statut == null ? 0 : statut.hashCode());
 		result = prime * result + (type == null ? 0 : type.hashCode());
 		result = prime * result + urgenceActe;
+		result = prime * result + pourcentage;
 		return result;
 	}
 
@@ -324,7 +294,7 @@ public class DetailFacture extends Entity<DetailFacture> implements HasDetailFac
 		if (getClass() != obj.getClass()) {
 			return false;
 		}
-		DetailFacture other = (DetailFacture) obj;
+		DetailFactureChirurgie other = (DetailFactureChirurgie) obj;
 		if (acte == null) {
 			if (other.acte != null) {
 				return false;
@@ -350,11 +320,11 @@ public class DetailFacture extends Entity<DetailFacture> implements HasDetailFac
 		if (depl != other.depl) {
 			return false;
 		}
-		if (detailFactId == null) {
-			if (other.detailFactId != null) {
+		if (detailFactChirurgieId == null) {
+			if (other.detailFactChirurgieId != null) {
 				return false;
 			}
-		} else if (!detailFactId.equals(other.detailFactId)) {
+		} else if (!detailFactChirurgieId.equals(other.detailFactChirurgieId)) {
 			return false;
 		}
 		if (facture == null) {
@@ -364,11 +334,11 @@ public class DetailFacture extends Entity<DetailFacture> implements HasDetailFac
 		} else if (!facture.equals(other.facture)) {
 			return false;
 		}
-		if (hospitalisation == null) {
-			if (other.hospitalisation != null) {
+		if (detailFacture == null) {
+			if (other.detailFacture != null) {
 				return false;
 			}
-		} else if (!hospitalisation.equals(other.hospitalisation)) {
+		} else if (!detailFacture.equals(other.detailFacture)) {
 			return false;
 		}
 		if (infirmier == null) {
@@ -466,17 +436,22 @@ public class DetailFacture extends Entity<DetailFacture> implements HasDetailFac
 		if (urgenceActe != other.urgenceActe) {
 			return false;
 		}
+		if (pourcentage != other.pourcentage) {
+			return false;
+		}
+		
+		
 		return true;
 	}
 
 	@Override
-	protected DetailFacture createEntity() {
-		return new DetailFacture();
+	protected DetailFactureChirurgie createEntity() {
+		return new DetailFactureChirurgie();
 	}
 
 	@Override
-	public void updateWith(DetailFacture entity) {
-		detailFactId = entity.getDetailFactId();
+	public void updateWith(DetailFactureChirurgie entity) {
+		detailFactChirurgieId = entity.getDetailFactChirurgieId();
 		nomActe = entity.getNomActe();
 		nbrActes = entity.getNbrActes();
 		urgenceActe = entity.getUrgenceActe();
@@ -494,8 +469,8 @@ public class DetailFacture extends Entity<DetailFacture> implements HasDetailFac
 		acte = aCopier.copy(entity.getActe());
 		EntityCopier<Facture> fCopier = new EntityCopier<Facture>();
 		facture = fCopier.copy(entity.getFacture());
-		EntityCopier<Hospitalisation> hCopier = new EntityCopier<Hospitalisation>();
-		hospitalisation = hCopier.copy(entity.getHospitalisation());
+		EntityCopier<DetailFacture> hCopier = new EntityCopier<DetailFacture>();
+		detailFacture = hCopier.copy(entity.getDetailFacture());
 		EntityCopier<Acteur> acCopier = new EntityCopier<Acteur>();
 		medecin = acCopier.copy(entity.getMedecin());
 		infirmier = acCopier.copy(entity.getInfirmier());
@@ -507,6 +482,37 @@ public class DetailFacture extends Entity<DetailFacture> implements HasDetailFac
 		coteClinique = entity.getCoteClinique();
 		coteCliniqueMajore = entity.getCoteCliniqueMajore();
 		dateDetail = entity.getDateDetail();
+		pourcentage = entity.getPourcentage();
+	}
+
+	public String getDetailFactChirurgieId() {
+		return detailFactChirurgieId;
+	}
+
+	public void setDetailFactChirurgieId(String detailFactChirurgieId) {
+		this.detailFactChirurgieId = detailFactChirurgieId;
+	}
+
+	public DetailFacture getDetailFacture() {
+		return detailFacture;
+	}
+
+	public void setDetailFacture(DetailFacture detailFacture) {
+		this.detailFacture = detailFacture;
+	}
+
+	public int getPourcentage() {
+		return pourcentage;
+	}
+
+	public void setPourcentage(int pourcentage) {
+		this.pourcentage = pourcentage;
+	}
+
+	@Override
+	public Hospitalisation getHospitalisation() {
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 }

@@ -75,7 +75,9 @@ import clinique.mapping.Compte;
 import clinique.mapping.CompteCategorie;
 import clinique.mapping.DetailDgrCnamFacture;
 import clinique.mapping.DetailFacture;
+import clinique.mapping.DetailFactureChirurgie;
 import clinique.mapping.DetailFactureModifiees;
+import clinique.mapping.DetailFactureServices;
 import clinique.mapping.DevisActes;
 import clinique.mapping.DevisAssureur;
 import clinique.mapping.DrgCnam;
@@ -84,6 +86,7 @@ import clinique.mapping.Entreprise;
 import clinique.mapping.Facture;
 import clinique.mapping.FactureModifiees;
 import clinique.mapping.FamillePrestation;
+import clinique.mapping.HasDetailFactureInfo;
 import clinique.mapping.Hospitalisation;
 import clinique.mapping.Patient;
 import clinique.mapping.PatientPcActuel;
@@ -320,7 +323,7 @@ public class GestionCommercialeBO extends TransactionalBO implements
 	 */
 	@Override
 	public void addActeBadgeFromDetailFacture(
-			GestionCommercialeForm formulaire, double prixActe, DetailFacture df) {
+			GestionCommercialeForm formulaire, double prixActe, HasDetailFactureInfo df) {
 		int pourcentage = getCategorieDAO().getCategorie(
 				Integer.parseInt(formulaire.getCategorieId())).getPourcentage();
 		int nbreActe = df.getNbrActes();
@@ -596,7 +599,7 @@ public class GestionCommercialeBO extends TransactionalBO implements
 	 */
 	@Override
 	public void addActePCFromDetailFacture(GestionCommercialeForm formulaire,
-			double prixActe, DetailFacture df) {
+			double prixActe, HasDetailFactureInfo df) {
 		PrestationCouvertesPc pcCouv = getPrestationCouverte(formulaire);
 		int nbreActeRestant = 0;
 		int pourcentage = formulaire.getPriseEnCharge().getPourcentage();
@@ -779,7 +782,7 @@ public class GestionCommercialeBO extends TransactionalBO implements
 	 */
 	@Override
 	public void addActePCWithoutPrestationCouvFromDetailFacture(
-			GestionCommercialeForm formulaire, double prixActe, DetailFacture df) {
+			GestionCommercialeForm formulaire, double prixActe, HasDetailFactureInfo df) {
 
 		// int nbreActeRestant=0;
 		int pourcentage = formulaire.getPriseEnCharge().getPourcentage();
@@ -1581,7 +1584,7 @@ public class GestionCommercialeBO extends TransactionalBO implements
 				}
 			}
 
-			System.out.println(" libele CNAM" + formulaire.getLibeleAssureur());
+			
 
 			if (formulaire.getPriseEnChargeFlag().equals("badge")
 					&& !formulaire.getLibeleAssureur().equals("CNAM")) {
@@ -1636,6 +1639,108 @@ public class GestionCommercialeBO extends TransactionalBO implements
 		}
 	}
 
+	
+	
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * clinique.metier.gestion.commerciale.IGestionCommercialeBO#supprimerDeatilFacture
+	 * (clinique.model.gestion.commerciale.GestionCommercialeForm)
+	 */
+	@Override
+	@SuppressWarnings({ "finally", "unchecked" })
+	public boolean supprimerDeatilFacture(GestionCommercialeForm formulaire)
+			throws Exception {
+
+		boolean result = false;
+		log.debug("********** Debut supprimerDeatilFacture GestionCommercialeBO **********");
+		// Session session=SessionFactoryUtil.getInstance().openSession();
+		try {
+			List detailsFactureList = formulaire.getDetailsFactureList();
+			
+			String idDetailFactureAsupprimer=formulaire.getIdDetailFactAsupprimer();
+			
+			for (Iterator iter = detailsFactureList.iterator(); iter.hasNext();) {
+				DetailFacture df1 = (DetailFacture) iter.next();
+				if (df1.getDetailFactId().equals(idDetailFactureAsupprimer))
+				{
+					detailsFactureList.remove(df1);
+				}
+			}
+			
+			formulaire.setDetailsFactureList(new ArrayList());
+			
+			
+				formulaire.setTotalApayer("0");
+				formulaire.setCoteClinique("0");
+				formulaire.setCoteAssureur("0");
+			
+
+
+
+			for (Iterator iter = detailsFactureList.iterator(); iter.hasNext();) 
+			{
+				DetailFacture df = (DetailFacture) iter.next();
+
+			formulaire.setActeId(String.valueOf(df.getActe().getActeId()));
+			formulaire.setNombreActe(String.valueOf(df.getNbrActes()));
+			formulaire.setTypeActe(df.getType());
+			
+			if (df.getInfirmierExiste().equals("1")) 
+			{
+				formulaire.setInfirmierChoix("oui");
+				if (df.getInfirmier()!=null) formulaire.
+				   setActeurActeIdInf(String.valueOf(df.getInfirmier().getActeurId()));
+			}
+			else 
+			{
+				formulaire.setInfirmierChoix("non");
+				formulaire.
+				   setActeurActeIdInf("");
+				
+			}
+			
+			if (df.getMedecinExiste().equals("1")) 
+			{
+				formulaire.setMedecinChoix("oui");
+				if (df.getMedecin()!=null) formulaire.
+				   setActeurActeId(String.valueOf(df.getMedecin().getActeurId()));
+			}
+			else 
+			{
+				formulaire.setMedecinChoix("non");
+				formulaire.
+				   setActeurActeId("");
+				
+			}
+			
+			ajouterActe(formulaire);
+             
+			}
+			
+			result = true;
+
+		} catch (Throwable e) {
+
+			e.printStackTrace();
+			log.fatal(e.getMessage());
+
+		}
+
+		finally {
+			// session.close();
+			log.debug("********** Fin supprimerDeatilFacture GestionCommercialeBO **********");
+			// SessionFactoryUtil.getInstance().close();
+			return result;
+		}
+	}
+
+
+	
+	
+	
 	/*
 	 * (non-Javadoc)
 	 * 
@@ -2145,6 +2250,911 @@ public class GestionCommercialeBO extends TransactionalBO implements
 		}
 	}
 
+	
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * clinique.metier.gestion.commerciale.IGestionCommercialeBO#ajouterActeForHosp
+	 * (clinique.model.gestion.commerciale.GestionCommercialeForm)
+	 */
+	@Override
+	@SuppressWarnings({ "finally", "unchecked" })
+	public boolean ajouterActeChirurgie(GestionCommercialeForm formulaire)
+			throws Exception {
+
+		boolean result = false;
+		log.debug("********** Debut ajouterActeCghirurgie GestionCommercialeBO **********");
+
+		try {
+			List detailsFactureList = formulaire.getDetailsFactureList();
+			if (formulaire.getFactureId().equals("")) {
+				// debut id facture 11
+				formulaire.setFactureId(ConstantesMetier.ID_FACTURE
+						+ UtilDate.getInstance().getDateForId()
+						+ ""
+						+ getUserDao()
+								.getUserByLogin(formulaire.getOperateur())
+								.getUserId());
+			}
+
+			int majoration = calculMajoration(formulaire);
+			System.out.println("majoration : " + majoration);
+
+			// ajouter une prestation dans détails facture
+
+			DetailFacture df = new DetailFacture();
+
+			// debut id detail facture 13
+			df.setDetailFactId(ConstantesMetier.ID_DETAILFACTURE
+					+ UtilDate.getInstance().getDateForId()
+					+ ""
+					+ getUserDao().getUserByLogin(formulaire.getOperateur())
+							.getUserId());
+			df.setActe(getActeDAO().getActe(
+					Integer.parseInt(formulaire.getActeId())));
+			df.setNomActe(getActeDAO().getActe(
+					Integer.parseInt(formulaire.getActeId())).getNomActe());
+			df.setNbrActes(Integer.parseInt(formulaire.getNombreActe()));
+
+			// calcul QPC
+			//df.setQpActeur(calculQPActeur(formulaire));
+			//df.setQpAssistant(calculQPAssistant(formulaire));
+			df.setQpActeur(0);
+			df.setQpAssistant(100);
+			// int qpc=100-(df.getQpActeur()+df.getQpAssistant());
+			double montantQPC = 0;
+
+			df.setInfirmierExiste("0");
+
+			double montantTotal;
+			double prixActe;
+			if (formulaire.getTypeActe().equals("normal")) {
+				
+						
+					
+				 if (!UtilDate.getInstance().isVide(
+									formulaire.getChirurgienId()))
+				   {
+						ActeurActe medecin = getActeurActeDAO().getActeurActe(
+								Integer.parseInt(formulaire.getChirurgienId()));
+
+						df.setMedecin(medecin.getActeur());
+						
+						df.setMedecinExiste("1");
+						
+						if (medecin.getIsException().equals("1")) {
+							prixActe = medecin.getPrix();
+						} else {
+							prixActe = getActeDAO().getActe(
+									Integer.parseInt(formulaire.getActeId()))
+									.getPrix();
+						}
+
+					}
+				 
+				 else 
+				 {
+					 df.setMedecinExiste("0");
+					 prixActe = getActeDAO().getActe(
+								Integer.parseInt(formulaire.getActeId()))
+								.getPrix();
+				 }
+					
+				
+				df.setUrgenceActe(0);
+				df.setDepl(0);
+		
+
+				df.setPrixReel(prixActe);
+
+				prixActe = prixActe + majoration * prixActe / 100;
+				df.setPrix(prixActe);
+
+				montantTotal = prixActe
+						* Integer.parseInt(formulaire.getNombreActe());
+				df.setMontantTotal(montantTotal);
+
+				df.setType("normal");
+			} 
+			
+			else if (formulaire.getTypeActe().equals("urgence")) {
+				
+				 if (!UtilDate.getInstance().isVide(
+							formulaire.getChirurgienId()))
+		   {
+				ActeurActe medecin = getActeurActeDAO().getActeurActe(
+						Integer.parseInt(formulaire.getChirurgienId()));
+
+				df.setMedecin(medecin.getActeur());
+				
+				df.setMedecinExiste("1");
+				
+				if (medecin.getIsException().equals("1")) {
+					prixActe = medecin.getPrix();
+				} else {
+					prixActe = getActeDAO().getActe(
+							Integer.parseInt(formulaire.getActeId()))
+							.getPrixUrg();
+				}
+
+			}
+		 
+		 else 
+		 {
+			 df.setMedecinExiste("0");
+			 prixActe = getActeDAO().getActe(
+						Integer.parseInt(formulaire.getActeId()))
+						.getPrixUrg();
+		 }
+			
+				
+				df.setUrgenceActe(1);
+				df.setDepl(0);
+
+				df.setPrixReel(prixActe);
+
+				prixActe = prixActe + majoration * prixActe / 100;
+				df.setPrixUrg(prixActe);
+
+				montantTotal = prixActe
+						* Integer.parseInt(formulaire.getNombreActe());
+				df.setMontantTotal(montantTotal);
+
+				df.setType("urgence");
+
+			} else {
+				
+				 if (!UtilDate.getInstance().isVide(
+							formulaire.getChirurgienId()))
+		   {
+				ActeurActe medecin = getActeurActeDAO().getActeurActe(
+						Integer.parseInt(formulaire.getChirurgienId()));
+
+				df.setMedecin(medecin.getActeur());
+				
+				df.setMedecinExiste("1");
+				
+				if (medecin.getIsException().equals("1")) {
+					prixActe = medecin.getPrix();
+				} else {
+					prixActe = getActeDAO().getActe(
+							Integer.parseInt(formulaire.getActeId()))
+							.getPrixUrg();
+				}
+
+			}
+		 
+		 else 
+		 {
+			 df.setMedecinExiste("0");
+			 prixActe = getActeDAO().getActe(
+						Integer.parseInt(formulaire.getActeId()))
+						.getPrixUrg();
+		 }
+			
+				
+				df.setUrgenceActe(0);
+				df.setDepl(1);
+
+				df.setPrixReel(prixActe);
+
+				prixActe = prixActe + majoration * prixActe / 100;
+				df.setPrixDepl(prixActe);
+
+				montantTotal = prixActe
+						* Integer.parseInt(formulaire.getNombreActe());
+				df.setMontantTotal(montantTotal);
+
+				df.setType("deplacement");
+
+			}
+
+			montantQPC = montantTotal
+					- (df.getQpActeur() + df.getQpAssistant())
+					* df.getPrixReel() * df.getNbrActes() / 100;
+			double montantQpcNonMajore = df.getPrixReel() * df.getNbrActes()
+					- (df.getQpActeur() + df.getQpAssistant())
+					* df.getPrixReel() * df.getNbrActes() / 100;
+
+			df.setCoteClinique(montantQpcNonMajore);
+			df.setCoteCliniqueMajore(montantQPC);
+
+			df.setDateDetail(UtilDate.getInstance().getDateToday());
+			df.setOperateur(formulaire.getOperateur());
+
+			df.setFacture(formulaire.getFacture());
+
+			detailsFactureList.add(df);
+			formulaire.setDetailsFactureList(detailsFactureList);
+			
+			formulaire.setDetailsFactureChirurgieList(new ArrayList());
+			formulaire.setDetailsFactureServicesList(new ArrayList());
+			ajouterActeBloc(formulaire,df);
+			ajouterActeAnesthesie(formulaire, df);
+			result = true;
+
+		} catch (Exception e) {
+
+			e.printStackTrace();
+			log.fatal(e.getMessage());
+
+		}
+
+		finally {
+			log.debug("********** Fin ajouterActeCghirurgie GestionCommercialeBO **********");
+			return result;
+		}
+	}
+
+	
+	
+	
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * clinique.metier.gestion.commerciale.IGestionCommercialeBO#ajouterActeBloc
+	 * (clinique.model.gestion.commerciale.GestionCommercialeForm)
+	 */
+	@Override
+	@SuppressWarnings({ "finally", "unchecked" })
+	public boolean ajouterActeBloc(GestionCommercialeForm formulaire,DetailFacture detail)
+			throws Exception {
+
+		boolean result = false;
+		log.debug("********** Debut ajouterActeBloc GestionCommercialeBO **********");
+
+		try {
+			List detailsFactureList = formulaire.getDetailsFactureChirurgieList();
+			
+
+			int majoration = calculMajoration(formulaire);
+			System.out.println("majoration : " + majoration);
+
+			// ajouter une prestation dans détails facture
+
+			DetailFactureChirurgie df = new DetailFactureChirurgie();
+
+			// debut id detail facture 13
+			df.setDetailFactChirurgieId(ConstantesMetier.ID_DETAILFACTURE
+					+ UtilDate.getInstance().getDateForId()
+					+ ""
+					+ getUserDao().getUserByLogin(formulaire.getOperateur())
+							.getUserId());
+			df.setActe(getActeDAO().getActe(
+					Integer.parseInt(formulaire.getActeId())));
+			df.setNomActe("BLOC OPERATOIRE");
+			df.setNbrActes(Integer.parseInt(formulaire.getNombreActe()));
+
+			
+			
+			double montantQPC = 0;
+
+			if (formulaire.getAssistantBlocExiste().equals("oui")
+					&& !UtilDate.getInstance().isVide(
+							formulaire.getAssistantBlocId())) {
+				df.setInfirmier(getActeurDAO().getActeur(
+						Integer.parseInt(formulaire.getAssistantBlocId())));
+				df.setInfirmierExiste("1");
+				ajouterActeAssistantBloc(formulaire, detail);
+			} else {
+				df.setInfirmierExiste("0");
+			}
+			
+			
+			// calcul QPC
+			
+			df.setQpActeur(0);
+			df.setQpAssistant(0);
+
+			double montantTotal=0;
+			double prixActe=detail.getPrixReel()*50/100;
+			if (formulaire.getTypeActe().equals("normal")) {
+				if (!UtilDate.getInstance().isVide(
+								formulaire.getChirurgienId())) {
+					ActeurActe medecin = getActeurActeDAO().getActeurActe(
+							Integer.parseInt(formulaire.getChirurgienId()));
+					
+
+					df.setMedecin(medecin.getActeur());
+					
+				} 
+				df.setMedecinExiste("1");
+				
+				df.setUrgenceActe(0);
+				df.setDepl(0);
+
+				df.setPrixReel(prixActe);
+
+				prixActe = prixActe + majoration * prixActe / 100;
+				df.setPrix(prixActe);
+
+				montantTotal = prixActe
+						* Integer.parseInt(formulaire.getNombreActe());
+				df.setMontantTotal(montantTotal);
+
+				df.setType("normal");
+			} else if (formulaire.getTypeActe().equals("urgence")) {
+				if (!UtilDate.getInstance().isVide(
+								formulaire.getChirurgienId())) {
+					ActeurActe medecin = getActeurActeDAO().getActeurActe(
+							Integer.parseInt(formulaire.getChirurgienId()));
+
+					df.setMedecin(medecin.getActeur());
+
+				}
+				df.setMedecinExiste("1");
+				df.setUrgenceActe(1);
+				df.setDepl(0);
+
+				df.setPrixReel(prixActe);
+
+				prixActe = prixActe + majoration * prixActe / 100;
+				df.setPrixUrg(prixActe);
+
+				montantTotal = prixActe
+						* Integer.parseInt(formulaire.getNombreActe());
+				df.setMontantTotal(montantTotal);
+
+				df.setType("urgence");
+
+			} else {
+				if (!UtilDate.getInstance().isVide(
+								formulaire.getChirurgienId())) {
+					ActeurActe medecin = getActeurActeDAO().getActeurActe(
+							Integer.parseInt(formulaire.getChirurgienId()));
+					
+					df.setMedecin(medecin.getActeur());
+					
+				
+				}
+				df.setMedecinExiste("1");
+				df.setUrgenceActe(0);
+				df.setDepl(1);
+
+				df.setPrixReel(prixActe);
+
+				prixActe = prixActe + majoration * prixActe / 100;
+				df.setPrixDepl(prixActe);
+
+				montantTotal = prixActe
+						* Integer.parseInt(formulaire.getNombreActe());
+				df.setMontantTotal(montantTotal);
+
+				df.setType("deplacement");
+
+			}
+
+			montantQPC = montantTotal
+					- (df.getQpActeur() + df.getQpAssistant())
+					* df.getPrixReel() * df.getNbrActes() / 100;
+			double montantQpcNonMajore = df.getPrixReel() * df.getNbrActes()
+					- (df.getQpActeur() + df.getQpAssistant())
+					* df.getPrixReel() * df.getNbrActes() / 100;
+
+			df.setCoteClinique(montantQpcNonMajore);
+			df.setCoteCliniqueMajore(montantQPC);
+
+			df.setDateDetail(UtilDate.getInstance().getDateToday());
+			df.setOperateur(formulaire.getOperateur());
+            df.setDetailFacture(detail);
+			df.setFacture(formulaire.getFacture());
+            df.setPourcentage(50);
+			detailsFactureList.add(df);
+			formulaire.setDetailsFactureChirurgieList(detailsFactureList);
+			result = true;
+
+		} catch (Exception e) {
+
+			e.printStackTrace();
+			log.fatal(e.getMessage());
+
+		}
+
+		finally {
+			log.debug("********** Fin ajouterActeBloc GestionCommercialeBO **********");
+			return result;
+		}
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * clinique.metier.gestion.commerciale.IGestionCommercialeBO#ajouterActeAssistantBloc
+	 * (clinique.model.gestion.commerciale.GestionCommercialeForm)
+	 */
+	@Override
+	@SuppressWarnings({ "finally", "unchecked" })
+	public boolean ajouterActeAssistantBloc(GestionCommercialeForm formulaire,DetailFacture detail)
+			throws Exception {
+
+		boolean result = false;
+		log.debug("********** Debut ajouterActeAssistantBloc GestionCommercialeBO **********");
+
+		try {
+			List detailsFactureList = formulaire.getDetailsFactureServicesList();
+			
+
+			int majoration = calculMajoration(formulaire);
+			System.out.println("majoration : " + majoration);
+
+			// ajouter une prestation dans détails facture
+
+			DetailFactureServices df = new DetailFactureServices();
+
+			// debut id detail facture 13
+			df.setDetailFactServiceId(ConstantesMetier.ID_DETAILFACTURE
+					+ UtilDate.getInstance().getDateForId()
+					+ ""
+					+ getUserDao().getUserByLogin(formulaire.getOperateur())
+							.getUserId());
+			df.setActe(getActeDAO().getActe(
+					Integer.parseInt(formulaire.getActeId())));
+			df.setNomActe("ASSISTANT BLOC");
+			df.setNbrActes(Integer.parseInt(formulaire.getNombreActe()));
+
+			
+			
+			double montantQPC = 0;
+
+			
+				df.setInfirmier(getActeurDAO().getActeur(
+						Integer.parseInt(formulaire.getAssistantBlocId())));
+				df.setInfirmierExiste("1");
+			
+			
+			
+			// calcul QPC
+			
+			df.setQpActeur(0);
+			df.setQpAssistant(100);
+
+			double montantTotal=0;
+			double prixActe=5000;
+			if (formulaire.getTypeActe().equals("normal")) {
+				if (!UtilDate.getInstance().isVide(
+								formulaire.getChirurgienId())) {
+					ActeurActe medecin = getActeurActeDAO().getActeurActe(
+							Integer.parseInt(formulaire.getChirurgienId()));
+					
+
+					df.setMedecin(medecin.getActeur());
+					
+				} 
+				df.setMedecinExiste("1");
+				
+				df.setUrgenceActe(0);
+				df.setDepl(0);
+
+				df.setPrixReel(prixActe);
+
+				prixActe = prixActe + majoration * prixActe / 100;
+				df.setPrix(prixActe);
+
+				montantTotal = prixActe
+						* Integer.parseInt(formulaire.getNombreActe());
+				df.setMontantTotal(montantTotal);
+
+				df.setType("normal");
+			} else if (formulaire.getTypeActe().equals("urgence")) {
+				if (!UtilDate.getInstance().isVide(
+								formulaire.getChirurgienId())) {
+					ActeurActe medecin = getActeurActeDAO().getActeurActe(
+							Integer.parseInt(formulaire.getChirurgienId()));
+
+					df.setMedecin(medecin.getActeur());
+
+				}
+				df.setMedecinExiste("1");
+				df.setUrgenceActe(1);
+				df.setDepl(0);
+
+				df.setPrixReel(prixActe);
+
+				prixActe = prixActe + majoration * prixActe / 100;
+				df.setPrixUrg(prixActe);
+
+				montantTotal = prixActe
+						* Integer.parseInt(formulaire.getNombreActe());
+				df.setMontantTotal(montantTotal);
+
+				df.setType("urgence");
+
+			} else {
+				if (!UtilDate.getInstance().isVide(
+								formulaire.getChirurgienId())) {
+					ActeurActe medecin = getActeurActeDAO().getActeurActe(
+							Integer.parseInt(formulaire.getChirurgienId()));
+					
+					df.setMedecin(medecin.getActeur());
+					
+				
+				}
+				df.setMedecinExiste("1");
+				df.setUrgenceActe(0);
+				df.setDepl(1);
+
+				df.setPrixReel(prixActe);
+
+				prixActe = prixActe + majoration * prixActe / 100;
+				df.setPrixDepl(prixActe);
+
+				montantTotal = prixActe
+						* Integer.parseInt(formulaire.getNombreActe());
+				df.setMontantTotal(montantTotal);
+
+				df.setType("deplacement");
+
+			}
+
+			montantQPC = montantTotal
+					- (df.getQpActeur() + df.getQpAssistant())
+					* df.getPrixReel() * df.getNbrActes() / 100;
+			double montantQpcNonMajore = df.getPrixReel() * df.getNbrActes()
+					- (df.getQpActeur() + df.getQpAssistant())
+					* df.getPrixReel() * df.getNbrActes() / 100;
+
+			df.setCoteClinique(montantQpcNonMajore);
+			df.setCoteCliniqueMajore(montantQPC);
+
+			df.setDateDetail(UtilDate.getInstance().getDateToday());
+			df.setOperateur(formulaire.getOperateur());
+            df.setDetailFacture(detail);
+			df.setFacture(formulaire.getFacture());
+            df.setPourcentage(50);
+			detailsFactureList.add(df);
+			formulaire.setDetailsFactureServicesList(detailsFactureList);
+			result = true;
+
+		} catch (Exception e) {
+
+			e.printStackTrace();
+			log.fatal(e.getMessage());
+
+		}
+
+		finally {
+			log.debug("********** Fin ajouterActeAssistantBloc GestionCommercialeBO **********");
+			return result;
+		}
+	}
+
+	
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+       ajouterActeAnesthesie	 
+       * (clinique.model.gestion.commerciale.GestionCommercialeForm)
+	 */
+	@Override
+	@SuppressWarnings({ "finally", "unchecked" })
+	public boolean ajouterActeAnesthesie(GestionCommercialeForm formulaire,DetailFacture detail)
+			throws Exception {
+
+		boolean result = false;
+		log.debug("********** Debut ajouterActeAnesthesie GestionCommercialeBO **********");
+
+		try {
+			List detailsFactureList = formulaire.getDetailsFactureChirurgieList();
+			
+
+			int majoration = calculMajoration(formulaire);
+			System.out.println("majoration : " + majoration);
+
+			// ajouter une prestation dans détails facture
+
+			DetailFactureChirurgie df = new DetailFactureChirurgie();
+
+			// debut id detail facture 13
+			df.setDetailFactChirurgieId(ConstantesMetier.ID_DETAILFACTURE
+					+ UtilDate.getInstance().getDateForId()
+					+ ""
+					+ getUserDao().getUserByLogin(formulaire.getOperateur())
+							.getUserId());
+			df.setActe(getActeDAO().getActe(
+					Integer.parseInt(formulaire.getActeId())));
+			df.setNomActe("ANESTHESIE");
+			df.setNbrActes(Integer.parseInt(formulaire.getNombreActe()));
+
+			
+			
+			double montantQPC = 0;
+
+			if (formulaire.getAssistantAnesthesisteExiste().equals("oui")
+					&& !UtilDate.getInstance().isVide(
+							formulaire.getAssistantAnesthesisteId())) {
+				df.setInfirmier(getActeurDAO().getActeur(
+						Integer.parseInt(formulaire.getAssistantAnesthesisteId())));
+				df.setInfirmierExiste("1");
+				ajouterActeAssistantAnesthesie(formulaire, detail);
+			} else {
+				df.setInfirmierExiste("0");
+			}
+			
+			
+			// calcul QPC
+			
+			df.setQpActeur(100);
+			df.setQpAssistant(0);
+
+			double montantTotal=0;
+			double prixActe=detail.getPrixReel()*50/100;
+			if (formulaire.getTypeActe().equals("normal")) {
+				if (!UtilDate.getInstance().isVide(
+								formulaire.getAnesthesisteId())) {
+					ActeurActe medecin = getActeurActeDAO().getActeurActe(
+							Integer.parseInt(formulaire.getAnesthesisteId()));
+					
+
+					df.setMedecin(medecin.getActeur());
+					
+				} 
+				df.setMedecinExiste("1");
+				
+				df.setUrgenceActe(0);
+				df.setDepl(0);
+
+				df.setPrixReel(prixActe);
+
+				prixActe = prixActe + majoration * prixActe / 100;
+				df.setPrix(prixActe);
+
+				montantTotal = prixActe
+						* Integer.parseInt(formulaire.getNombreActe());
+				df.setMontantTotal(montantTotal);
+
+				df.setType("normal");
+			} else if (formulaire.getTypeActe().equals("urgence")) {
+				if (!UtilDate.getInstance().isVide(
+								formulaire.getAnesthesisteId())) {
+					ActeurActe medecin = getActeurActeDAO().getActeurActe(
+							Integer.parseInt(formulaire.getAnesthesisteId()));
+
+					df.setMedecin(medecin.getActeur());
+
+				}
+				df.setMedecinExiste("1");
+				df.setUrgenceActe(1);
+				df.setDepl(0);
+
+				df.setPrixReel(prixActe);
+
+				prixActe = prixActe + majoration * prixActe / 100;
+				df.setPrixUrg(prixActe);
+
+				montantTotal = prixActe
+						* Integer.parseInt(formulaire.getNombreActe());
+				df.setMontantTotal(montantTotal);
+
+				df.setType("urgence");
+
+			} else {
+				if (!UtilDate.getInstance().isVide(
+								formulaire.getAnesthesisteId())) {
+					ActeurActe medecin = getActeurActeDAO().getActeurActe(
+							Integer.parseInt(formulaire.getAnesthesisteId()));
+					
+					df.setMedecin(medecin.getActeur());
+					
+				
+				}
+				df.setMedecinExiste("1");
+				df.setUrgenceActe(0);
+				df.setDepl(1);
+
+				df.setPrixReel(prixActe);
+
+				prixActe = prixActe + majoration * prixActe / 100;
+				df.setPrixDepl(prixActe);
+
+				montantTotal = prixActe
+						* Integer.parseInt(formulaire.getNombreActe());
+				df.setMontantTotal(montantTotal);
+
+				df.setType("deplacement");
+
+			}
+
+			montantQPC = montantTotal
+					- (df.getQpActeur() + df.getQpAssistant())
+					* df.getPrixReel() * df.getNbrActes() / 100;
+			double montantQpcNonMajore = df.getPrixReel() * df.getNbrActes()
+					- (df.getQpActeur() + df.getQpAssistant())
+					* df.getPrixReel() * df.getNbrActes() / 100;
+
+			df.setCoteClinique(montantQpcNonMajore);
+			df.setCoteCliniqueMajore(montantQPC);
+
+			df.setDateDetail(UtilDate.getInstance().getDateToday());
+			df.setOperateur(formulaire.getOperateur());
+            df.setDetailFacture(detail);
+			df.setFacture(formulaire.getFacture());
+			df.setPourcentage(50);
+			detailsFactureList.add(df);
+			formulaire.setDetailsFactureChirurgieList(detailsFactureList);
+			result = true;
+
+		} catch (Exception e) {
+
+			e.printStackTrace();
+			log.fatal(e.getMessage());
+
+		}
+
+		finally {
+			log.debug("********** Fin ajouterActeAnesthesie GestionCommercialeBO **********");
+			return result;
+		}
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+       ajouterActeAssistantAnesthesie	 
+       * (clinique.model.gestion.commerciale.GestionCommercialeForm)
+	 */
+	@Override
+	@SuppressWarnings({ "finally", "unchecked" })
+	public boolean ajouterActeAssistantAnesthesie(GestionCommercialeForm formulaire,DetailFacture detail)
+			throws Exception {
+
+		boolean result = false;
+		log.debug("********** Debut ajouterActeAnesthesie GestionCommercialeBO **********");
+
+		try {
+			List detailsFactureList = formulaire.getDetailsFactureServicesList();
+			
+
+			int majoration = calculMajoration(formulaire);
+			System.out.println("majoration : " + majoration);
+
+			// ajouter une prestation dans détails facture
+
+			DetailFactureServices df = new DetailFactureServices();
+
+			// debut id detail facture 13
+			df.setDetailFactServiceId(ConstantesMetier.ID_DETAILFACTURE
+					+ UtilDate.getInstance().getDateForId()
+					+ ""
+					+ getUserDao().getUserByLogin(formulaire.getOperateur())
+							.getUserId());
+			df.setActe(getActeDAO().getActe(
+					Integer.parseInt(formulaire.getActeId())));
+			df.setNomActe("ASSISTANT ANESTHESIE");
+			df.setNbrActes(Integer.parseInt(formulaire.getNombreActe()));
+
+			
+			
+			double montantQPC = 0;
+
+			
+				df.setInfirmier(getActeurDAO().getActeur(
+						Integer.parseInt(formulaire.getAssistantAnesthesisteId())));
+				df.setInfirmierExiste("1");
+			
+			
+			// calcul QPC
+			
+			df.setQpActeur(0);
+			df.setQpAssistant(100);
+
+			double montantTotal=0;
+			double prixActe=5000;
+			if (formulaire.getTypeActe().equals("normal")) {
+				if (!UtilDate.getInstance().isVide(
+								formulaire.getAnesthesisteId())) {
+					ActeurActe medecin = getActeurActeDAO().getActeurActe(
+							Integer.parseInt(formulaire.getAnesthesisteId()));
+					
+
+					df.setMedecin(medecin.getActeur());
+					
+				} 
+				df.setMedecinExiste("1");
+				
+				df.setUrgenceActe(0);
+				df.setDepl(0);
+
+				df.setPrixReel(prixActe);
+
+				prixActe = prixActe + majoration * prixActe / 100;
+				df.setPrix(prixActe);
+
+				montantTotal = prixActe
+						* Integer.parseInt(formulaire.getNombreActe());
+				df.setMontantTotal(montantTotal);
+
+				df.setType("normal");
+			} else if (formulaire.getTypeActe().equals("urgence")) {
+				if (!UtilDate.getInstance().isVide(
+								formulaire.getAnesthesisteId())) {
+					ActeurActe medecin = getActeurActeDAO().getActeurActe(
+							Integer.parseInt(formulaire.getAnesthesisteId()));
+
+					df.setMedecin(medecin.getActeur());
+
+				}
+				df.setMedecinExiste("1");
+				df.setUrgenceActe(1);
+				df.setDepl(0);
+
+				df.setPrixReel(prixActe);
+
+				prixActe = prixActe + majoration * prixActe / 100;
+				df.setPrixUrg(prixActe);
+
+				montantTotal = prixActe
+						* Integer.parseInt(formulaire.getNombreActe());
+				df.setMontantTotal(montantTotal);
+
+				df.setType("urgence");
+
+			} else {
+				if (!UtilDate.getInstance().isVide(
+								formulaire.getAnesthesisteId())) {
+					ActeurActe medecin = getActeurActeDAO().getActeurActe(
+							Integer.parseInt(formulaire.getAnesthesisteId()));
+					
+					df.setMedecin(medecin.getActeur());
+					
+				
+				}
+				df.setMedecinExiste("1");
+				df.setUrgenceActe(0);
+				df.setDepl(1);
+
+				df.setPrixReel(prixActe);
+
+				prixActe = prixActe + majoration * prixActe / 100;
+				df.setPrixDepl(prixActe);
+
+				montantTotal = prixActe
+						* Integer.parseInt(formulaire.getNombreActe());
+				df.setMontantTotal(montantTotal);
+
+				df.setType("deplacement");
+
+			}
+
+			montantQPC = montantTotal
+					- (df.getQpActeur() + df.getQpAssistant())
+					* df.getPrixReel() * df.getNbrActes() / 100;
+			double montantQpcNonMajore = df.getPrixReel() * df.getNbrActes()
+					- (df.getQpActeur() + df.getQpAssistant())
+					* df.getPrixReel() * df.getNbrActes() / 100;
+
+			df.setCoteClinique(montantQpcNonMajore);
+			df.setCoteCliniqueMajore(montantQPC);
+
+			df.setDateDetail(UtilDate.getInstance().getDateToday());
+			df.setOperateur(formulaire.getOperateur());
+            df.setDetailFacture(detail);
+			df.setFacture(formulaire.getFacture());
+			df.setPourcentage(50);
+			detailsFactureList.add(df);
+			formulaire.setDetailsFactureServicesList(detailsFactureList);
+			result = true;
+
+		} catch (Exception e) {
+
+			e.printStackTrace();
+			log.fatal(e.getMessage());
+
+		}
+
+		finally {
+			log.debug("********** Fin ajouterActeAnesthesie GestionCommercialeBO **********");
+			return result;
+		}
+	}
+
+	
+	
+	
 	/*
 	 * (non-Javadoc)
 	 * 
@@ -3157,6 +4167,106 @@ public class GestionCommercialeBO extends TransactionalBO implements
 		return qpActeur;
 	}
 
+	
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * clinique.metier.gestion.commerciale.IGestionCommercialeBO#calculQPChirurgien
+	 * (clinique.model.gestion.commerciale.GestionCommercialeForm)
+	 */
+	@Override
+	public int calculQPChirurgien(GestionCommercialeForm formulaire) {
+		// calcul qp praticien
+		int qpActeur = 0;
+		if (!UtilDate.getInstance().isVide(formulaire.getChirurgienId())) {
+			ActeurActe praticien = getActeurActeDAO().getActeurActe(
+					Integer.parseInt(formulaire.getChirurgienId()));
+
+			if (praticien != null) {
+				if (formulaire.getTypeActe().equals("normal")) {
+					if (praticien.getPourcentage() != 0) {
+						qpActeur = praticien.getPourcentage();
+					} else {
+						Acte acte = getActeDAO().getActe(
+								Integer.parseInt(formulaire.getActeId()));
+						qpActeur = acte.getTauxPraticien();
+					}
+				} else {
+					if (praticien.getPourcentageUrg() != 0) {
+						qpActeur = praticien.getPourcentageUrg();
+					} else {
+						Acte acte = getActeDAO().getActe(
+								Integer.parseInt(formulaire.getActeId()));
+						qpActeur = acte.getTauxPraticienUrg();
+					}
+				}
+			} else {
+				Acte acte = getActeDAO().getActe(
+						Integer.parseInt(formulaire.getActeId()));
+				if (formulaire.getTypeActe().equals("normal")) {
+					qpActeur = acte.getTauxPraticien();
+				} else {
+					qpActeur = acte.getTauxPraticienUrg();
+					// else qpActeur=acte.getTauxDepPraticien();
+				}
+			}
+		}
+
+		return qpActeur;
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * clinique.metier.gestion.commerciale.IGestionCommercialeBO#calculQPAnesthesiste
+	 * (clinique.model.gestion.commerciale.GestionCommercialeForm)
+	 */
+	@Override
+	public int calculQPAnesthesiste(GestionCommercialeForm formulaire) {
+		// calcul qp praticien
+		int qpActeur = 0;
+		if (!UtilDate.getInstance().isVide(formulaire.getAnesthesisteId())) {
+			ActeurActe praticien = getActeurActeDAO().getActeurActe(
+					Integer.parseInt(formulaire.getAnesthesisteId()));
+
+			if (praticien != null) {
+				if (formulaire.getTypeActe().equals("normal")) {
+					if (praticien.getPourcentage() != 0) {
+						qpActeur = praticien.getPourcentage();
+					} else {
+						Acte acte = getActeDAO().getActe(
+								Integer.parseInt(formulaire.getActeId()));
+						qpActeur = acte.getTauxPraticien();
+					}
+				} else {
+					if (praticien.getPourcentageUrg() != 0) {
+						qpActeur = praticien.getPourcentageUrg();
+					} else {
+						Acte acte = getActeDAO().getActe(
+								Integer.parseInt(formulaire.getActeId()));
+						qpActeur = acte.getTauxPraticienUrg();
+					}
+				}
+			} else {
+				Acte acte = getActeDAO().getActe(
+						Integer.parseInt(formulaire.getActeId()));
+				if (formulaire.getTypeActe().equals("normal")) {
+					qpActeur = acte.getTauxPraticien();
+				} else {
+					qpActeur = acte.getTauxPraticienUrg();
+					// else qpActeur=acte.getTauxDepPraticien();
+				}
+			}
+		}
+
+		return qpActeur;
+	}
+
+
+	
+	
 	/*
 	 * (non-Javadoc)
 	 * 
@@ -3173,6 +4283,31 @@ public class GestionCommercialeBO extends TransactionalBO implements
 			if (df.getType().equals("normal")) {
 				qpAssistant = acte.getTauxAssistant();
 			} else if (df.getType().equals("urgence")) {
+				qpAssistant = acte.getTauxAssistantUrg();
+			} else {
+				qpAssistant = acte.getTauxDepAssistant();
+			}
+		}
+		return qpAssistant;
+	}
+	
+	
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * clinique.metier.gestion.commerciale.IGestionCommercialeBO#calculQPAssistantChirurgie
+	 * (clinique.mapping.DetailFacture)
+	 */
+	@Override
+	public int calculQPAssistantChirurgie(DetailFactureChirurgie df) {
+		// calcul qp praticien
+		int qpAssistant = 0;
+		if ("1".equals(df.getInfirmierExiste())) {
+			Acte acte = df.getActe();
+			if ("normal".equals(df.getType())) {
+				qpAssistant = acte.getTauxAssistant();
+			} else if ("urgence".equals(df.getType())) {
 				qpAssistant = acte.getTauxAssistantUrg();
 			} else {
 				qpAssistant = acte.getTauxDepAssistant();
@@ -4683,6 +5818,57 @@ public class GestionCommercialeBO extends TransactionalBO implements
 		return frais;
 	}
 
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * clinique.metier.gestion.commerciale.IGestionCommercialeBO#getChambreFraisAssureur
+	 * (clinique.mapping.ChambresHospitalisation)
+	 */
+	@Override
+	public double getChambreFraisAssureur(ChambresHospitalisation chambreHospitalisation) {
+		double frais = 0;
+
+		Chambre chambre = chambreHospitalisation.getChambre();
+		if (chambre != null) {
+			double tarif = chambre.getTarif();
+			Date dateEntree = chambreHospitalisation.getDateEntree();
+			Date dateSortie = chambreHospitalisation.getDateSortie();
+			int heureEntree = chambreHospitalisation.getHeureEntree();
+			int heureSortie = chambreHospitalisation.getHeureSortie();
+
+			Date date1 = new GregorianCalendar(dateEntree.getYear(),
+					dateEntree.getMonth(), dateEntree.getDate(), heureEntree,
+					00).getTime();
+			Date date2 = new GregorianCalendar(dateSortie.getYear(),
+					dateSortie.getMonth(), dateSortie.getDate(), heureSortie,
+					00).getTime();
+
+			long diff = date2.getTime() - date1.getTime();
+			double nbreHeures = diff / (1000 * 60 * 60) % 24;
+			double nbreJours = diff / (1000 * 60 * 60) / 24;
+
+			
+
+			if (nbreHeures < 4) {
+				nbreHeures = 0;
+			}
+			else nbreHeures = 24;
+
+			frais = tarif * 24 * nbreJours + tarif * nbreHeures;
+
+		}
+
+		return frais;
+	}
+
+
+	
+	
+	
+	
+	
 	/*
 	 * (non-Javadoc)
 	 * 
@@ -5606,6 +6792,8 @@ public class GestionCommercialeBO extends TransactionalBO implements
 
 			ArrayList acteursListe = new ArrayList();
 			ArrayList acteursInfListe = new ArrayList();
+			ArrayList chirurgiens = new ArrayList();
+			
 
 			FamillePrestationDAO famillePrestDAO = getFamillePrestationDAO();
 			ClasseDAO classeDAO = getClasseDAO();
@@ -5678,6 +6866,10 @@ public class GestionCommercialeBO extends TransactionalBO implements
 						acteursListe.add(new LabelValueBean(element.getActeur()
 								.getNom(), String.valueOf(element
 								.getActeurActeId())));
+						  if (element.getActeur().getChirurgie().equals("1"))
+							  chirurgiens.add(new LabelValueBean(element.getActeur()
+										.getNom(), String.valueOf(element
+										.getActeurActeId())));
 					} else {
 						acteursInfListe.add(new LabelValueBean(element
 								.getActeur().getNom(), String.valueOf(element
@@ -7070,13 +8262,18 @@ public class GestionCommercialeBO extends TransactionalBO implements
 
 			int nbreChambresHosp = i;
 			int majoration = calculMajoration(formulaire);
+			boolean pcFlag=false;
+			if (!formulaire.getPriseEnChargeFlag().equals("aucune")) pcFlag=true;
 			i = 0;
 			double frais = 0;
 			for (Iterator iter = formulaire.getChambresHospList().iterator(); iter
 					.hasNext();) {
 				ChambresHospitalisation element = (ChambresHospitalisation) iter
 						.next();
-				frais = getChambreFrais(element);
+				
+				if (!pcFlag) frais = getChambreFrais(element);
+				else frais = getChambreFraisAssureur(element);
+				
 				element.setTotalReel(frais);
 				frais = frais + majoration * frais / 100;
 				element.setTotal(frais);
