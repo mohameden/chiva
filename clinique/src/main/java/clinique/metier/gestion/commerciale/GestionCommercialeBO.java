@@ -86,6 +86,7 @@ import clinique.mapping.Entreprise;
 import clinique.mapping.Facture;
 import clinique.mapping.FactureModifiees;
 import clinique.mapping.FamillePrestation;
+import clinique.mapping.HasDetailFactureInfo;
 import clinique.mapping.Hospitalisation;
 import clinique.mapping.Patient;
 import clinique.mapping.PatientPcActuel;
@@ -9018,7 +9019,7 @@ public class GestionCommercialeBO extends TransactionalBO implements
 						.dateToString(patient.getDateNaissance()));
 
 				formulaire.setDateDerniereVisite(UtilDate.getInstance()
-						.dateToString(patient.getDateDerniereVisite()));
+//						.dateToString(patient.getDateDerniereVisite()));
 				formulaire.setDatePremiereVisite(UtilDate.getInstance()
 						.dateToString(patient.getDatePremiereViste()));
 				formulaire.setLieuNaissance(patient.getLieuNaissance());

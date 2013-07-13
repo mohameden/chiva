@@ -18,7 +18,6 @@ import clinique.mapping.DetailFactureModifiees;
 import clinique.mapping.DevisAssureur;
 import clinique.mapping.Entreprise;
 import clinique.mapping.FamillePrestation;
-import clinique.mapping.HasDetailFactureInfo;
 import clinique.mapping.Patient;
 import clinique.mapping.PrestationCouvertesPc;
 import clinique.mapping.PrestationCouvertesPcModifiee;
@@ -33,7 +32,7 @@ public interface IGestionCommercialeBO {
 	void addActeBadge(GestionCommercialeForm formulaire, double prixActe);
 
 	void addActeBadgeFromDetailFacture(GestionCommercialeForm formulaire,
-			double prixActe, HasDetailFactureInfo df);
+			double prixActe, DetailFacture df);
 
 	void addActeNombreActeLimiteAvecPlafond(GestionCommercialeForm formulaire,
 			int pourcentage, int nbreActe, PrestationCouvertesPc pcCouv,
@@ -46,13 +45,13 @@ public interface IGestionCommercialeBO {
 	void addActePC(GestionCommercialeForm formulaire, double prixActe);
 
 	void addActePCFromDetailFacture(GestionCommercialeForm formulaire,
-			double prixActe, HasDetailFactureInfo df);
+			double prixActe, DetailFacture df);
 
 	void addActePCWithoutPrestationCouv(GestionCommercialeForm formulaire,
 			double prixActe);
 
 	void addActePCWithoutPrestationCouvFromDetailFacture(
-			GestionCommercialeForm formulaire, double prixActe, HasDetailFactureInfo df);
+			GestionCommercialeForm formulaire, double prixActe, DetailFacture df);
 
 	boolean addAncienDevisPatientWithoutPCInfos(
 			GestionCommercialeForm formulaire) throws Exception;

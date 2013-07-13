@@ -46,8 +46,8 @@ public abstract class AbstractPdfImpressionBO extends TransactionalBO {
 			DocumentException {
 		cb.setLineWidth(1f);
 		// add the images
-		String logoPath = InitServlet.CHEMIN_ROOT + "\\images\\logopdf.jpg";
-		//String logoPath = "d:/logopdf.jpg";
+		//String logoPath = InitServlet.CHEMIN_ROOT + "\\images\\logopdf.jpg";
+		String logoPath = "d:/logopdf.jpg";
 		Image companyLogo = Image.getInstance(logoPath);
 		companyLogo.setAbsolutePosition(462 + getA5XMargin(), 720
 				- getA5YAdjustement() + getA5XMargin());
