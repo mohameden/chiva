@@ -614,6 +614,11 @@
 				
 				
     	}
+		function setTypePrestationCouverte(var1)
+		{
+			document.forms[0].typePrestationCouverte.value = var1;
+		}
+		
 
 		function selectPatient(IdPatient)
     	{
@@ -722,6 +727,21 @@
 			var idDivActesLimites = document.getElementById ("divActesLimites");
 			idDivActesLimites.style.display = 'none';
 		} 
+		
+		function afficherFamilleLimites()
+		{
+			
+			var idDivActesLimites = document.getElementById ("divFamilleLimites");
+			idDivActesLimites.style.display = 'block';
+		}
+
+		function cacherFamilleLimites()
+		{
+			
+			var idDivActesLimites = document.getElementById ("divFamilleLimites");
+			idDivActesLimites.style.display = 'none';
+		} 
+
 
 	function afficherAddPcPrestation()
 	{
@@ -830,6 +850,7 @@
 <input type="hidden" name="pcId"/>
 <input type="hidden" name="idPrestAsupprimer"/>
 <input type="hidden" name="operation" value="<bean:write name="formInfosPatient" property="operation" />"/>
+<input type="hidden" name="typePrestationCouverte"/>
 
 
 <table  align="center" bgcolor="#00253E" style="color:#E70739; font-weight:bold;  font-size:16; margin-bottom: 5px;">
@@ -1082,9 +1103,9 @@
 						  
 		                 <tr id="btnAdd" align="center" style="display: none;">
 		                 <td colspan="4" align="center"> 
-		                <input type="button"  onclick="afficherAddPcFamille();" value="Familles prises en charge" size ="50" style="font-weight:bold; background-color:#00253E; color:#FFFFFF; cursor:hand; border:solid 2px #FF6600;"  />
+		                <input type="button"  onclick="afficherAddPcFamille(); setTypePrestationCouverte('famille');" value="Familles prises en charge" size ="50" style="font-weight:bold; background-color:#00253E; color:#FFFFFF; cursor:hand; border:solid 2px #FF6600;"  />
 		                
-		                <input type="button"  onclick="afficherAddPcPrestation();" value="Actes pris en charge" size ="50" style="font-weight:bold; background-color:#00253E; color:#FFFFFF; cursor:hand; border:solid 2px #FF6600;"  />
+		                <input type="button"  onclick="afficherAddPcPrestation(); setTypePrestationCouverte('acte');" value="Actes pris en charge" size ="50" style="font-weight:bold; background-color:#00253E; color:#FFFFFF; cursor:hand; border:solid 2px #FF6600;"  />
 		                
 		                </td>
 		                </tr>
@@ -1197,14 +1218,14 @@
 				         <tr>
 				             <td>Nombre limité </td>
 				             <td>
-					           <html:radio property="actesLimite" name="formInfosPatient" onclick="afficherActesLimites();" value="oui"/> Oui
-					           <html:radio property="actesLimite" name="formInfosPatient" onclick="cacherActesLimites();" value="non"/> Non
+					           <html:radio property="actesLimite" name="formInfosPatient" onclick="afficherFamilleLimites();" value="oui"/> Oui
+					           <html:radio property="actesLimite" name="formInfosPatient" onclick="cacherFamilleLimites();" value="non"/> Non
 					         </td>
 					          
 					          <td></td>
 				         </tr>
-				         <tr id="divActesLimites" style="display: block;">
-				         <td >Nombre actes</td>
+				         <tr id="divFamilleLimites" style="display: block;">
+				         <td >Nombre </td>
 	                     <td ><html:text styleClass="champText" property="nombreActesPC" onfocus="couleurBlanc(this,'ErrNombreActes');" onkeypress="Numerique();" size ="23"/></td>
 				         <td></td>
 				         </tr>

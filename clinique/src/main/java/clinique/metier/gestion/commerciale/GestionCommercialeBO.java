@@ -86,7 +86,6 @@ import clinique.mapping.Entreprise;
 import clinique.mapping.Facture;
 import clinique.mapping.FactureModifiees;
 import clinique.mapping.FamillePrestation;
-import clinique.mapping.HasDetailFactureInfo;
 import clinique.mapping.Hospitalisation;
 import clinique.mapping.Patient;
 import clinique.mapping.PatientPcActuel;
@@ -323,7 +322,7 @@ public class GestionCommercialeBO extends TransactionalBO implements
 	 */
 	@Override
 	public void addActeBadgeFromDetailFacture(
-			GestionCommercialeForm formulaire, double prixActe, HasDetailFactureInfo df) {
+			GestionCommercialeForm formulaire, double prixActe, DetailFacture df) {
 		int pourcentage = getCategorieDAO().getCategorie(
 				Integer.parseInt(formulaire.getCategorieId())).getPourcentage();
 		int nbreActe = df.getNbrActes();
@@ -599,7 +598,7 @@ public class GestionCommercialeBO extends TransactionalBO implements
 	 */
 	@Override
 	public void addActePCFromDetailFacture(GestionCommercialeForm formulaire,
-			double prixActe, HasDetailFactureInfo df) {
+			double prixActe, DetailFacture df) {
 		PrestationCouvertesPc pcCouv = getPrestationCouverte(formulaire);
 		int nbreActeRestant = 0;
 		int pourcentage = formulaire.getPriseEnCharge().getPourcentage();
@@ -782,7 +781,7 @@ public class GestionCommercialeBO extends TransactionalBO implements
 	 */
 	@Override
 	public void addActePCWithoutPrestationCouvFromDetailFacture(
-			GestionCommercialeForm formulaire, double prixActe, HasDetailFactureInfo df) {
+			GestionCommercialeForm formulaire, double prixActe, DetailFacture df) {
 
 		// int nbreActeRestant=0;
 		int pourcentage = formulaire.getPriseEnCharge().getPourcentage();
@@ -1170,14 +1169,18 @@ public class GestionCommercialeBO extends TransactionalBO implements
 				pc.setMontantFact(0);
 				pc.setOperateur(formulaire.getOperateur());
 
-				List prestCouvList = formulaire.getPrestationCouvertesPcs();
-
-				for (Iterator iter = prestCouvList.iterator(); iter.hasNext();) {
-					PrestationCouvertesPc element = (PrestationCouvertesPc) iter
-							.next();
-					element.setStatut("1");
-					element.setPriseEnCharge(pc);
-					prestationCouvertesPcDAO.save(element);
+				if (formulaire.getTypePC().equals("tout")) pc.setTout("1");
+				else 
+				{
+					pc.setTout("0");
+					List prestCouvList = formulaire.getPrestationCouvertesPcs();
+					for (Iterator iter = prestCouvList.iterator(); iter.hasNext();) {
+						PrestationCouvertesPc element = (PrestationCouvertesPc) iter
+								.next();
+						element.setStatut("1");
+						element.setPriseEnCharge(pc);
+						prestationCouvertesPcDAO.save(element);
+					}
 				}
 
 				formulaire.setPriseEnCharge(pc);
@@ -4303,11 +4306,11 @@ public class GestionCommercialeBO extends TransactionalBO implements
 	public int calculQPAssistantChirurgie(DetailFactureChirurgie df) {
 		// calcul qp praticien
 		int qpAssistant = 0;
-		if ("1".equals(df.getInfirmierExiste())) {
+		if (df.getInfirmierExiste().equals("1")) {
 			Acte acte = df.getActe();
-			if ("normal".equals(df.getType())) {
+			if (df.getType().equals("normal")) {
 				qpAssistant = acte.getTauxAssistant();
-			} else if ("urgence".equals(df.getType())) {
+			} else if (df.getType().equals("urgence")) {
 				qpAssistant = acte.getTauxAssistantUrg();
 			} else {
 				qpAssistant = acte.getTauxDepAssistant();
@@ -5391,12 +5394,22 @@ public class GestionCommercialeBO extends TransactionalBO implements
 					+ ""
 					+ getUserDao().getUserByLogin(formulaire.getOperateur())
 							.getUserId());
-
-			Acte a = getActeDAO().getActe(
-					Integer.parseInt(formulaire.getActeId()));
-			pc.setType("acte");
-			pc.setLibelle(a.getNomActe());
-			pc.setActe(a);
+            if (formulaire.getTypePrestationCouverte().equals("acte"))
+            {
+				Acte a = getActeDAO().getActe(
+						Integer.parseInt(formulaire.getActeId()));
+				pc.setType("acte");
+				pc.setLibelle(a.getNomActe());
+				pc.setActe(a);
+            }
+            else if (formulaire.getTypePrestationCouverte().equals("famille"))
+            {
+				FamillePrestation a = famillePrestationDAO.getFamillePrestation(
+						Integer.parseInt(formulaire.getFamillePrestationId()));
+				pc.setType("famille");
+				pc.setLibelle(a.getLibelle());
+				pc.setFamille(a);
+            }
 			// }
 
 			if (formulaire.getActesLimite().equals("non")) {
