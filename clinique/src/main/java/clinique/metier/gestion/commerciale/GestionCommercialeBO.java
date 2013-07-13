@@ -9019,7 +9019,7 @@ public class GestionCommercialeBO extends TransactionalBO implements
 						.dateToString(patient.getDateNaissance()));
 
 				formulaire.setDateDerniereVisite(UtilDate.getInstance()
-//						.dateToString(patient.getDateDerniereVisite()));
+						.dateToString(patient.getDateDerniereVisite()));
 				formulaire.setDatePremiereVisite(UtilDate.getInstance()
 						.dateToString(patient.getDatePremiereViste()));
 				formulaire.setLieuNaissance(patient.getLieuNaissance());
