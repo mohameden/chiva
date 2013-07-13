@@ -9470,5 +9470,6 @@ public class GestionCommercialeBO extends TransactionalBO implements
 			return result;
 		}
 	}
-
+	
+	
 }
