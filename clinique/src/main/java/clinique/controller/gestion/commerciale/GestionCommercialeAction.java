@@ -1340,6 +1340,7 @@ public class GestionCommercialeAction extends DispatchActionSupport {
 			user, os);
 			os.flush();
 			os.close();
+			
 			return mapping.findForward(null);
 			} catch (Exception e) {
 			log.fatal(e.getMessage());
