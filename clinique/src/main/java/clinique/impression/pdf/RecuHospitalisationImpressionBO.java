@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
+import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -20,6 +21,7 @@ import clinique.mapping.DetailFactureChirurgie;
 import clinique.mapping.DetailFactureServices;
 import clinique.mapping.Facture;
 import clinique.mapping.HasDetailFactureInfo;
+import clinique.mapping.Recu;
 import clinique.mapping.Reglement;
 
 import com.itextpdf.text.Document;
@@ -56,7 +58,7 @@ public class RecuHospitalisationImpressionBO extends AbstractPdfImpressionBO imp
 	}
 
 	@Override
-	public void imprimerPDF(String numFacture, String mentionName, String user,
+	public void imprimerPDF(String numRecu, String mentionName, String user,
 			OutputStream out) {
 
 		Document doc = new Document();
@@ -69,17 +71,18 @@ public class RecuHospitalisationImpressionBO extends AbstractPdfImpressionBO imp
 			doc.open();
 			PdfContentByte cb = docWriter.getDirectContent();
 
-			Facture facture = factureDAO.getFacture(numFacture);
+			Recu recu = recuDAO.getRecu(numRecu);
 			List<DetailFacture> detailList = detailFactureDAO
-					.findDetailFactureByFacture(facture);
+					.findDetailFactureByRecu(recu);
 			List<DetailFactureChirurgie> detailFCList = detailFactureChirurgieDAO
-					.findDetailFactureChirurgieByFacture(facture);
+					.findDetailFactureChirurgieByRecu(recu);
 			List<DetailFactureServices> detailFSList = detailFactureServicesDAO
-					.findDetailFactureServicesByFacture(facture);
+					.findDetailFactureServicesByRecu(recu);
 			List<HasDetailFactureInfo> details = new ArrayList<HasDetailFactureInfo>();
 			details.addAll(detailList);
 			details.addAll(detailFCList);
 			details.addAll(detailFSList);
+			Facture facture = recu.getFacture();
 			List<Reglement> regList = reglementDAO
 					.findReglementsByFacture(facture);
 
@@ -103,7 +106,7 @@ public class RecuHospitalisationImpressionBO extends AbstractPdfImpressionBO imp
 			Iterator<DetailFacturePrinter> it = dList.iterator();
 			printFirstPages(doc, cb, facture, nbrPage, it, mention);
 			printLastPage(user, doc, cb, facture, rList, hList, nbrPage, it,
-					mention, detailList);
+					mention, detailList, recu);
 		} catch (Throwable ex) {
 			ex.printStackTrace();
 		} finally {
@@ -129,7 +132,7 @@ public class RecuHospitalisationImpressionBO extends AbstractPdfImpressionBO imp
 			Facture facture, List<ReglementPrinter> rList,
 			List<HospitalisationPrinter> hList, int nbrPage,
 			Iterator<DetailFacturePrinter> it, Mention mention,
-			List<DetailFacture> detailList) {
+			List<DetailFacture> detailList, Recu recu) {
 		int y = 0;
 		// ecrire la derniere page
 		generateFinalLayout(doc, cb, facture, user, mention);
@@ -137,7 +140,7 @@ public class RecuHospitalisationImpressionBO extends AbstractPdfImpressionBO imp
 		generateDetailList(doc, cb, it, y);
 		// start reglement
 		y = REGLEMENT_ORDONATE;
-		generateReglement(doc, cb, y, rList, facture);
+		generateReglement(doc, cb, y, rList, facture, recu);
 		generateFooter(cb, nbrPage);
 	}
 
@@ -279,11 +282,16 @@ public class RecuHospitalisationImpressionBO extends AbstractPdfImpressionBO imp
 	}
 
 	private void generateReglement(Document doc, PdfContentByte cb, int y,
-			List<ReglementPrinter> list, Facture facture) {
+			List<ReglementPrinter> list, Facture facture, Recu recu) {
 		DecimalFormat df = new DecimalFormat("0.00");
-		createContent(cb, 287 + 2, y, "PC",
+		Reglement reglement = recu.getReglement();
+		String description = StringUtils.EMPTY;
+		if(reglement!=null) {
+			description = reglement.getDescription();
+		}
+		createContent(cb, 287 + 2, y, description,
 				PdfContentByte.ALIGN_LEFT);
-		createContent(cb, 570, y, df.format(1900),
+		createContent(cb, 570, y, df.format(recu.getTotal()),
 				PdfContentByte.ALIGN_RIGHT);
 	}
 

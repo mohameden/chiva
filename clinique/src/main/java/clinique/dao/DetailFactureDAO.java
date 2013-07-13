@@ -10,6 +10,7 @@ import org.springframework.stereotype.Repository;
 import clinique.mapping.DetailFacture;
 import clinique.mapping.Facture;
 import clinique.mapping.HasDetailFactureInfo;
+import clinique.mapping.Recu;
 
 @Repository
 public class DetailFactureDAO extends
@@ -124,6 +125,14 @@ public class DetailFactureDAO extends
 		Session session = getSession();
 		Query query = session.createQuery(queryString);
 		query.setEntity("fac", facture);
+		return query.list();
+	}
+	@SuppressWarnings("unchecked")
+	public List<DetailFacture> findDetailFactureByRecu(final Recu recu) {
+		String queryString = "from DetailFacture d where d.recu = :recu";
+		Session session = getSession();
+		Query query = session.createQuery(queryString);
+		query.setEntity("recu", recu);
 		return query.list();
 	}
 

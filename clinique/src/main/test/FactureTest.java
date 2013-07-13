@@ -42,7 +42,7 @@ public class FactureTest extends AbstractCliniqueTestNGSpringContextTests {
 		os = new FileOutputStream("d:/factureHosp_test.pdf");
 		hImpressionBO.imprimerPDF("11201304151137182", "Original", "sas", os);
 		os = new FileOutputStream("d:/recuHosp_test.pdf");
-		rhimpressionBO.imprimerPDF("11201304151137182", "Original", "sas", os);
+		rhimpressionBO.imprimerPDF("12201203151418393", "Original", "sas", os);
 
 	}
 }
