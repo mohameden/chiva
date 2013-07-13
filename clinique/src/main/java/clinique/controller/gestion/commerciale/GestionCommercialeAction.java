@@ -18,6 +18,7 @@ import org.springframework.web.struts.DispatchActionSupport;
 import clinique.impression.IImpressionBO;
 import clinique.impression.pdf.IFactureHospitalisationImpressionBO;
 import clinique.impression.pdf.IFactureImpressionBO;
+import clinique.impression.pdf.IRecuHospitalisationImpressionBO;
 import clinique.impression.pdf.IRecuImpressionBO;
 import clinique.metier.gestion.commerciale.IGestionCommercialeBO;
 import clinique.model.gestion.commerciale.GestionCommercialeForm;
@@ -43,6 +44,10 @@ public class GestionCommercialeAction extends DispatchActionSupport {
 	private IRecuImpressionBO getRecuImpressionBO() {
 		return (IRecuImpressionBO) getWebApplicationContext().getBean(
 				IRecuImpressionBO.NAME);
+	}
+	private IRecuHospitalisationImpressionBO getRecuHospitalisationImpressionBO() {
+		return (IRecuHospitalisationImpressionBO) getWebApplicationContext().getBean(
+				IRecuHospitalisationImpressionBO.NAME);
 	}
 
 	private IFactureImpressionBO getFactureImpressionBO() {
@@ -1330,7 +1335,7 @@ public class GestionCommercialeAction extends DispatchActionSupport {
 			formulaire.setOperateur(user);
 			OutputStream os = response.getOutputStream();
 			response.setContentType("application/pdf");
-			IFactureHospitalisationImpressionBO impressionBO = getFactureHospitalisationImpressionBO();
+			IRecuHospitalisationImpressionBO impressionBO = getRecuHospitalisationImpressionBO();
 			impressionBO.imprimerPDF(formulaire.getRecu().getRecuId(), "ORIGINAL",
 			user, os);
 			os.flush();
