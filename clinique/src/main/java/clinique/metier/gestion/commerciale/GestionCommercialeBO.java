@@ -320,7 +320,6 @@ public class GestionCommercialeBO extends TransactionalBO implements
 	 * (clinique.model.gestion.commerciale.GestionCommercialeForm, double,
 	 * clinique.mapping.DetailFacture)
 	 */
-	@Override
 	public void addActeBadgeFromDetailFacture(
 			GestionCommercialeForm formulaire, double prixActe, DetailFacture df) {
 		int pourcentage = getCategorieDAO().getCategorie(
@@ -596,7 +595,6 @@ public class GestionCommercialeBO extends TransactionalBO implements
 	 * (clinique.model.gestion.commerciale.GestionCommercialeForm, double,
 	 * clinique.mapping.DetailFacture)
 	 */
-	@Override
 	public void addActePCFromDetailFacture(GestionCommercialeForm formulaire,
 			double prixActe, DetailFacture df) {
 		PrestationCouvertesPc pcCouv = getPrestationCouverte(formulaire);
@@ -779,7 +777,6 @@ public class GestionCommercialeBO extends TransactionalBO implements
 	 * (clinique.model.gestion.commerciale.GestionCommercialeForm, double,
 	 * clinique.mapping.DetailFacture)
 	 */
-	@Override
 	public void addActePCWithoutPrestationCouvFromDetailFacture(
 			GestionCommercialeForm formulaire, double prixActe, DetailFacture df) {
 

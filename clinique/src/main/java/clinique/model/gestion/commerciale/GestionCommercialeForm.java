@@ -263,6 +263,8 @@ public class GestionCommercialeForm extends ActionForm {
 	
 	private String typePC="tout";
 	
+	private String typePrestationCouverte;
+	
 	
 	@SuppressWarnings("unchecked")
 	private List detailsFactureChirurgieList = new ArrayList();
@@ -1587,5 +1589,15 @@ public class GestionCommercialeForm extends ActionForm {
 	public void setTypePC(String typePC) {
 		this.typePC = typePC;
 	}
+
+	public String getTypePrestationCouverte() {
+		return typePrestationCouverte;
+	}
+
+	public void setTypePrestationCouverte(String typePrestationCouverte) {
+		this.typePrestationCouverte = typePrestationCouverte;
+	}
+
+	
 
 }

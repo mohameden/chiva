@@ -16,6 +16,7 @@
 <property name="montantFact" column="montant_fact" />
 <property name="statut" column="statut" />
 <property name="operateur" column="operateur" />
+<property name="tout" column="tout" />
 
 <!--  
 <set name="prestationCouvertesPcs" cascade="none" lazy="true">

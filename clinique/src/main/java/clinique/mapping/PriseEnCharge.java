@@ -18,6 +18,7 @@ public class PriseEnCharge extends Entity<PriseEnCharge> {
 	private double montantFact;
 	private String statut;
 	private String operateur;
+	private String tout;
 
 	private Patient patient;
 
@@ -251,6 +252,14 @@ public class PriseEnCharge extends Entity<PriseEnCharge> {
 		categorie = cCopier.copy(entity.getCategorie());
 		EntityCopier<Patient> pCopier = new EntityCopier<Patient>();
 		patient = pCopier.copy(entity.getPatient());
+	}
+
+	public String getTout() {
+		return tout;
+	}
+
+	public void setTout(String tout) {
+		this.tout = tout;
 	}
 
 }
